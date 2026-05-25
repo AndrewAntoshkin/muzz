@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Сообщения · Кадр</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="assets/theme.css" />
+</head>
+<body class="app-body-root" data-page="messages" data-page-title="Сообщения"
+  data-profession="actor"
+  data-user-name="Александр Взметнев"
+  data-user-city="Москва"
+  data-user-avatar="assets/actors/vzmetnev-avatar.jpg"
+  data-profile-complete="78"
+  data-profile-views="12">
+
+<div class="app-frame">
+  <aside id="app-sidebar"></aside>
+
+  <div class="app-main">
+    <header id="app-header"></header>
+
+    <div class="app-main__body">
+      <main class="page-area" style="padding:0; overflow:hidden;">
+        <div class="msg-layout">
+
+          <!-- LEFT: thread list -->
+          <aside class="msg-list">
+            <div class="msg-list__head">
+              <div class="msg-list__title">Сообщения · 3</div>
+              <label class="msg-list__search">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                <input type="search" placeholder="Поиск по чатам" />
+              </label>
+            </div>
+
+            <div class="msg-row is-active">
+              <img src="assets/figma/avatar-02.png" alt="" />
+              <div>
+                <div class="msg-row__name">Анна Лебедева <span class="tag tag-green" style="font-size:10px; padding:1px 6px;">Кастинг</span></div>
+                <div class="msg-row__preview">Спасибо! Жду самопробу до 6 июня…</div>
+              </div>
+              <div style="text-align:right;">
+                <div class="msg-row__time">12:08</div>
+                <span class="msg-row__badge">2</span>
+              </div>
+            </div>
+
+            <div class="msg-row">
+              <img src="assets/figma/avatar-04.png" alt="" />
+              <div>
+                <div class="msg-row__name">Sreda Production</div>
+                <div class="msg-row__preview">Договор отправили на почту, проверьте</div>
+              </div>
+              <div style="text-align:right;">
+                <div class="msg-row__time">вчера</div>
+              </div>
+            </div>
+
+            <div class="msg-row">
+              <img src="assets/figma/avatar-01.png" alt="" />
+              <div>
+                <div class="msg-row__name">Ксения Воронина <span class="tag tag-blue" style="font-size:10px; padding:1px 6px;">Trace · Okko</span></div>
+                <div class="msg-row__preview">Привет, отправляю сцены «После шторма», по…</div>
+              </div>
+              <div style="text-align:right;">
+                <div class="msg-row__time">пн</div>
+                <span class="msg-row__badge">1</span>
+              </div>
+            </div>
+
+            <div class="msg-row">
+              <span class="project-team-card__ava" style="background:#5C4A45;">МК</span>
+              <div>
+                <div class="msg-row__name">Мария Коваль</div>
+                <div class="msg-row__preview">Спасибо, дозвонилась режиссёру.</div>
+              </div>
+              <div style="text-align:right;">
+                <div class="msg-row__time">22 мая</div>
+              </div>
+            </div>
+
+            <div class="msg-row">
+              <span class="project-team-card__ava" style="background:#3D6D99;">ЛМ</span>
+              <div>
+                <div class="msg-row__name">Лариса Морозова <span style="font-size:10px; color:var(--text-faint);">· менеджер</span></div>
+                <div class="msg-row__preview">Подтверждаю даты 10–14, плюс avail check…</div>
+              </div>
+              <div style="text-align:right;">
+                <div class="msg-row__time">20 мая</div>
+              </div>
+            </div>
+
+            <div class="msg-row">
+              <img src="assets/figma/avatar-04.png" alt="" />
+              <div>
+                <div class="msg-row__name">Студия Окно <span class="tag" style="background:#FFE9EF; color:#E50046; font-size:10px; padding:1px 6px;">KION</span></div>
+                <div class="msg-row__preview">Ищем эпизод в док-сериал. Скиньте показ-карту.</div>
+              </div>
+              <div style="text-align:right;">
+                <div class="msg-row__time">19 мая</div>
+              </div>
+            </div>
+            <div class="msg-row">
+              <span class="project-team-card__ava" style="background:#fff; color:#2C2C2B; border:1px solid #ccc;">YBW</span>
+              <div>
+                <div class="msg-row__name">Yellow Black White <span class="tag" style="background:#f4f4f4; color:#2C2C2B; font-size:10px; padding:1px 6px; border:1px solid #ddd;">START</span></div>
+                <div class="msg-row__preview">Сериал «Берег 2», 8 эп. Готовы говорить о…</div>
+              </div>
+              <div style="text-align:right;">
+                <div class="msg-row__time">17 мая</div>
+              </div>
+            </div>
+            <div class="msg-row">
+              <span class="project-team-card__ava" style="background:#FF5500;">КП</span>
+              <div>
+                <div class="msg-row__name">Кинопоиск Студия</div>
+                <div class="msg-row__preview">Спасибо за самопробу «Тихий январь». Возьмём…</div>
+              </div>
+              <div style="text-align:right;">
+                <div class="msg-row__time">15 мая</div>
+              </div>
+            </div>
+          </aside>
+
+          <!-- RIGHT: thread -->
+          <section class="msg-thread">
+            <div class="msg-thread__head">
+              <img src="assets/figma/avatar-02.png" alt="" />
+              <div>
+                <div class="name">Анна Лебедева</div>
+                <div class="meta">Кастинг-директор · «Тихий январь» · отвечает обычно за 2 часа</div>
+              </div>
+              <div class="actions">
+                <button type="button" class="btn-secondary btn-sm">Профиль</button>
+                <button type="button" class="btn-secondary btn-sm">Перейти к кастингу</button>
+              </div>
+            </div>
+
+            <div class="msg-thread__body">
+              <div class="msg-day">Вчера</div>
+
+              <div class="msg-bubble">
+                Александр, здравствуйте! Передаю информацию от Sreda — мы открыли кастинг на главную роль в «Тихом январе». По вашему типажу вы попадаете, хотим пригласить на самопробу.
+                <div class="msg-bubble__time">14:22</div>
+              </div>
+
+              <div class="msg-card-inline">
+                <div class="label">Кастинг</div>
+                <div class="title">Актриса на главную роль — «Тихий январь»</div>
+                <div style="color:var(--text-muted); font-size:12px;">Sreda Production · до 6 июня · 142 отклика</div>
+                <a href="casting.html" class="link-accent" style="font-size:12px; font-weight:600; display:inline-block; margin-top:6px;">Открыть кастинг →</a>
+              </div>
+
+              <div class="msg-bubble is-me">
+                Спасибо, посмотрел. Лариса (мой менеджер) на связи, она подтвердит даты. Когда дедлайн самопробы?
+                <div class="msg-bubble__time">14:35</div>
+              </div>
+
+              <div class="msg-bubble">
+                6 июня. Сцены прикрепляю, в первой нужен партнёр. На очный кастинг пригласим в окне 10–14 июня, если попадёте в шорт-лист.
+                <div class="msg-bubble__time">14:40</div>
+              </div>
+
+              <div class="msg-day">Сегодня</div>
+
+              <div class="msg-bubble is-me">
+                Окей, снимаю в эти выходные. Можно ли сцены прислать раньше дедлайна? Чтобы было время на доп. версию, если попрошусь.
+                <div class="msg-bubble__time">11:55</div>
+              </div>
+
+              <div class="msg-bubble">
+                Конечно. Чем раньше, тем лучше — особенно сцена 2 (монолог), её хочу показать режиссёру до общего просмотра.
+                <div class="msg-bubble__time">12:08</div>
+              </div>
+
+              <div class="msg-bubble">
+                Спасибо! Жду самопробу до 6 июня. Если что — пишите, я на связи.
+                <div class="msg-bubble__time">12:08</div>
+              </div>
+            </div>
+
+            <div class="msg-thread__compose">
+              <button type="button" class="btn-secondary btn-sm" title="Прикрепить">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05 12.25 20.24a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              </button>
+              <textarea placeholder="Сообщение…"></textarea>
+              <button type="button" class="btn-primary btn-sm">Отправить</button>
+            </div>
+          </section>
+
+        </div>
+      </main>
+    </div>
+  </div>
+</div>
+
+<script src="assets/shell.js"></script>
+</body>
+</html>

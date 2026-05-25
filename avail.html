@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Запросы доступности · Кадр</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="assets/theme.css" />
+</head>
+<body class="app-body-root" data-page="avail" data-page-title="Чек доступности"
+  data-profession="casting"
+  data-user-name="Анна Лебедева"
+  data-user-city="Москва"
+  data-user-avatar="assets/figma/avatar-02.png"
+  data-profile-complete="87"
+  data-profile-views="218">
+
+<div class="app-frame">
+  <aside id="app-sidebar"></aside>
+
+  <div class="app-main">
+    <header id="app-header"></header>
+
+    <div class="app-main__body">
+      <main class="page-area">
+        <div class="page-scroll detail-page">
+
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; flex-wrap:wrap; gap:10px;">
+            <div>
+              <p style="font-size:12px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-faint); font-weight:600;">Avail check</p>
+              <h1 style="font-size:26px; font-weight:700; letter-spacing:-0.02em;">Запросы доступности</h1>
+              <p style="color:var(--text-muted); font-size:14px;">Массовая рассылка «свободен в эти даты?» — заменяет десятки звонков и сообщений.</p>
+            </div>
+            <button type="button" class="btn-primary">+ Новый запрос</button>
+          </div>
+
+          <div class="avail-summary">
+            <div class="avail-summary__stat"><strong>3</strong>активных опроса</div>
+            <div class="avail-summary__stat"><strong>184</strong>получателя</div>
+            <div class="avail-summary__stat"><strong>112</strong>ответили (61%)</div>
+            <div class="avail-summary__stat"><strong>4ч 12мин</strong>среднее время ответа</div>
+            <div class="avail-summary__stat"><strong>−42</strong>часа за месяц</div>
+          </div>
+
+          <!-- ACTIVE REQUEST -->
+          <section class="detail-block">
+            <div class="detail-block__head">
+              <div>
+                <h2 class="detail-block__title">«Тихий январь» · очные пробы</h2>
+                <p style="font-size:13px; color:var(--text-muted); margin-top:2px;">Окно: 10–14 июня · Москва, студия Sreda · 4 даты</p>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button type="button" class="btn-secondary btn-sm">Экспорт в Sheets</button>
+                <button type="button" class="btn-secondary btn-sm">Дублировать</button>
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:4px; margin-bottom:14px; font-size:11px;">
+              <div style="grid-column:span 7; font-weight:600; font-size:12px; color:var(--text-muted); margin-bottom:4px;">Распределение ответов по датам</div>
+              <div style="text-align:center;">
+                <div style="background:#e9f0f9; color:var(--tag-blue-fg); padding:8px 0; border-radius:6px; font-weight:700;">10 июн</div>
+                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">12 свободны</div>
+              </div>
+              <div style="text-align:center;">
+                <div style="background:#e4f2e8; color:var(--tag-green-fg); padding:8px 0; border-radius:6px; font-weight:700;">11 июн</div>
+                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">18 свободны</div>
+              </div>
+              <div style="text-align:center;">
+                <div style="background:#e4f2e8; color:var(--tag-green-fg); padding:8px 0; border-radius:6px; font-weight:700;">12 июн</div>
+                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">21 свободны</div>
+              </div>
+              <div style="text-align:center;">
+                <div style="background:#fce8d8; color:var(--tag-orange-fg); padding:8px 0; border-radius:6px; font-weight:700;">13 июн</div>
+                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">7 свободны</div>
+              </div>
+              <div style="text-align:center;">
+                <div style="background:#e9f0f9; color:var(--tag-blue-fg); padding:8px 0; border-radius:6px; font-weight:700;">14 июн</div>
+                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">14 свободны</div>
+              </div>
+              <div></div><div></div>
+            </div>
+
+            <div class="responses-list">
+              <a href="profile-actress.html" class="response-row" style="text-decoration:none; color:inherit;">
+                <img src="assets/figma/avatar-02.png" alt="" />
+                <div>
+                  <div class="response-row__name">Мария Коваль <span class="tag tag-green" style="font-size:10px; padding:0 6px;">✓ PRO</span></div>
+                  <div class="response-row__meta">«Слово пацана 2» (START), «Стая» (Okko) · через MS Talents · 38 мин</div>
+                </div>
+                <div class="response-row__stat">10–14 <strong style="color:var(--tag-green-fg);">все</strong></div>
+                <span class="tag tag-green">Свободна</span>
+              </a>
+              <a href="profile.html" class="response-row" style="text-decoration:none; color:inherit;">
+                <img src="assets/actors/vzmetnev-avatar.jpg" alt="" />
+                <div>
+                  <div class="response-row__name">Александр Взметнев <span class="tag tag-green" style="font-size:10px; padding:0 6px;">✓</span></div>
+                  <div class="response-row__meta">«Любовь СССР» (Кинопоиск), «Август» (Okko) · через MS Talents · 1ч 12 мин</div>
+                </div>
+                <div class="response-row__stat"><strong style="color:var(--tag-orange-fg);">10, 11, 14</strong></div>
+                <span class="tag tag-orange">Частично</span>
+              </a>
+              <div class="response-row">
+                <span class="project-team-card__ava" style="background:#4A3D5C;">АБ</span>
+                <div>
+                  <div class="response-row__name">Анна Белова</div>
+                  <div class="response-row__meta">прямой контакт · ответила за 4ч</div>
+                </div>
+                <div class="response-row__stat">10–14 <strong style="color:var(--tag-green-fg);">все</strong></div>
+                <span class="tag tag-green">Свободна</span>
+              </div>
+              <div class="response-row">
+                <span class="project-team-card__ava" style="background:#5C4A45;">ЕП</span>
+                <div>
+                  <div class="response-row__name">Елена Прокопьева</div>
+                  <div class="response-row__meta">не ответила · 2 дня назад</div>
+                </div>
+                <div class="response-row__stat" style="color:var(--text-faint);">—</div>
+                <span class="tag tag-gray">Ожидание</span>
+              </div>
+              <div class="response-row">
+                <span class="project-team-card__ava" style="background:#3D5C4A;">КН</span>
+                <div>
+                  <div class="response-row__name">Кристина Новикова</div>
+                  <div class="response-row__meta">прямой контакт · ответила за 6ч</div>
+                </div>
+                <div class="response-row__stat" style="color:var(--text-faint);">—</div>
+                <span class="tag" style="background:#fbe2e2; color:#a04545;">Занята</span>
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:14px; border-top:1px solid var(--hairline);">
+              <div style="font-size:13px; color:var(--text-muted);">28 получателей · 19 ответили · 9 в ожидании</div>
+              <div style="display:flex; gap:8px;">
+                <button type="button" class="btn-secondary btn-sm">Напомнить (9)</button>
+                <button type="button" class="btn-primary btn-sm">Пригласить свободных на 11–12 июня</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- OTHER ACTIVE -->
+          <section class="detail-block">
+            <div class="detail-block__head">
+              <h2 class="detail-block__title">Другие активные запросы</h2>
+            </div>
+            <div class="responses-list">
+              <a href="#" class="response-row" style="text-decoration:none; color:inherit;">
+                <span class="project-team-card__ava" style="background:#3D6D99;">КП</span>
+                <div>
+                  <div class="response-row__name">«Комната 14» · эпизоды</div>
+                  <div class="response-row__meta">23–28 июня · павильон · 36 получателей</div>
+                </div>
+                <div class="response-row__stat"><strong>22 / 36</strong> ответили</div>
+                <span class="tag tag-blue">Открыто</span>
+              </a>
+              <a href="#" class="response-row" style="text-decoration:none; color:inherit;">
+                <span class="project-team-card__ava" style="background:#3D5C4A;">СО</span>
+                <div>
+                  <div class="response-row__name">«Окно» · ведущий док-сериала</div>
+                  <div class="response-row__meta">12–22 июля · Казань, Москва · 120 получателей</div>
+                </div>
+                <div class="response-row__stat"><strong>71 / 120</strong> ответили</div>
+                <span class="tag tag-blue">Открыто</span>
+              </a>
+            </div>
+          </section>
+
+        </div>
+      </main>
+    </div>
+  </div>
+</div>
+
+<script src="assets/shell.js"></script>
+</body>
+</html>

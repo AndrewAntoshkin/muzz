@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Поиск · Кадр</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="assets/theme.css" />
+</head>
+<body class="app-body-root" data-page="search" data-page-title="Поиск и фильтры"
+  data-profession="casting"
+  data-user-name="Анна Лебедева"
+  data-user-city="Москва"
+  data-user-avatar="assets/figma/avatar-02.png"
+  data-profile-complete="87"
+  data-profile-views="218">
+
+<div class="app-frame">
+  <aside id="app-sidebar"></aside>
+
+  <div class="app-main">
+    <header id="app-header"></header>
+
+    <div class="app-main__body">
+      <main class="page-area">
+        <div class="page-scroll detail-page">
+
+          <div style="margin-bottom:16px;">
+            <label class="sidebar-search__box" style="background:#fff; border:1px solid var(--hairline); display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:14px; box-shadow:0 1px 0 rgba(0,0,0,0.02);">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+              <input type="search" placeholder="Александр Взметнев, или «оператор Москва ARRI», или «#драма #натура»" value="оператор-постановщик" style="border:none; outline:none; background:none; font:inherit; flex:1; font-size:15px;" />
+              <span style="font-size:12px; color:var(--text-muted);">218 результатов</span>
+            </label>
+
+            <div class="search-tabs" style="margin-top:12px;">
+              <button type="button" class="search-tab is-on">Люди · 142</button>
+              <button type="button" class="search-tab">Кастинги · 38</button>
+              <button type="button" class="search-tab">Проекты · 24</button>
+              <button type="button" class="search-tab">Студии · 9</button>
+              <button type="button" class="search-tab">Сообщества · 5</button>
+            </div>
+          </div>
+
+          <div class="search-layout">
+
+            <!-- FILTERS -->
+            <aside>
+              <section class="search-filter">
+                <div class="search-filter__title">Профессия</div>
+                <div class="search-filter__chips">
+                  <a href="#" class="search-chip is-on">Оператор-пост.</a>
+                  <a href="#" class="search-chip">Режиссёр</a>
+                  <a href="#" class="search-chip">Актёр</a>
+                  <a href="#" class="search-chip">Сценарист</a>
+                  <a href="#" class="search-chip">Монтаж</a>
+                  <a href="#" class="search-chip">Звук</a>
+                  <a href="#" class="search-chip">Гафер</a>
+                  <a href="#" class="search-chip">Костюм</a>
+                  <a href="#" class="search-chip">Колорист</a>
+                </div>
+              </section>
+
+              <section class="search-filter">
+                <div class="search-filter__title">Город</div>
+                <div class="search-filter__chips">
+                  <a href="#" class="search-chip is-on">Москва</a>
+                  <a href="#" class="search-chip">СПб</a>
+                  <a href="#" class="search-chip">Казань</a>
+                  <a href="#" class="search-chip">Мурманск</a>
+                  <a href="#" class="search-chip">Сочи</a>
+                  <a href="#" class="search-chip">+ Все</a>
+                </div>
+              </section>
+
+              <section class="search-filter">
+                <div class="search-filter__title">Опыт</div>
+                <div class="search-filter__chips">
+                  <a href="#" class="search-chip">До 3 лет</a>
+                  <a href="#" class="search-chip is-on">3–7 лет</a>
+                  <a href="#" class="search-chip is-on">7–12 лет</a>
+                  <a href="#" class="search-chip">12+ лет</a>
+                </div>
+              </section>
+
+              <section class="search-filter">
+                <div class="search-filter__title">Формат</div>
+                <div class="search-filter__chips">
+                  <a href="#" class="search-chip is-on">Полный метр</a>
+                  <a href="#" class="search-chip is-on">Сериал</a>
+                  <a href="#" class="search-chip">Док</a>
+                  <a href="#" class="search-chip">Реклама</a>
+                  <a href="#" class="search-chip">Клип</a>
+                  <a href="#" class="search-chip">Короткий метр</a>
+                </div>
+              </section>
+
+              <section class="search-filter">
+                <div class="search-filter__title">Камера</div>
+                <div class="search-filter__chips">
+                  <a href="#" class="search-chip is-on">ARRI Alexa 35</a>
+                  <a href="#" class="search-chip">Alexa Mini LF</a>
+                  <a href="#" class="search-chip">Sony Venice 2</a>
+                  <a href="#" class="search-chip">RED V-Raptor</a>
+                  <a href="#" class="search-chip">RED Komodo X</a>
+                  <a href="#" class="search-chip">BMD URSA</a>
+                </div>
+              </section>
+
+              <section class="search-filter">
+                <div class="search-filter__title">Опыт работы с платформой</div>
+                <div class="search-filter__chips">
+                  <a href="#" class="search-chip is-on">Кинопоиск</a>
+                  <a href="#" class="search-chip is-on">Okko</a>
+                  <a href="#" class="search-chip">START</a>
+                  <a href="#" class="search-chip">KION</a>
+                  <a href="#" class="search-chip">Wink</a>
+                  <a href="#" class="search-chip">Premier</a>
+                  <a href="#" class="search-chip">IVI</a>
+                </div>
+              </section>
+
+              <section class="search-filter">
+                <div class="search-filter__title">Налоговый статус</div>
+                <div class="search-filter__chips">
+                  <a href="#" class="search-chip is-on">ИП</a>
+                  <a href="#" class="search-chip is-on">Самозанятый</a>
+                  <a href="#" class="search-chip">Физлицо</a>
+                  <a href="#" class="search-chip">Агентский договор</a>
+                </div>
+              </section>
+
+              <section class="search-filter">
+                <div class="search-filter__title">Доступен с</div>
+                <div class="search-range">
+                  <input type="text" placeholder="01.07" />
+                  <input type="text" placeholder="31.08" />
+                </div>
+              </section>
+
+              <section class="search-filter">
+                <div class="search-filter__title">Дневная ставка ₽</div>
+                <div class="search-range">
+                  <input type="text" placeholder="от 80 ₽ тыс" />
+                  <input type="text" placeholder="до 320 ₽ тыс" />
+                </div>
+              </section>
+
+              <section class="search-filter">
+                <div class="search-filter__title">Дополнительно</div>
+                <div class="search-filter__chips">
+                  <a href="#" class="search-chip is-on">Проверенный</a>
+                  <a href="#" class="search-chip">С менеджером</a>
+                  <a href="#" class="search-chip">Готов к экспедиции</a>
+                  <a href="#" class="search-chip">Английский</a>
+                </div>
+              </section>
+
+              <button type="button" class="btn-secondary btn-block">Сбросить фильтры</button>
+            </aside>
+
+            <!-- RESULTS -->
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px;">
+                <h2 style="font-size:18px; font-weight:700; letter-spacing:-0.01em;">142 оператора-постановщика</h2>
+                <select style="border:1px solid var(--hairline); border-radius:8px; padding:6px 10px; font:inherit; font-size:13px; background:#fff;">
+                  <option>По релевантности</option>
+                  <option>По опыту</option>
+                  <option>По ставке (по возрастанию)</option>
+                  <option>Доступность (раньше → позже)</option>
+                </select>
+              </div>
+
+              <div class="search-result-grid">
+                <a href="profile-dop.html" class="search-result-card">
+                  <img src="assets/figma/avatar-04.png" alt="" />
+                  <div>
+                    <div class="search-result-card__name">Дмитрий Карпов <span class="tag tag-green" style="font-size:10px; padding:0 6px; vertical-align:middle;">✓</span></div>
+                    <div class="search-result-card__meta">DOP · 8 лет · Москва · ИП</div>
+                  </div>
+                  <div class="search-result-card__tags">
+                    <span class="tag tag-gray">Alexa 35</span>
+                    <span class="tag tag-gray">Кинопоиск</span>
+                    <span class="tag tag-gray">Okko</span>
+                  </div>
+                  <div style="font-size:12px; color:var(--text-muted); margin-top:auto; padding-top:6px; border-top:1px solid var(--hairline);">
+                    Свободен с 1 июля · от 180 ₽ тыс/смена
+                  </div>
+                </a>
+
+                <a href="#" class="search-result-card">
+                  <div class="search-result-card__ava" style="background:#5C4A45;">ИП</div>
+                  <div>
+                    <div class="search-result-card__name">Игорь Петров <span class="tag tag-green" style="font-size:10px; padding:0 6px; vertical-align:middle;">✓</span></div>
+                    <div class="search-result-card__meta">DOP · 11 лет · СПб · ИП</div>
+                  </div>
+                  <div class="search-result-card__tags">
+                    <span class="tag tag-gray">Venice 2</span>
+                    <span class="tag tag-gray">START</span>
+                    <span class="tag tag-gray">KION</span>
+                  </div>
+                  <div style="font-size:12px; color:var(--text-muted); margin-top:auto; padding-top:6px; border-top:1px solid var(--hairline);">
+                    Свободен сейчас · от 220 ₽ тыс/смена
+                  </div>
+                </a>
+
+                <a href="#" class="search-result-card">
+                  <div class="search-result-card__ava" style="background:#3D5C4A;">МК</div>
+                  <div>
+                    <div class="search-result-card__name">Максим Кравцов</div>
+                    <div class="search-result-card__meta">DOP · 6 лет · Москва · Самозанятый</div>
+                  </div>
+                  <div class="search-result-card__tags">
+                    <span class="tag tag-gray">Alexa Mini</span>
+                    <span class="tag tag-gray">Реклама</span>
+                    <span class="tag tag-gray">Клип · Кинопоиск</span>
+                  </div>
+                  <div style="font-size:12px; color:var(--text-muted); margin-top:auto; padding-top:6px; border-top:1px solid var(--hairline);">
+                    Hold до 15 июня · от 280 ₽ тыс/смена (реклама)
+                  </div>
+                </a>
+
+                <a href="#" class="search-result-card">
+                  <div class="search-result-card__ava" style="background:#4A3D5C;">СВ</div>
+                  <div>
+                    <div class="search-result-card__name">Сергей Волков <span class="tag tag-green" style="font-size:10px; padding:0 6px; vertical-align:middle;">✓</span></div>
+                    <div class="search-result-card__meta">DOP · 14 лет · Москва · ИП</div>
+                  </div>
+                  <div class="search-result-card__tags">
+                    <span class="tag tag-gray">Venice 2</span>
+                    <span class="tag tag-gray">Первый канал</span>
+                    <span class="tag tag-gray">Экспедиции</span>
+                  </div>
+                  <div style="font-size:12px; color:var(--text-muted); margin-top:auto; padding-top:6px; border-top:1px solid var(--hairline);">
+                    С 1 сентября · от 320 ₽ тыс/смена
+                  </div>
+                </a>
+
+                <a href="#" class="search-result-card">
+                  <div class="search-result-card__ava" style="background:#5C3D48;">АН</div>
+                  <div>
+                    <div class="search-result-card__name">Алексей Никитин</div>
+                    <div class="search-result-card__meta">DOP · 4 года · Казань · Самозанятый</div>
+                  </div>
+                  <div class="search-result-card__tags">
+                    <span class="tag tag-gray">Alexa 35</span>
+                    <span class="tag tag-gray">KION</span>
+                    <span class="tag tag-gray">Док</span>
+                  </div>
+                  <div style="font-size:12px; color:var(--text-muted); margin-top:auto; padding-top:6px; border-top:1px solid var(--hairline);">
+                    Свободен сейчас · от 110 ₽ тыс/смена
+                  </div>
+                </a>
+
+                <a href="#" class="search-result-card">
+                  <div class="search-result-card__ava" style="background:#5C5340;">ВТ</div>
+                  <div>
+                    <div class="search-result-card__name">Вероника Тимофеева <span class="tag tag-green" style="font-size:10px; padding:0 6px; vertical-align:middle;">✓</span></div>
+                    <div class="search-result-card__meta">DOP · 9 лет · Москва · ИП</div>
+                  </div>
+                  <div class="search-result-card__tags">
+                    <span class="tag tag-gray">Alexa 35</span>
+                    <span class="tag tag-gray">Okko</span>
+                    <span class="tag tag-gray">START · «Берег»</span>
+                  </div>
+                  <div style="font-size:12px; color:var(--text-muted); margin-top:auto; padding-top:6px; border-top:1px solid var(--hairline);">
+                    С 15 июля · от 195 ₽ тыс/смена
+                  </div>
+                </a>
+              </div>
+
+              <div style="text-align:center; margin-top:18px;">
+                <button type="button" class="btn-secondary">Показать ещё 24</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</div>
+
+<script src="assets/shell.js"></script>
+</body>
+</html>

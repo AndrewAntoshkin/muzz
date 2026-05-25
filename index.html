@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Кадр — главная</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css" />
+</head>
+<body class="app-body-root" data-page="home" data-page-title="Главная" data-layout="hub" data-header="page"
+  data-profession="actor"
+  data-user-name="Александр Взметнев"
+  data-user-city="Москва"
+  data-user-avatar="assets/actors/vzmetnev-avatar.jpg"
+  data-profile-complete="78"
+  data-profile-views="12">
+
+<div class="app-frame">
+  <aside id="app-sidebar"></aside>
+
+  <div class="app-main">
+    <header id="app-header"></header>
+
+    <div class="app-main__body app-main__body--hub">
+      <main class="page-area hub-center">
+        <div class="page-scroll">
+          <div class="hub-column">
+
+            <!-- WELCOME -->
+            <section class="hub-welcome">
+              <div>
+                <h1 class="hub-welcome__title">Здравствуйте, Александр</h1>
+                <p class="hub-welcome__lead">У вас 3 новые задачи и 2 непрочитанных сообщения.</p>
+              </div>
+              <div class="hub-welcome__tasks">
+                <a href="casting.html" class="hub-task hub-task--urgent">
+                  <span class="hub-task__label">До дедлайна</span>
+                  <strong>Самопроба «Тихий январь»</strong>
+                  <span class="hub-task__meta">осталось 12 дней · Sreda · Кинопоиск</span>
+                </a>
+                <a href="messages.html" class="hub-task">
+                  <span class="hub-task__label">Сообщение</span>
+                  <strong>Анна Лебедева</strong>
+                  <span class="hub-task__meta">«Жду самопробу до 6 июня…» · 2 ч назад</span>
+                </a>
+              </div>
+            </section>
+
+            <!-- METRICS -->
+            <section class="hub-metrics">
+              <a href="castings.html" class="hub-metric">
+                <strong>128</strong>
+                <span>открытых кастингов</span>
+                <em>+12 за неделю</em>
+              </a>
+              <a href="projects.html" class="hub-metric">
+                <strong>42</strong>
+                <span>проекта в работе</span>
+                <em>7 платформ</em>
+              </a>
+              <a href="#" class="hub-metric">
+                <strong>18</strong>
+                <span>дедлайнов на неделе</span>
+                <em>3 у вас</em>
+              </a>
+              <a href="messages.html" class="hub-metric">
+                <strong>3</strong>
+                <span>новых сообщения</span>
+                <em>Sreda, Анна Л., Ксения В.</em>
+              </a>
+            </section>
+
+            <!-- TOP CASTINGS -->
+            <section class="hub-block">
+              <header class="hub-block__head">
+                <div>
+                  <h2 class="hub-block__title">Кастинги для вас</h2>
+                  <p class="hub-block__lead">3 наиболее подходящих из 128 открытых</p>
+                </div>
+                <a href="castings.html" class="hub-block__link">Все кастинги →</a>
+              </header>
+              <div id="feed-castings" class="feed-list feed-list--compact" data-limit="3" aria-live="polite"></div>
+            </section>
+
+            <!-- PLATFORMS ACTIVITY -->
+            <section class="hub-block">
+              <header class="hub-block__head">
+                <div>
+                  <h2 class="hub-block__title">Активность платформ</h2>
+                  <p class="hub-block__lead">Кто заказывает кино прямо сейчас</p>
+                </div>
+                <a href="projects.html" class="hub-block__link">Все проекты →</a>
+              </header>
+              <div class="platform-strip">
+                <a href="projects.html?platform=kinopoisk" class="platform-card">
+                  <span class="platform-card__logo" style="background:#FF5500;">КП</span>
+                  <span class="platform-card__name">Кинопоиск</span>
+                  <span class="platform-card__count">14 проектов</span>
+                  <span class="platform-card__hot">3 ищут команду</span>
+                </a>
+                <a href="projects.html?platform=okko" class="platform-card">
+                  <span class="platform-card__logo" style="background:#181818;">OK</span>
+                  <span class="platform-card__name">Okko</span>
+                  <span class="platform-card__count">9 проектов</span>
+                  <span class="platform-card__hot">5 ищут команду</span>
+                </a>
+                <a href="projects.html?platform=start" class="platform-card">
+                  <span class="platform-card__logo" style="background:#fff; color:#2C2C2B; border:1px solid #ccc;">ST</span>
+                  <span class="platform-card__name">START</span>
+                  <span class="platform-card__count">7 проектов</span>
+                  <span class="platform-card__hot">2 ищут команду</span>
+                </a>
+                <a href="projects.html?platform=kion" class="platform-card">
+                  <span class="platform-card__logo" style="background:#E50046;">KI</span>
+                  <span class="platform-card__name">KION</span>
+                  <span class="platform-card__count">6 проектов</span>
+                  <span class="platform-card__hot">4 ищут команду</span>
+                </a>
+                <a href="projects.html?platform=wink" class="platform-card">
+                  <span class="platform-card__logo" style="background:#0080CB;">W</span>
+                  <span class="platform-card__name">Wink</span>
+                  <span class="platform-card__count">4 проекта</span>
+                  <span class="platform-card__hot">1 ищет команду</span>
+                </a>
+                <a href="projects.html?platform=premier" class="platform-card">
+                  <span class="platform-card__logo" style="background:#7B61FF;">PR</span>
+                  <span class="platform-card__name">Premier</span>
+                  <span class="platform-card__count">2 проекта</span>
+                  <span class="platform-card__hot">—</span>
+                </a>
+              </div>
+            </section>
+
+            <!-- TOP PROJECTS -->
+            <section class="hub-block">
+              <header class="hub-block__head">
+                <div>
+                  <h2 class="hub-block__title">Проекты в производстве</h2>
+                  <p class="hub-block__lead">Студии, которые набирают команду</p>
+                </div>
+                <a href="projects.html" class="hub-block__link">Все проекты →</a>
+              </header>
+              <div id="feed-projects" class="feed-list feed-list--compact" data-limit="2" aria-live="polite"></div>
+            </section>
+
+            <!-- NEW FACES -->
+            <section class="hub-block">
+              <header class="hub-block__head">
+                <div>
+                  <h2 class="hub-block__title">Новые лица</h2>
+                  <p class="hub-block__lead">Недавно подтвердили профиль в «Кадре»</p>
+                </div>
+                <a href="faces.html" class="hub-block__link">Все 24 →</a>
+              </header>
+              <div id="faces-strip-preview" class="faces-strip" aria-live="polite"></div>
+            </section>
+
+            <!-- COMMUNITIES -->
+            <section class="hub-block">
+              <header class="hub-block__head">
+                <div>
+                  <h2 class="hub-block__title">Сообщества по специальностям</h2>
+                  <p class="hub-block__lead">Закрытые группы профессионалов</p>
+                </div>
+                <a href="#" class="hub-block__link">Все 14 →</a>
+              </header>
+              <div class="community-grid">
+                <a href="#" class="community-card">
+                  <div class="community-card__img community-card__img--1" aria-hidden="true"></div>
+                  <div class="community-card__body">
+                    <div class="community-card__name">Операторы Москвы</div>
+                    <div class="community-card__meta">428 участников · закрытое</div>
+                  </div>
+                </a>
+                <a href="#" class="community-card">
+                  <div class="community-card__img community-card__img--2" aria-hidden="true"></div>
+                  <div class="community-card__body">
+                    <div class="community-card__name">Сценаристы платформ</div>
+                    <div class="community-card__meta">312 участников · по приглашению</div>
+                  </div>
+                </a>
+                <a href="#" class="community-card">
+                  <div class="community-card__img community-card__img--3" aria-hidden="true"></div>
+                  <div class="community-card__body">
+                    <div class="community-card__name">Монтажёры RU</div>
+                    <div class="community-card__meta">186 участников · открытое</div>
+                  </div>
+                </a>
+                <a href="#" class="community-card">
+                  <div class="community-card__img community-card__img--4" aria-hidden="true"></div>
+                  <div class="community-card__body">
+                    <div class="community-card__name">Sound for film</div>
+                    <div class="community-card__meta">141 участник · открытое</div>
+                  </div>
+                </a>
+                <a href="#" class="community-card">
+                  <div class="community-card__img community-card__img--5" aria-hidden="true"></div>
+                  <div class="community-card__body">
+                    <div class="community-card__name">Худпост-отдел</div>
+                    <div class="community-card__meta">98 участников · по приглашению</div>
+                  </div>
+                </a>
+                <a href="#" class="community-card">
+                  <div class="community-card__img community-card__img--6" aria-hidden="true"></div>
+                  <div class="community-card__body">
+                    <div class="community-card__name">Инди-кино</div>
+                    <div class="community-card__meta">524 участника · открытое</div>
+                  </div>
+                </a>
+              </div>
+            </section>
+
+            <!-- EVENTS / PITCHINGS -->
+            <section class="hub-block">
+              <header class="hub-block__head">
+                <div>
+                  <h2 class="hub-block__title">Индустрия: ближайшие события</h2>
+                  <p class="hub-block__lead">Питчинги, фестивали, рынки</p>
+                </div>
+                <a href="#" class="hub-block__link">Календарь →</a>
+              </header>
+              <div class="events-grid">
+                <a href="#" class="event-card event-card--urgent">
+                  <div class="event-card__date">14<span>июн</span></div>
+                  <div class="event-card__body">
+                    <div class="event-card__title">Питчинг ИРИ · сериалы для платформ</div>
+                    <div class="event-card__meta">Москва · отбор Кинопоиск, Okko, START, KION</div>
+                    <div class="event-card__tag">До 600 ₽ млн на проект · заявки до 13 июня</div>
+                  </div>
+                </a>
+                <a href="#" class="event-card">
+                  <div class="event-card__date">20<span>июн</span></div>
+                  <div class="event-card__body">
+                    <div class="event-card__title">Контентный рынок Okko</div>
+                    <div class="event-card__meta">Москва · закрытое B2B</div>
+                    <div class="event-card__tag">По приглашениям</div>
+                  </div>
+                </a>
+                <a href="#" class="event-card">
+                  <div class="event-card__date">1<span>окт</span></div>
+                  <div class="event-card__body">
+                    <div class="event-card__title">Фестиваль «Маяк»</div>
+                    <div class="event-card__meta">Геленджик · конкурс полного метра</div>
+                    <div class="event-card__tag">Заявки до 15 июля</div>
+                  </div>
+                </a>
+                <a href="#" class="event-card">
+                  <div class="event-card__date">15<span>окт</span></div>
+                  <div class="event-card__body">
+                    <div class="event-card__title">«Окно в Европу»</div>
+                    <div class="event-card__meta">Выборг · кино + сериал</div>
+                    <div class="event-card__tag">Заявки до 20 августа</div>
+                  </div>
+                </a>
+              </div>
+            </section>
+
+          </div>
+        </div>
+      </main>
+
+      <aside id="app-right-rail" class="app-right-rail"></aside>
+    </div>
+  </div>
+</div>
+
+<script src="assets/shell.js"></script>
+<script src="assets/rail.js" defer></script>
+<script src="assets/feed.js" defer></script>
+<script src="assets/faces.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Новые лица · Кадр</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css" />
+</head>
+<body class="app-body-root" data-page="faces" data-page-title="Новые лица" data-header="page"
+  data-profession="actor"
+  data-user-name="Александр Взметнев"
+  data-user-city="Москва"
+  data-user-avatar="assets/actors/vzmetnev-avatar.jpg"
+  data-profile-complete="78"
+  data-profile-views="12">
+
+<div class="app-frame">
+  <aside id="app-sidebar"></aside>
+
+  <div class="app-main">
+    <header id="app-header"></header>
+
+    <div class="app-main__body app-main__body--catalog">
+      <main class="page-area">
+        <div class="page-scroll catalog-page" id="faces-catalog">
+
+          <header class="catalog-page__head catalog-page__head--row">
+            <div>
+              <a href="index.html" class="catalog-page__back">← Главная</a>
+              <h1 class="catalog-page__title">Новые лица</h1>
+              <p class="catalog-page__lead">Недавно подтвердили профиль в «Кадре» — актёры, режиссёры и команда</p>
+            </div>
+          </header>
+
+          <label class="catalog-search">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input type="search" data-faces-search placeholder="Имя, профессия или город…" />
+            <span class="catalog-search__count" data-faces-count>24 человека</span>
+          </label>
+
+          <div class="search-layout catalog-layout" data-faces-filters>
+            <aside class="catalog-filters">
+              <section class="search-filter">
+                <div class="search-filter__title">Профессия</div>
+                <div class="search-filter__chips">
+                  <button type="button" class="search-chip is-on" data-filter-profession="">Все</button>
+                  <button type="button" class="search-chip" data-filter-profession="actor">Актёр</button>
+                  <button type="button" class="search-chip" data-filter-profession="actress">Актриса</button>
+                  <button type="button" class="search-chip" data-filter-profession="director">Режиссёр</button>
+                  <button type="button" class="search-chip" data-filter-profession="producer">Продюсер</button>
+                  <button type="button" class="search-chip" data-filter-profession="dop">Оператор-пост.</button>
+                  <button type="button" class="search-chip" data-filter-profession="casting">Кастинг</button>
+                  <button type="button" class="search-chip" data-filter-profession="screenwriter">Сценарист</button>
+                  <button type="button" class="search-chip" data-filter-profession="editor">Монтаж</button>
+                  <button type="button" class="search-chip" data-filter-profession="sound">Звук</button>
+                  <button type="button" class="search-chip" data-filter-profession="gaffer">Гафер</button>
+                  <button type="button" class="search-chip" data-filter-profession="costume">Костюм</button>
+                </div>
+              </section>
+
+              <section class="search-filter">
+                <div class="search-filter__title">Город</div>
+                <div class="search-filter__chips">
+                  <button type="button" class="search-chip is-on" data-filter-city="">Все</button>
+                  <button type="button" class="search-chip" data-filter-city="Москва">Москва</button>
+                  <button type="button" class="search-chip" data-filter-city="СПб">СПб</button>
+                  <button type="button" class="search-chip" data-filter-city="Казань">Казань</button>
+                  <button type="button" class="search-chip" data-filter-city="Мурманск">Мурманск</button>
+                  <button type="button" class="search-chip" data-filter-city="Сочи">Сочи</button>
+                </div>
+              </section>
+
+              <section class="search-filter">
+                <div class="search-filter__title">Дополнительно</div>
+                <label class="hub-filters__check catalog-filters__check">
+                  <input type="checkbox" data-filter-verified />
+                  <span>Только проверенные</span>
+                </label>
+              </section>
+
+              <button type="button" class="btn-secondary btn-block catalog-filters__reset" data-faces-reset>Сбросить фильтры</button>
+            </aside>
+
+            <div class="catalog-results">
+              <div id="faces-grid" class="faces-grid" aria-live="polite"></div>
+            </div>
+          </div>
+
+        </div>
+      </main>
+    </div>
+  </div>
+</div>
+
+<script src="assets/shell.js"></script>
+<script src="assets/faces.js" defer></script>
+</body>
+</html>

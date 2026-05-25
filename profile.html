@@ -1,0 +1,710 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Александр Взметнев · кадр</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Onest', 'ui-sans-serif', 'system-ui'] },
+        colors: {
+          ink: { 900: '#2C2C2B', 700: '#4A4A49', 500: '#8E8E8E', 400: '#B0B0B0', 300: '#D4D4D4' },
+          canvas: '#E8E8E8',
+          surface: { DEFAULT: '#FCFCFC', muted: '#F3F3F3' },
+        },
+        borderRadius: { post: '12px', media: '10px' },
+        letterSpacing: { tightish: '-0.01em', tighter2: '-0.02em' },
+      }
+    }
+  }
+</script>
+<link rel="stylesheet" href="assets/theme.css" />
+<style>
+  .photo-1 { background: #3D4F6B; }
+  .photo-2 { background: #5C4A45; }
+  .photo-3 { background: #3D5C4A; }
+  .photo-4 { background: #4A3D5C; }
+  .photo-5 { background: #5C5340; }
+  .photo-6 { background: #454545; }
+  .photo-7 { background: #5C3D48; }
+  .photo-8 { background: #3D5568; }
+  .layout-ads { width: 280px; flex-shrink: 0; }
+  @media (max-width: 1279px) { .layout-ads { width: 100%; } }
+</style>
+</head>
+<body class="app-body-root" data-page="profile" data-page-title="Александр Взметнев"
+  data-profession="actor"
+  data-user-name="Александр Взметнев"
+  data-user-city="Москва"
+  data-user-avatar="assets/actors/vzmetnev-kinopoisk.jpg"
+  data-profile-complete="78"
+  data-profile-views="12">
+
+<div class="app-frame">
+  <aside id="app-sidebar"></aside>
+
+  <div class="app-main">
+    <header id="app-header"></header>
+
+    <div class="app-main__body">
+    <main class="page-area">
+      <div class="page-scroll">
+        <p class="page-type">Профиль</p>
+
+    <!-- HERO -->
+    <section class="post overflow-hidden">
+      <div class="aspect-[5/1] cover relative overflow-hidden">
+        <img src="assets/actors/vzmetnev-cover.jpg" alt="" class="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+        <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+        <div class="absolute inset-0 grain opacity-30"></div>
+        <div class="absolute top-4 right-4 flex flex-wrap gap-2 justify-end">
+          <a href="https://www.kinopoisk.ru/name/4531331/" target="_blank" rel="noopener noreferrer" class="h-9 px-3 rounded-full text-[13px] font-medium text-white bg-black/30 backdrop-blur hover:bg-black/40 inline-flex items-center gap-1.5 shrink-0 whitespace-nowrap">Кинопоиск</a>
+          <a href="https://kinolift.com/ru/16017" target="_blank" rel="noopener noreferrer" class="h-9 px-3 rounded-full text-[13px] font-medium text-white bg-black/30 backdrop-blur hover:bg-black/40 inline-flex items-center gap-1.5 shrink-0 whitespace-nowrap">Kinolift</a>
+        </div>
+      </div>
+
+      <div class="px-4 sm:px-6 pb-6 relative">
+        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between -mt-12 sm:-mt-16 mb-4 gap-4">
+          <img src="assets/actors/vzmetnev-kinopoisk.jpg" alt="Александр Взметнев" class="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover ring-white-4 shrink-0" width="128" height="128" />
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" class="btn-primary shrink-0 whitespace-nowrap">Пригласить на кастинг</button>
+            <a href="#contacts" class="btn-secondary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              Контакты
+            </a>
+            <button class="h-10 w-10 grid place-items-center rounded-full text-ink-500 bg-surface-muted hover:bg-line">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <h1 class="page-title" style="margin-bottom:8px">Александр Взметнев</h1>
+          <span class="tag tag-green text-[11px] font-semibold inline-flex items-center gap-1 h-6 px-2">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 9.91 5.5l-4-1 .91 4.07L4 12l2.82 3.43-.91 4.07 4-1L12 22l2.09-3.5 4 1-.91-4.07L20 12l-2.82-3.43.91-4.07-4 1L12 2z"/></svg>
+            Проверенный
+          </span>
+          <span class="text-[12px] px-2 py-0.5 rounded-md bg-surface-muted text-ink-700 font-medium">32 года</span>
+        </div>
+
+        <div class="mt-1 text-[15px] text-ink-500 flex items-center gap-2 flex-wrap">
+          <span class="font-medium text-ink-700">Актёр кино и телевидения</span>
+          <span class="w-1 h-1 rounded-full bg-ink-300"></span>
+          <span class="inline-flex items-center gap-1">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Москва · Рязань
+          </span>
+          <span class="w-1 h-1 rounded-full bg-ink-300"></span>
+          <span>180 см</span>
+          <span class="w-1 h-1 rounded-full bg-ink-300"></span>
+          <span>@alexander_vzmetnev</span>
+        </div>
+
+        <p class="mt-4 text-[15px] leading-relaxed text-ink-900 max-w-2xl">
+          Снимается в сериалах и кино с 2013 года. Фильмография на платформах: «Мажор» (Кинопоиск), «Трудные подростки» (Wink), «Ивановы-Ивановы» (СТС / Premier), «Любовь Советского Союза» (Кинопоиск, прокат 2024), «Август» (Okko, 2025). Комфортен в драме, криминале, военном кино. Профиль на <a href="https://kinolift.com/ru/16017" target="_blank" rel="noopener" class="link-accent font-medium hover:opacity-80">Kinolift</a> и <a href="https://www.kinopoisk.ru/name/4531331/" target="_blank" rel="noopener" class="link-accent font-medium hover:opacity-80">Кинопоиске</a>.
+        </p>
+
+        <div class="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-[14px]">
+          <div><span class="font-bold text-ink-900 text-[16px]">13</span> <span class="text-ink-500">проектов</span></div>
+          <div><span class="font-bold text-ink-900 text-[16px]">847</span> <span class="text-ink-500">подписчиков</span></div>
+          <div><span class="font-bold text-ink-900 text-[16px]">124</span> <span class="text-ink-500">подписок</span></div>
+          <div class="w-full sm:w-auto sm:ml-auto inline-flex items-center gap-1.5 text-[13px] text-ink-500">
+            <span class="w-2 h-2 rounded-full bg-[#3d7a52]"></span>
+            Открыт к предложениям
+          </div>
+        </div>
+
+        <div class="mt-5 flex flex-wrap gap-2">
+          <span class="text-[13px] px-3 py-1.5 rounded-full tag-casting font-medium font-medium inline-flex items-center gap-1.5 shrink-0 whitespace-nowrap">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#3d7a52]"></span>
+            Доступен для кастингов
+          </span>
+          <span class="text-[13px] px-3 py-1.5 rounded-full bg-surface-muted text-ink-700 font-medium shrink-0 whitespace-nowrap">Сериалы</span>
+          <span class="text-[13px] px-3 py-1.5 rounded-full bg-surface-muted text-ink-700 font-medium shrink-0 whitespace-nowrap">Полный и короткий метр</span>
+          <span class="text-[13px] px-3 py-1.5 rounded-full bg-surface-muted text-ink-700 font-medium shrink-0 whitespace-nowrap">18.08.1993</span>
+        </div>
+
+        <!-- Менеджер — сразу под шапкой профиля -->
+        <div class="callout mt-6 flex-col sm:flex-row sm:items-center gap-4">
+          <div class="flex items-center gap-3 min-w-0 flex-1">
+            <div class="w-12 h-12 rounded-full bg-white link-accent text-[12px] font-bold grid place-items-center shrink-0 shadow-sm">ЛМ</div>
+            <div class="min-w-0">
+              <div class="object-type" style="margin-bottom:4px">Менеджер</div>
+              <div class="text-[16px] font-bold text-ink-900">Лариса Морозова</div>
+              <div class="text-[13px] text-ink-500">MS Talents · кастинги и съёмки</div>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 shrink-0">
+            <a href="mailto:lmorozova@mstalents.ru" class="btn-primary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              Написать менеджеру
+            </a>
+            <a href="tel:+74951234567" class="btn-secondary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              +7 (495) 123-45-67
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="flex flex-col xl:flex-row xl:items-start gap-5">
+
+      <div class="flex-1 min-w-0 space-y-4">
+
+        <!-- КОНТАКТЫ -->
+        <section class="post p-4 sm:p-6" id="contacts">
+          <header class="flex items-center justify-between gap-3 mb-4">
+            <h2 class="text-[17px] font-bold text-ink-900">Контакты</h2>
+            <span class="text-[12px] text-ink-400 shrink-0">для кастингов и коллабораций</span>
+          </header>
+
+          <div class="grid sm:grid-cols-2 gap-3">
+            <a href="https://kinolift.com/ru/16017" target="_blank" rel="noopener noreferrer" class="contact-link group flex items-center gap-3 p-3.5 rounded-2xl bg-surface-muted hover:bg-white border border-transparent hover:border-line transition-colors">
+              <span class="w-10 h-10 rounded-xl bg-white grid place-items-center link-accent shrink-0 shadow-sm">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="block text-[14px] font-semibold text-ink-900 group-hover:link-accent">Kinolift</span>
+                <span class="block text-[12px] text-ink-500 truncate">kinolift.com/ru/16017</span>
+              </span>
+              <svg class="shrink-0 text-ink-300 group-hover:link-accent" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </a>
+
+            <a href="https://www.kinopoisk.ru/name/4531331/" target="_blank" rel="noopener noreferrer" class="contact-link group flex items-center gap-3 p-3.5 rounded-2xl bg-surface-muted hover:bg-white border border-transparent hover:border-line transition-colors">
+              <span class="w-10 h-10 rounded-xl bg-[#FF5500] text-white text-[10px] font-bold grid place-items-center shrink-0">КП</span>
+              <span class="min-w-0 flex-1">
+                <span class="block text-[14px] font-semibold text-ink-900 group-hover:link-accent">Кинопоиск</span>
+                <span class="block text-[12px] text-ink-500 truncate">kinopoisk.ru/name/4531331</span>
+              </span>
+              <svg class="shrink-0 text-ink-300 group-hover:link-accent" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </a>
+
+            <a href="https://t.me/alexander_vzmetnev" target="_blank" rel="noopener noreferrer" class="contact-link group flex items-center gap-3 p-3.5 rounded-2xl bg-surface-muted hover:bg-white border border-transparent hover:border-line transition-colors">
+              <span class="w-10 h-10 rounded-xl bg-[#229ED9] text-white grid place-items-center shrink-0">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="block text-[14px] font-semibold text-ink-900 group-hover:link-accent">Telegram</span>
+                <span class="block text-[12px] text-ink-500 truncate">@alexander_vzmetnev</span>
+              </span>
+              <svg class="shrink-0 text-ink-300 group-hover:link-accent" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </a>
+
+            <a href="tel:+79161234567" class="contact-link group flex items-center gap-3 p-3.5 rounded-2xl bg-surface-muted hover:bg-white border border-transparent hover:border-line transition-colors">
+              <span class="w-10 h-10 rounded-xl bg-white grid place-items-center text-ink-700 shrink-0 shadow-sm">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="block text-[14px] font-semibold text-ink-900 group-hover:link-accent">Телефон</span>
+                <span class="block text-[12px] text-ink-500">+7 (916) 123-45-67</span>
+              </span>
+            </a>
+
+            <a href="mailto:casting@vzmetnev.ru" class="contact-link group flex items-center gap-3 p-3.5 rounded-2xl bg-surface-muted hover:bg-white border border-transparent hover:border-line transition-colors sm:col-span-2">
+              <span class="w-10 h-10 rounded-xl bg-white grid place-items-center text-ink-700 shrink-0 shadow-sm">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="block text-[14px] font-semibold text-ink-900 group-hover:link-accent">Почта</span>
+                <span class="block text-[12px] text-ink-500">casting@vzmetnev.ru · lmorozova@mstalents.ru</span>
+              </span>
+            </a>
+          </div>
+
+          <p class="mt-4 text-[12px] text-ink-400 leading-relaxed">Добавьте сюда любые ссылки — VK, Instagram, сайт агентства, дополнительные телефоны: скопируйте любую карточку выше и замените адрес и подпись.</p>
+        </section>
+
+        <!-- SHOWREEL -->
+        <section class="post overflow-hidden" id="showreel">
+          <div class="aspect-video media-fill relative group cursor-pointer overflow-hidden">
+            <img src="assets/actors/vzmetnev-kinopoisk.jpg" alt="Александр Взметнев" class="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+            <div class="absolute inset-0 bg-black/25"></div>
+            <div class="absolute inset-0 grain opacity-20"></div>
+            <div class="absolute top-4 left-4 text-[11px] uppercase tracking-[0.1em] text-white/60 font-semibold">Showreel · сериалы и кино</div>
+            <div class="absolute top-4 right-4 text-[12px] px-2 py-1 rounded-md bg-black/40 text-white font-medium">1:52</div>
+            <div class="absolute inset-0 grid place-items-center">
+              <div class="w-16 h-16 rounded-full bg-white grid place-items-center shadow-lg group-hover:scale-105 transition-transform">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="#14151A"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+            </div>
+            <div class="absolute bottom-4 left-4 right-4 text-white">
+              <div class="text-[clamp(18px,3vw,24px)] font-bold leading-tight">Александр Взметнев — отрывки из «Мажор», «Ивановы» и «Любовь СССР»</div>
+              <div class="text-[13px] text-white/70 mt-1">13 проектов · 2013–2025</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PHOTOS -->
+        <section class="post p-4 sm:p-6" id="photo">
+          <header class="flex items-center justify-between mb-4">
+            <h2 class="text-[17px] font-bold text-ink-900">Фото <span class="text-ink-400 font-medium">· 8</span></h2>
+            <a href="https://www.kinopoisk.ru/name/4531331/" target="_blank" rel="noopener" class="text-[13px] link-accent font-semibold hover:opacity-80">Кинопоиск →</a>
+          </header>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="aspect-[3/4] rounded-media relative overflow-hidden group"><img src="assets/actors/gallery-1.jpg" alt="Александр Взметнев" class="absolute inset-0 w-full h-full object-cover" loading="lazy" /><div class="absolute bottom-2 left-2 right-2 text-[11px] text-white/90 font-medium opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 rounded px-1.5 py-0.5">Портрет</div></div>
+            <div class="aspect-[3/4] rounded-media relative overflow-hidden group"><img src="assets/actors/gallery-2.jpg" alt="Александр Взметнев" class="absolute inset-0 w-full h-full object-cover" loading="lazy" /><div class="absolute bottom-2 left-2 right-2 text-[11px] text-white/90 font-medium opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 rounded px-1.5 py-0.5">Кинопоиск</div></div>
+            <div class="aspect-[3/4] rounded-media relative overflow-hidden group"><img src="assets/actors/gallery-3.jpg" alt="Александр Взметнев" class="absolute inset-0 w-full h-full object-cover" loading="lazy" /><div class="absolute bottom-2 left-2 right-2 text-[11px] text-white/90 font-medium opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 rounded px-1.5 py-0.5">Кадр из фильма</div></div>
+            <div class="aspect-[3/4] rounded-media relative overflow-hidden group"><img src="assets/actors/gallery-4.jpg" alt="Александр Взметнев" class="absolute inset-0 w-full h-full object-cover" loading="lazy" /><div class="absolute bottom-2 left-2 right-2 text-[11px] text-white/90 font-medium opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 rounded px-1.5 py-0.5">Кадр из фильма</div></div>
+            <div class="aspect-[3/4] rounded-media relative overflow-hidden group"><img src="assets/actors/gallery-5.jpg" alt="Александр Взметнев" class="absolute inset-0 w-full h-full object-cover" loading="lazy" /><div class="absolute bottom-2 left-2 right-2 text-[11px] text-white/90 font-medium opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 rounded px-1.5 py-0.5">Кадр из фильма</div></div>
+            <div class="aspect-[3/4] rounded-media relative overflow-hidden group"><img src="assets/actors/gallery-6.jpg" alt="Александр Взметнев" class="absolute inset-0 w-full h-full object-cover" loading="lazy" /><div class="absolute bottom-2 left-2 right-2 text-[11px] text-white/90 font-medium opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 rounded px-1.5 py-0.5">Кадр из фильма</div></div>
+            <div class="aspect-[3/4] rounded-media relative overflow-hidden group"><img src="assets/actors/gallery-7.jpg" alt="Александр Взметнев" class="absolute inset-0 w-full h-full object-cover" loading="lazy" /><div class="absolute bottom-2 left-2 right-2 text-[11px] text-white/90 font-medium opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 rounded px-1.5 py-0.5">Кадр из фильма</div></div>
+            <div class="aspect-[3/4] rounded-media relative overflow-hidden group"><img src="assets/actors/gallery-8.jpg" alt="Александр Взметнев" class="absolute inset-0 w-full h-full object-cover" loading="lazy" /><div class="absolute bottom-2 left-2 right-2 text-[11px] text-white/90 font-medium opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 rounded px-1.5 py-0.5">Кадр из фильма</div></div>
+          </div>
+        </section>
+
+        <!-- PORTFOLIO -->
+        <section class="post p-4 sm:p-6" id="portfolio">
+          <header class="flex items-center justify-between gap-3 mb-4">
+            <h2 class="text-[17px] font-bold text-ink-900">Портфолио</h2>
+            <a href="https://www.kinopoisk.ru/name/4531331/" target="_blank" rel="noopener" class="text-[13px] link-accent font-semibold hover:opacity-80 shrink-0 whitespace-nowrap">Кинопоиск →</a>
+          </header>
+          <p class="text-[13px] text-ink-500 mb-4 -mt-2">Проекты и кредиты — для любой специализации в кино.</p>
+          <div class="hidden sm:grid grid-cols-[56px_1fr_auto_auto] gap-x-4 text-[11px] uppercase tracking-wide text-ink-400 font-semibold pb-2 border-b border-line">
+            <span>Год</span><span>Проект</span><span>Роль / позиция</span><span class="text-right">Тип</span>
+          </div>
+          <div class="divide-y divide-line">
+
+            <div class="grid grid-cols-1 sm:grid-cols-[56px_1fr_auto_auto] gap-2 sm:gap-x-4 py-3 first:pt-0 sm:items-center">
+              <div class="text-[13px] font-semibold text-ink-500 sm:contents"><span class="sm:hidden text-ink-400 text-[11px] uppercase">Год </span>2025</div>
+              <div class="min-w-0 sm:col-start-2">
+                <div class="text-[15px] font-semibold text-ink-900">«Август»</div>
+                <div class="text-[13px] text-ink-500 truncate">военная драма</div>
+              </div>
+              <div class="text-[13px] text-ink-700 sm:text-left"><span class="font-semibold">пулемётчик ДШК</span></div>
+              <div class="sm:text-right"><span class="tag tag-blue">Кино</span></div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-[56px_1fr_auto_auto] gap-2 sm:gap-x-4 py-3 sm:items-center">
+              <div class="text-[13px] font-semibold text-ink-500"><span class="sm:hidden text-ink-400 text-[11px] uppercase">Год </span>2024</div>
+              <div class="min-w-0"><div class="text-[15px] font-semibold text-ink-900">«Любовь Советского Союза»</div><div class="text-[13px] text-ink-500 truncate">драма</div></div>
+              <div class="text-[13px] text-ink-700"><span class="font-semibold">Андрей Панкратов</span></div>
+              <div class="sm:text-right"><span class="text-[11px] px-2 py-1 rounded-md bg-surface-muted text-ink-500 font-semibold uppercase">Кино</span></div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-[56px_1fr_auto_auto] gap-2 sm:gap-x-4 py-3 sm:items-center">
+              <div class="text-[13px] font-semibold text-ink-500"><span class="sm:hidden text-ink-400 text-[11px] uppercase">Год </span>2023</div>
+              <div class="min-w-0"><div class="text-[15px] font-semibold text-ink-900">«Трудные подростки»</div><div class="text-[13px] text-ink-500 truncate">сериал · 5 сезон</div></div>
+              <div class="text-[13px] text-ink-700"><span class="font-semibold">Глеб</span> · преподаватель</div>
+              <div class="sm:text-right"><span class="text-[11px] px-2 py-1 rounded-md bg-surface-muted text-ink-500 font-semibold uppercase">Сериал</span></div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-[56px_1fr_auto_auto] gap-2 sm:gap-x-4 py-3 sm:items-center">
+              <div class="text-[13px] font-semibold text-ink-500"><span class="sm:hidden text-ink-400 text-[11px] uppercase">Год </span>2022</div>
+              <div class="min-w-0"><div class="text-[15px] font-semibold text-ink-900">«Дурочка Надя»</div><div class="text-[13px] text-ink-500 truncate">комедия</div></div>
+              <div class="text-[13px] text-ink-700"><span class="font-semibold">официант</span></div>
+              <div class="sm:text-right"><span class="text-[11px] px-2 py-1 rounded-md bg-surface-muted text-ink-500 font-semibold uppercase">Кино</span></div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-[56px_1fr_auto_auto] gap-2 sm:gap-x-4 py-3 sm:items-center">
+              <div class="text-[13px] font-semibold text-ink-500"><span class="sm:hidden text-ink-400 text-[11px] uppercase">Год </span>2021</div>
+              <div class="min-w-0"><div class="text-[15px] font-semibold text-ink-900">«Бессмертные»</div><div class="text-[13px] text-ink-500 truncate">драма</div></div>
+              <div class="text-[13px] text-ink-700"><span class="font-semibold">нотариус</span></div>
+              <div class="sm:text-right"><span class="text-[11px] px-2 py-1 rounded-md bg-surface-muted text-ink-500 font-semibold uppercase">Кино</span></div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-[56px_1fr_auto_auto] gap-2 sm:gap-x-4 py-3 sm:items-center">
+              <div class="text-[13px] font-semibold text-ink-500"><span class="sm:hidden text-ink-400 text-[11px] uppercase">Год </span>2019</div>
+              <div class="min-w-0"><div class="text-[15px] font-semibold text-ink-900">«Трезвый водитель»</div><div class="text-[13px] text-ink-500 truncate">комедия</div></div>
+              <div class="text-[13px] text-ink-700"><span class="font-semibold">продавец в ЦУМе</span></div>
+              <div class="sm:text-right"><span class="text-[11px] px-2 py-1 rounded-md bg-surface-muted text-ink-500 font-semibold uppercase">Кино</span></div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-[56px_1fr_auto_auto] gap-2 sm:gap-x-4 py-3 sm:items-center">
+              <div class="text-[13px] font-semibold text-ink-500"><span class="sm:hidden text-ink-400 text-[11px] uppercase">Год </span>2018</div>
+              <div class="min-w-0"><div class="text-[15px] font-semibold text-ink-900">«Мажор-3» · «Ивановы-Ивановы» · «Алиби»</div><div class="text-[13px] text-ink-500 truncate">сериалы</div></div>
+              <div class="text-[13px] text-ink-700"><span class="font-semibold">Дмитрий Фёдоров</span> · Брусочкин · Игнат</div>
+              <div class="sm:text-right"><span class="text-[11px] px-2 py-1 rounded-md bg-surface-muted text-ink-500 font-semibold uppercase">Сериал</span></div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-[56px_1fr_auto_auto] gap-2 sm:gap-x-4 py-3 sm:items-center">
+              <div class="text-[13px] font-semibold text-ink-500"><span class="sm:hidden text-ink-400 text-[11px] uppercase">Год </span>2013</div>
+              <div class="min-w-0"><div class="text-[15px] font-semibold text-ink-900">«Слишком красивая жена»</div><div class="text-[13px] text-ink-500 truncate">сериал · дебют</div></div>
+              <div class="text-[13px] text-ink-700"><span class="font-semibold">Антон</span></div>
+              <div class="sm:text-right"><span class="text-[11px] px-2 py-1 rounded-md bg-surface-muted text-ink-500 font-semibold uppercase">Сериал</span></div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ABOUT -->
+        <section class="post p-4 sm:p-6" id="about">
+          <h2 class="text-[17px] font-bold text-ink-900 mb-3">О себе</h2>
+          <div class="space-y-3 text-[15px] leading-relaxed text-ink-700">
+            <p>Александр Взметнев родился 18 августа 1993 года в Рязани. Актёр кино и телевидения, карьера с 2013 года — более 13 проектов в жанрах комедии, драмы, криминала и военного кино.</p>
+            <p>Зрители знают по сериалам «Ивановы-Ивановы» (Брусочкин), «Мажор-3» (Дмитрий Фёдоров), «Трудные подростки» (Глеб), а также по фильмам «Бессмертные», «Любовь Советского Союза» и «Август». Профиль также на <a href="https://www.kinopoisk.ru/name/4531331/" target="_blank" rel="noopener" class="link-accent font-medium hover:opacity-80">Кинопоиске</a>.</p>
+          </div>
+        </section>
+
+        <!-- ACTOR CARD (физические данные) -->
+        <section class="post p-4 sm:p-6" id="actor-card">
+          <header class="flex items-center justify-between mb-4">
+            <h2 class="text-[17px] font-bold text-ink-900">Анкета актёра</h2>
+            <span class="text-[12px] text-ink-400">обновлено 12 мая</span>
+          </header>
+          <div class="grid sm:grid-cols-3 gap-x-6 gap-y-4 text-[14px]">
+            <div>
+              <h3 class="text-[11px] font-semibold text-ink-400 uppercase tracking-wide mb-2">Параметры</h3>
+              <div class="space-y-1.5">
+                <div class="flex justify-between"><span class="text-ink-500">Рост</span><span class="font-medium">180 см</span></div>
+                <div class="flex justify-between"><span class="text-ink-500">Вес</span><span class="font-medium">76 кг</span></div>
+                <div class="flex justify-between"><span class="text-ink-500">Грудь</span><span class="font-medium">102 см</span></div>
+                <div class="flex justify-between"><span class="text-ink-500">Талия</span><span class="font-medium">82 см</span></div>
+                <div class="flex justify-between"><span class="text-ink-500">Размер одежды</span><span class="font-medium">50 (M/L)</span></div>
+                <div class="flex justify-between"><span class="text-ink-500">Обувь</span><span class="font-medium">43</span></div>
+              </div>
+            </div>
+            <div>
+              <h3 class="text-[11px] font-semibold text-ink-400 uppercase tracking-wide mb-2">Внешность</h3>
+              <div class="space-y-1.5">
+                <div class="flex justify-between"><span class="text-ink-500">Тип</span><span class="font-medium">славянский</span></div>
+                <div class="flex justify-between"><span class="text-ink-500">Волосы</span><span class="font-medium">тёмно-русые</span></div>
+                <div class="flex justify-between"><span class="text-ink-500">Глаза</span><span class="font-medium">серо-зелёные</span></div>
+                <div class="flex justify-between"><span class="text-ink-500">Татуировки</span><span class="font-medium">нет</span></div>
+                <div class="flex justify-between"><span class="text-ink-500">Шрамы</span><span class="font-medium">нет</span></div>
+                <div class="flex justify-between"><span class="text-ink-500">Возр. диапазон</span><span class="font-medium">28–38</span></div>
+              </div>
+            </div>
+            <div>
+              <h3 class="text-[11px] font-semibold text-ink-400 uppercase tracking-wide mb-2">Языки и говор</h3>
+              <div class="space-y-1.5">
+                <div class="flex justify-between"><span class="text-ink-500">Русский</span><span class="font-medium">родной</span></div>
+                <div class="flex justify-between"><span class="text-ink-500">Английский</span><span class="font-medium">B1</span></div>
+                <div class="flex justify-between"><span class="text-ink-500">Украинский</span><span class="font-medium">понимаю</span></div>
+                <div class="flex justify-between"><span class="text-ink-500">Диалекты</span><span class="font-medium">рязанский, южнорусский</span></div>
+                <div class="flex justify-between"><span class="text-ink-500">Имитация</span><span class="font-medium">кавказский, питерский</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-5 pt-5 border-t border-line">
+            <h3 class="text-[11px] font-semibold text-ink-400 uppercase tracking-wide mb-2">Спецнавыки</h3>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="text-[12px] px-2.5 py-1 rounded-full bg-surface-muted text-ink-700 font-medium">Водительские A, B, C</span>
+              <span class="text-[12px] px-2.5 py-1 rounded-full bg-surface-muted text-ink-700 font-medium">Мотоцикл</span>
+              <span class="text-[12px] px-2.5 py-1 rounded-full bg-surface-muted text-ink-700 font-medium">Лошадь · средний уровень</span>
+              <span class="text-[12px] px-2.5 py-1 rounded-full bg-surface-muted text-ink-700 font-medium">Бокс · 4 года</span>
+              <span class="text-[12px] px-2.5 py-1 rounded-full bg-surface-muted text-ink-700 font-medium">Самбо</span>
+              <span class="text-[12px] px-2.5 py-1 rounded-full bg-surface-muted text-ink-700 font-medium">Плавание</span>
+              <span class="text-[12px] px-2.5 py-1 rounded-full bg-surface-muted text-ink-700 font-medium">Стрелковое (ДШК, АК) · сертификат</span>
+              <span class="text-[12px] px-2.5 py-1 rounded-full bg-surface-muted text-ink-700 font-medium">Гитара</span>
+              <span class="text-[12px] px-2.5 py-1 rounded-full bg-surface-muted text-ink-700 font-medium">Танец · базовый</span>
+              <span class="text-[12px] px-2.5 py-1 rounded-full bg-surface-muted text-ink-700 font-medium">Загранпаспорт + шенген</span>
+            </div>
+          </div>
+
+          <div class="mt-5 pt-5 border-t border-line">
+            <h3 class="text-[11px] font-semibold text-ink-400 uppercase tracking-wide mb-2">Амплуа и форматы</h3>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="text-[12px] px-2.5 py-1 rounded-full bg-surface-muted text-ink-700 font-medium">Драма</span>
+              <span class="text-[12px] px-2.5 py-1 rounded-full bg-surface-muted text-ink-700 font-medium">Криминал</span>
+              <span class="text-[12px] px-2.5 py-1 rounded-full bg-surface-muted text-ink-700 font-medium">Военный</span>
+              <span class="text-[12px] px-2.5 py-1 rounded-full bg-surface-muted text-ink-700 font-medium">Сериал · платформа</span>
+              <span class="text-[12px] px-2.5 py-1 rounded-full bg-surface-muted text-ink-700 font-medium">Полный метр</span>
+              <span class="text-[12px] px-2.5 py-1 rounded-full bg-surface-muted text-ink-700 font-medium">Реклама</span>
+              <span class="text-[12px] px-2.5 py-1 rounded-full bg-surface-muted text-ink-700 font-medium">Нагой кадр — обсуждаемо</span>
+              <span class="text-[12px] px-2.5 py-1 rounded-full bg-surface-muted text-ink-700 font-medium">Каскадёрский дубль — да</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- BUSINESS / TAX -->
+        <section class="post p-4 sm:p-6" id="business">
+          <h2 class="text-[17px] font-bold text-ink-900 mb-4">Условия работы и налог</h2>
+          <div class="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-[14px]">
+            <div class="flex justify-between"><span class="text-ink-500">Налоговый статус</span><span class="font-semibold">ИП · УСН 6%</span></div>
+            <div class="flex justify-between"><span class="text-ink-500">Альтернатива</span><span class="font-semibold">агентский договор (MS Talents)</span></div>
+            <div class="flex justify-between"><span class="text-ink-500">Ставка эпизод (платформа)</span><span class="font-semibold">от 220 ₽ тыс / смена</span></div>
+            <div class="flex justify-between"><span class="text-ink-500">Главная роль · сериал</span><span class="font-semibold">от 380 ₽ тыс / серия</span></div>
+            <div class="flex justify-between"><span class="text-ink-500">Главная роль · полный метр</span><span class="font-semibold">от 2.4 ₽ млн за проект</span></div>
+            <div class="flex justify-between"><span class="text-ink-500">Реклама</span><span class="font-semibold">от 380 ₽ тыс / смена + % за показ</span></div>
+            <div class="flex justify-between"><span class="text-ink-500">Аванс</span><span class="font-semibold">30% до 1-й смены</span></div>
+            <div class="flex justify-between"><span class="text-ink-500">Окончательный расчёт</span><span class="font-semibold">в течение 14 дней</span></div>
+            <div class="flex justify-between"><span class="text-ink-500">Тариф «холд»</span><span class="font-semibold">50% от смены</span></div>
+            <div class="flex justify-between"><span class="text-ink-500">Эксклюзив на жанр</span><span class="font-semibold">обсуждаемо</span></div>
+          </div>
+          <p class="mt-4 text-[12px] text-ink-400">Все договоры — через MS Talents или напрямую ИП. Расчёт безналом, по реквизитам, с НДС и без — обсуждаемо.</p>
+        </section>
+
+        <!-- EDUCATION & PLATFORMS -->
+        <section class="post p-4 sm:p-6" id="education">
+          <h2 class="text-[17px] font-bold text-ink-900 mb-4">Образование и платформы</h2>
+          <div class="grid sm:grid-cols-2 gap-6 text-[14px]">
+            <div>
+              <h3 class="text-[13px] font-semibold text-ink-500 mb-2">Образование</h3>
+              <div class="font-semibold text-ink-900">ВГИК · актёрский ф-т</div>
+              <div class="text-[13px] text-ink-500">мастерская И. Ясуловича · 2015</div>
+              <div class="mt-3 font-semibold text-ink-900">Курсы и мастер-классы</div>
+              <ul class="text-[13px] text-ink-500 list-disc pl-4 mt-1 space-y-0.5">
+                <li>Школа Алексея Учителя — самопроба для платформ, 2023</li>
+                <li>Stunt-курс «Тришки» — каскадёрская подготовка, 2022</li>
+                <li>МКТ · речь и работа с микрофоном, 2021</li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="text-[13px] font-semibold text-ink-500 mb-2">Опыт работы с платформами</h3>
+              <ul class="text-[13px] text-ink-500 space-y-1.5">
+                <li><span class="font-semibold text-ink-700">Кинопоиск</span> — «Мажор», «Любовь СССР»</li>
+                <li><span class="font-semibold text-ink-700">Okko</span> — «Август», «Стая»</li>
+                <li><span class="font-semibold text-ink-700">Wink</span> — «Трудные подростки»</li>
+                <li><span class="font-semibold text-ink-700">START</span> — гостевая роль в «Берегу»</li>
+                <li><span class="font-semibold text-ink-700">Premier</span> — «Ивановы-Ивановы»</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- POSTS -->
+        <section class="space-y-4" id="posts">
+          <header class="flex items-center justify-between px-1">
+            <h2 class="text-[17px] font-bold text-ink-900">Посты</h2>
+            <a href="#" class="text-[13px] link-accent font-semibold hover:opacity-80">Все</a>
+          </header>
+
+          <article class="post p-5">
+            <header class="flex items-center gap-3 min-w-0">
+              <img src="assets/actors/vzmetnev-kinopoisk.jpg" alt="" class="w-10 h-10 rounded-full object-cover shrink-0" width="40" height="40" />
+              <div class="leading-tight min-w-0 flex-1">
+                <div class="text-[15px] font-bold text-ink-900 truncate">Александр Взметнев</div>
+                <div class="text-[13px] text-ink-500 truncate">Актёр · 2 дня назад</div>
+              </div>
+              <button type="button" class="ml-auto text-ink-400 hover:text-ink-900 w-8 h-8 grid place-items-center rounded-xl hover:bg-white/80 shrink-0">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+              </button>
+            </header>
+            <div class="mt-3 text-[15px] leading-relaxed text-ink-900">
+              Завершили съёмки в «Августе» — военная драма, роль пулемётчика ДШК. Спасибо команде за тяжёлую, но честную работу. Скоро выложу фрагменты в showreel.
+            </div>
+            <div class="mt-3 aspect-[16/9] rounded-media relative overflow-hidden">
+              <img src="assets/actors/gallery-1.jpg" alt="Александр Взметнев" class="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+              <div class="absolute inset-0 bg-black/20"></div>
+              <div class="absolute bottom-3 left-3 text-white/90 text-[12px] font-medium">«Август» · бэкстейдж</div>
+            </div>
+            <footer class="mt-4 flex items-center gap-1 text-ink-500 text-sm">
+              <button type="button" class="h-8 px-2 rounded-xl hover:bg-white/80 flex items-center gap-1.5 shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 156</button>
+              <button type="button" class="h-8 px-2 rounded-xl hover:bg-white/80 flex items-center gap-1.5 shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 28</button>
+              <button type="button" class="h-8 px-2 rounded-xl hover:bg-white/80 flex items-center gap-1.5 shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> 9</button>
+            </footer>
+          </article>
+
+          <article class="post p-5">
+            <header class="flex items-center gap-3 min-w-0">
+              <img src="assets/actors/vzmetnev-kinopoisk.jpg" alt="" class="w-10 h-10 rounded-full object-cover shrink-0" width="40" height="40" />
+              <div class="leading-tight min-w-0 flex-1">
+                <div class="text-[15px] font-bold text-ink-900 truncate">Александр Взметнев</div>
+                <div class="text-[13px] text-ink-500 truncate">Актёр · 2 недели назад</div>
+              </div>
+            </header>
+            <div class="mt-3 text-[15px] leading-relaxed text-ink-900">
+              Вышла «Любовь Советского Союза» — играю Андрея Панкратова. Благодарен режиссёру и продюсерам за доверие. Открыт к новым драматическим ролям в полном метре — самопробы в личные сообщения.
+            </div>
+            <footer class="mt-4 flex items-center gap-1 text-ink-500 text-sm">
+              <button type="button" class="h-8 px-2 rounded-xl hover:bg-white/80 flex items-center gap-1.5 shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 94</button>
+              <button type="button" class="h-8 px-2 rounded-xl hover:bg-white/80 flex items-center gap-1.5 shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 17</button>
+              <button type="button" class="h-8 px-2 rounded-xl hover:bg-white/80 flex items-center gap-1.5 shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> 5</button>
+            </footer>
+          </article>
+        </section>
+
+        <!-- VERIFIED EXPLAIN -->
+        <section class="post p-4 sm:p-6" id="verified">
+          <h2 class="text-[17px] font-bold text-ink-900 mb-3">Проверенный профиль · что это значит</h2>
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:10px; font-size:13px;">
+            <div style="display:flex; gap:8px; align-items:flex-start;">
+              <span style="color:var(--tag-green-fg); font-size:18px;">✓</span>
+              <div><strong>Кинопоиск + Kinolift</strong><div style="color:var(--text-muted);">Профиль связан с подтверждёнными страницами</div></div>
+            </div>
+            <div style="display:flex; gap:8px; align-items:flex-start;">
+              <span style="color:var(--tag-green-fg); font-size:18px;">✓</span>
+              <div><strong>Агентство</strong><div style="color:var(--text-muted);">MS Talents подтвердили представительство</div></div>
+            </div>
+            <div style="display:flex; gap:8px; align-items:flex-start;">
+              <span style="color:var(--tag-green-fg); font-size:18px;">✓</span>
+              <div><strong>Платформы</strong><div style="color:var(--text-muted);">Подтверждены Кинопоиск Студия, Okko, Wink</div></div>
+            </div>
+            <div style="display:flex; gap:8px; align-items:flex-start;">
+              <span style="color:var(--tag-green-fg); font-size:18px;">✓</span>
+              <div><strong>ИП с УСН</strong><div style="color:var(--text-muted);">Налоговый статус для бухгалтерии продакшна</div></div>
+            </div>
+            <div style="display:flex; gap:8px; align-items:flex-start;">
+              <span style="color:var(--tag-green-fg); font-size:18px;">✓</span>
+              <div><strong>Договоры в «Кадре»</strong><div style="color:var(--text-muted);">2 контракта подписаны через платформу</div></div>
+            </div>
+            <div style="display:flex; gap:8px; align-items:flex-start;">
+              <span style="color:var(--tag-green-fg); font-size:18px;">✓</span>
+              <div><strong>СНИЛС + паспорт</strong><div style="color:var(--text-muted);">Личность подтверждена через Госуслуги</div></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SCHEDULE -->
+        <section class="post p-4 sm:p-6" id="schedule">
+          <header class="flex items-center justify-between mb-4">
+            <h2 class="text-[17px] font-bold text-ink-900">График и доступность</h2>
+            <span class="tag tag-green">Открыт к предложениям</span>
+          </header>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start;">
+            <div>
+              <div class="mini-cal">
+                <span class="mini-cal__h">пн</span><span class="mini-cal__h">вт</span><span class="mini-cal__h">ср</span><span class="mini-cal__h">чт</span><span class="mini-cal__h">пт</span><span class="mini-cal__h">сб</span><span class="mini-cal__h">вс</span>
+                <span class="mini-cal__d off">26</span><span class="mini-cal__d off">27</span><span class="mini-cal__d off">28</span><span class="mini-cal__d off">29</span><span class="mini-cal__d off">30</span><span class="mini-cal__d off">31</span><span class="mini-cal__d">1</span>
+                <span class="mini-cal__d">2</span><span class="mini-cal__d">3</span><span class="mini-cal__d">4</span><span class="mini-cal__d">5</span><span class="mini-cal__d busy">6</span><span class="mini-cal__d">7</span><span class="mini-cal__d">8</span>
+                <span class="mini-cal__d">9</span><span class="mini-cal__d hold">10</span><span class="mini-cal__d hold">11</span><span class="mini-cal__d hold">12</span><span class="mini-cal__d hold">13</span><span class="mini-cal__d hold">14</span><span class="mini-cal__d">15</span>
+                <span class="mini-cal__d">16</span><span class="mini-cal__d">17</span><span class="mini-cal__d">18</span><span class="mini-cal__d">19</span><span class="mini-cal__d today">20</span><span class="mini-cal__d">21</span><span class="mini-cal__d">22</span>
+                <span class="mini-cal__d">23</span><span class="mini-cal__d">24</span><span class="mini-cal__d">25</span><span class="mini-cal__d">26</span><span class="mini-cal__d">27</span><span class="mini-cal__d">28</span><span class="mini-cal__d">29</span>
+              </div>
+              <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; font-size:11px; color:var(--text-muted);">
+                <span style="display:inline-flex; align-items:center; gap:4px;"><span style="width:8px; height:8px; background:#e9f0f9; border-radius:2px;"></span> смена</span>
+                <span style="display:inline-flex; align-items:center; gap:4px;"><span style="width:8px; height:8px; background:#fce8d8; border-radius:2px;"></span> hold</span>
+                <span style="display:inline-flex; align-items:center; gap:4px;"><span style="width:8px; height:8px; outline:2px solid var(--tag-green-fg); border-radius:2px;"></span> сегодня</span>
+              </div>
+            </div>
+            <ul style="list-style:none; padding:0; margin:0; font-size:13px; line-height:1.55;">
+              <li style="padding:8px 0; border-bottom:1px solid var(--hairline);">
+                <strong>6 июня</strong> · самопроба «Тихий январь»
+                <div style="color:var(--text-muted); font-size:12px;">Дедлайн отправки</div>
+              </li>
+              <li style="padding:8px 0; border-bottom:1px solid var(--hairline);">
+                <strong>10–14 июня</strong> · очные кастинги «Тихий январь»
+                <div style="color:var(--text-muted); font-size:12px;">Hold · Sreda Production</div>
+              </li>
+              <li style="padding:8px 0;">
+                <strong>с 1 июля</strong> · открыт для съёмок
+                <div style="color:var(--text-muted); font-size:12px;">Готов к экспедициям</div>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- REVIEWS -->
+        <section class="post p-4 sm:p-6" id="reviews">
+          <header class="flex items-center justify-between mb-4">
+            <h2 class="text-[17px] font-bold text-ink-900">Отзывы команд <span class="text-ink-400 font-medium">· 9</span></h2>
+            <a href="#" class="text-[13px] link-accent font-semibold hover:opacity-80">Все →</a>
+          </header>
+          <div class="review-card">
+            <div class="review-card__head">
+              <img src="assets/figma/avatar-01.png" alt="" />
+              <div>
+                <div class="review-card__who">Ксения Воронина</div>
+                <div class="review-card__role">Продюсер · Trace Films</div>
+              </div>
+              <div class="review-card__project">«Антипод» · Кинопоиск · 2024</div>
+            </div>
+            <div class="review-card__text">
+              На площадке — внимательный, без капризов. Знает текст до съёмки, не «разогревается» 10 минут. После «Маяка» позвали на «После шторма» (Okko) — без проб.
+            </div>
+          </div>
+          <div class="review-card">
+            <div class="review-card__head">
+              <img src="assets/figma/avatar-02.png" alt="" />
+              <div>
+                <div class="review-card__who">Анна Лебедева</div>
+                <div class="review-card__role">Кастинг-директор</div>
+              </div>
+              <div class="review-card__project">«Стая» · Okko · 2024</div>
+            </div>
+            <div class="review-card__text">
+              Самопробы всегда в срок и по стандарту Okko (слейт, крупный + ¾ + общий). Это очень редко. На очный приходит с готовыми вариантами, не ждёт указаний.
+            </div>
+          </div>
+          <div class="review-card">
+            <div class="review-card__head">
+              <span class="project-team-card__ava" style="background:#4A3D5C; width:36px; height:36px; font-size:12px;">АБ</span>
+              <div>
+                <div class="review-card__who">Анна Белова</div>
+                <div class="review-card__role">Режиссёр</div>
+              </div>
+              <div class="review-card__project">«Колыбель» · «Окно в Европу» · 2022</div>
+            </div>
+            <div class="review-card__text">
+              На сцене в поезде сделал то, что я не могла объяснить словами. Доверяю — буду работать с ним и дальше. Берёт его на «После шторма» главную мужскую.
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- SIDEBAR -->
+      <aside class="layout-ads space-y-4 xl:sticky xl:top-[72px] self-start">
+
+        <!-- Менеджер + быстрые контакты -->
+        <section class="post p-4" id="contacts-sidebar">
+          <div class="object-type mb-3">Связаться</div>
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-11 h-11 rounded-full bg-surface-muted link-accent text-[11px] font-bold grid place-items-center shrink-0">ЛМ</div>
+            <div class="min-w-0">
+              <div class="text-[15px] font-bold text-ink-900 leading-tight">Лариса Морозова</div>
+              <div class="text-[12px] text-ink-500">MS Talents · менеджер</div>
+            </div>
+          </div>
+          <a href="mailto:lmorozova@mstalents.ru" class="btn-primary btn-block mb-2">Написать менеджеру</a>
+          <a href="tel:+74951234567" class="btn-secondary btn-block mb-4">+7 (495) 123-45-67</a>
+
+          <div class="space-y-1.5 text-[13px] border-t border-line pt-3">
+            <a href="https://kinolift.com/ru/16017" target="_blank" rel="noopener" class="flex items-center justify-between gap-2 py-2 px-2 -mx-2 rounded-xl hover:bg-surface-muted text-ink-700 hover:link-accent font-medium">
+              <span>Kinolift</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </a>
+            <a href="https://www.kinopoisk.ru/name/4531331/" target="_blank" rel="noopener" class="flex items-center justify-between gap-2 py-2 px-2 -mx-2 rounded-xl hover:bg-surface-muted text-ink-700 hover:link-accent font-medium">
+              <span>Кинопоиск</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </a>
+            <a href="https://t.me/alexander_vzmetnev" target="_blank" rel="noopener" class="flex items-center justify-between gap-2 py-2 px-2 -mx-2 rounded-xl hover:bg-surface-muted text-ink-700 hover:link-accent font-medium">
+              <span>Telegram</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </a>
+            <a href="tel:+79161234567" class="flex items-center justify-between gap-2 py-2 px-2 -mx-2 rounded-xl hover:bg-surface-muted text-ink-700 hover:link-accent font-medium">
+              <span>+7 (916) 123-45-67</span>
+            </a>
+            <a href="mailto:casting@vzmetnev.ru" class="flex items-center justify-between gap-2 py-2 px-2 -mx-2 rounded-xl hover:bg-surface-muted text-ink-700 hover:link-accent font-medium">
+              <span class="truncate">casting@vzmetnev.ru</span>
+            </a>
+          </div>
+          <a href="#contacts" class="mt-3 block text-center text-[12px] link-accent font-semibold hover:opacity-80">Все контакты ↓</a>
+        </section>
+
+        <div class="text-[11px] uppercase tracking-wide text-ink-400 px-1">Реклама · платформа</div>
+        <section class="post overflow-hidden">
+          <div class="aspect-[16/10] bg-[#1a1a1a] relative p-4 flex flex-col justify-between text-white">
+            <div class="text-[10px] uppercase tracking-wider text-white/50">Поток · курс</div>
+            <div>
+              <div class="text-[15px] font-bold leading-snug">DaVinci Resolve с нуля до Pro</div>
+              <div class="text-[12px] text-white/60 mt-1">Старт 10 июня · −20%</div>
+            </div>
+          </div>
+          <div class="p-4">
+            <div class="text-sm font-semibold">Школа киномонтажа</div>
+            <div class="text-xs text-ink-500 mt-1">8 недель · 24 урока</div>
+            <a href="#" class="mt-3 inline-block text-[13px] font-semibold link-accent">Подробнее →</a>
+          </div>
+        </section>
+
+        <div class="text-[11px] uppercase tracking-wide text-ink-400 px-1 pt-2">Партнёры</div>
+        <section class="post p-4">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-xl bg-ink-900 text-white text-xs font-bold grid place-items-center">RG</div>
+            <div>
+              <div class="text-[14px] font-semibold">RentalGear</div>
+              <div class="text-[12px] text-ink-500">Аренда кинотехники</div>
+            </div>
+          </div>
+          <p class="text-[13px] text-ink-500 leading-relaxed">ARRI, Sony Venice, Cooke S4. Доставка за 2 часа. Промокод <span class="font-semibold text-ink-900">KADR15</span> — скидка 15%.</p>
+          <button type="button" class="btn-primary btn-block mt-4 btn-sm">Каталог</button>
+        </section>
+
+        <section class="rounded-[20px] border border-dashed border-line p-4">
+          <div class="text-[12px] text-ink-400 text-center py-8">Внешняя реклама<br/><span class="text-ink-300">300×250</span></div>
+        </section>
+
+      </aside>
+    </div>
+      </div>
+    </main>
+    </div>
+  </div>
+</div>
+
+<script src="assets/shell.js"></script>
+</body>
+</html>

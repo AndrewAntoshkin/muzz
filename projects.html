@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Проекты · Кадр</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css" />
+</head>
+<body class="app-body-root" data-page="projects" data-page-title="Проекты" data-header="page"
+  data-profession="actor"
+  data-user-name="Александр Взметнев"
+  data-user-city="Москва"
+  data-user-avatar="assets/actors/vzmetnev-avatar.jpg"
+  data-profile-complete="78"
+  data-profile-views="12">
+
+<div class="app-frame">
+  <aside id="app-sidebar"></aside>
+
+  <div class="app-main">
+    <header id="app-header"></header>
+
+    <div class="app-main__body app-main__body--catalog">
+      <main class="page-area">
+        <div class="page-scroll catalog-page" id="projects-catalog">
+
+          <header class="catalog-page__head catalog-page__head--row">
+            <div>
+              <a href="index.html" class="catalog-page__back">← Главная</a>
+              <h1 class="catalog-page__title">Проекты в производстве</h1>
+              <p class="catalog-page__lead" data-platform-lead>Статус съёмок, команда и вакансии у заказчиков платформ</p>
+            </div>
+            <a href="project.html?new=1" class="btn-primary btn-sm catalog-page__cta">Создать проект</a>
+          </header>
+
+          <div class="catalog-stats" aria-label="Сводка">
+            <div class="catalog-stat">
+              <strong data-stat="total">6</strong>
+              <span>в ленте</span>
+              <em>все платформы</em>
+            </div>
+            <div class="catalog-stat">
+              <strong data-stat="hiring">4</strong>
+              <span>набирают</span>
+              <em>команду</em>
+            </div>
+            <div class="catalog-stat">
+              <strong data-stat="platforms">4</strong>
+              <span>платформ</span>
+              <em>в выдаче</em>
+            </div>
+            <div class="catalog-stat">
+              <strong data-stat="roles">18</strong>
+              <span>открытых</span>
+              <em>ролей в команде</em>
+            </div>
+          </div>
+
+          <label class="catalog-search">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input type="search" data-feed-search placeholder="Название проекта или студия…" />
+            <span class="catalog-search__count" data-feed-count>6 проектов</span>
+          </label>
+
+          <div class="search-layout catalog-layout" data-feed-filters>
+            <aside class="catalog-filters">
+              <section class="search-filter">
+                <div class="search-filter__title">Платформа</div>
+                <div class="catalog-platforms" data-platform-picker>
+                  <button type="button" class="platform-pill is-on" data-filter-platform="">
+                    <span class="platform-pill__logo">∞</span>
+                    <span class="platform-pill__text"><strong>Все</strong><em>6 проектов</em></span>
+                  </button>
+                  <button type="button" class="platform-pill" data-filter-platform="kinopoisk">
+                    <span class="platform-pill__logo" style="background:#FF5500;">КП</span>
+                    <span class="platform-pill__text"><strong>Кинопоиск</strong><em>1 проект</em></span>
+                  </button>
+                  <button type="button" class="platform-pill" data-filter-platform="okko">
+                    <span class="platform-pill__logo" style="background:#181818;">OK</span>
+                    <span class="platform-pill__text"><strong>Okko</strong><em>2 проекта</em></span>
+                  </button>
+                  <button type="button" class="platform-pill" data-filter-platform="start">
+                    <span class="platform-pill__logo" style="background:#fff;color:#2C2C2B;border:1px solid #ccc;">ST</span>
+                    <span class="platform-pill__text"><strong>START</strong><em>1 проект</em></span>
+                  </button>
+                  <button type="button" class="platform-pill" data-filter-platform="kion">
+                    <span class="platform-pill__logo" style="background:#E50046;">KI</span>
+                    <span class="platform-pill__text"><strong>KION</strong><em>2 проекта</em></span>
+                  </button>
+                </div>
+              </section>
+
+              <section class="search-filter">
+                <div class="search-filter__title">Стадия</div>
+                <div class="search-filter__chips">
+                  <button type="button" class="search-chip is-on" data-filter-status="">Все</button>
+                  <button type="button" class="search-chip" data-filter-status="production">В производстве</button>
+                  <button type="button" class="search-chip" data-filter-status="preprod">Препрод</button>
+                  <button type="button" class="search-chip" data-filter-status="dev">Разработка</button>
+                  <button type="button" class="search-chip" data-filter-status="casting">Кастинг открыт</button>
+                </div>
+              </section>
+
+              <section class="search-filter">
+                <div class="search-filter__title">Дополнительно</div>
+                <label class="catalog-filters__check">
+                  <input type="checkbox" data-filter-hiring />
+                  <span>Только набирают команду</span>
+                </label>
+              </section>
+
+              <button type="button" class="btn-secondary btn-block catalog-filters__reset" data-feed-reset>Сбросить фильтры</button>
+            </aside>
+
+            <div class="catalog-results">
+              <div id="feed-projects" class="catalog-feed-list feed-list" data-feed-list="projects" aria-live="polite"></div>
+              <p id="feed-empty" class="catalog-empty" hidden>По выбранным фильтрам проектов нет. <button type="button" class="btn-ghost" data-feed-reset>Сбросить фильтры</button></p>
+            </div>
+          </div>
+
+        </div>
+      </main>
+    </div>
+  </div>
+</div>
+
+<script src="assets/shell.js"></script>
+<script src="assets/feed.js" defer></script>
+</body>
+</html>
