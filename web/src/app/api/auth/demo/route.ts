@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { ensureDemoUser } from "@/lib/accounts";
-import { setSessionCookie, toSessionUser } from "@/lib/auth";
+import { ensureDemoUser, findUserByLogin } from "@/lib/accounts";
+import { DEMO_LOGIN, setSessionCookie, toSessionUser } from "@/lib/auth";
 
 export async function POST() {
   try {
-    const row = await ensureDemoUser();
+    let row = await findUserByLogin(DEMO_LOGIN);
+    if (!row) row = await ensureDemoUser();
     if (!row) {
       return NextResponse.json({ error: "Не удалось создать демо" }, { status: 500 });
     }

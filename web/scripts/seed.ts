@@ -5,6 +5,7 @@ import { config } from "dotenv";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import {
+  DEMO_BIOS,
   KEVORKOVA_CARD,
   LEBEDEVA_CARD,
   VZMETNEV_CARD,
@@ -66,7 +67,7 @@ const CREW: CrewRow[] = [
     img: "assets/actors/vzmetnev-kinopoisk.jpg",
     verified: true,
     hint: "«Любовь СССР» · Кинопоиск",
-    bio: "Снимается в сериалах и кино с 2013 года. Фильмография на платформах: «Мажор» (Кинопоиск), «Трудные подростки» (Wink), «Ивановы-Ивановы» (СТС / Premier), «Любовь Советского Союза» (Кинопоиск, прокат 2024), «Август» (Okko, 2025). Комфортен в драме, криминале, военном кино.",
+    bio: DEMO_BIOS.vzmetnev,
     birthDate: "1993-08-18",
     sourceUrl: "https://www.kinopoisk.ru/name/4531331/",
     card: VZMETNEV_CARD,
@@ -80,7 +81,7 @@ const CREW: CrewRow[] = [
     img: "assets/figma/avatar-02.png",
     verified: true,
     hint: "«Тихий январь» · Sreda",
-    bio: "Кастинг-директор полного метра и сериала для платформ. Регулярные клиенты: Кинопоиск Студия, Sreda Production, Trace Films, KION, Yellow Black White (для START). Специализация — драма, period, криминальный сериал, дебютные роли. Собственная база — 4 280 актёров с разметкой по типажам, размерам и опыту на платформах.",
+    bio: DEMO_BIOS.lebedeva,
     card: LEBEDEVA_CARD,
   },
   {
@@ -92,7 +93,7 @@ const CREW: CrewRow[] = [
     img: "assets/figma/avatar-01.png",
     verified: true,
     hint: "Агентство «Актёр 1»",
-    bio: "Агент актерского агентства «Актёр 1». Ведёт ростер для кино и сериалов, работает с кастинг-директорами платформ.",
+    bio: DEMO_BIOS.kevorkova,
     sourceUrl: "https://akter1.ru/",
     agencyId: "akter1",
     agentId: "anna-kevorkova",

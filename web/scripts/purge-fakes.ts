@@ -10,6 +10,7 @@ import postgres from "postgres";
 import { people, personLinks, personPhotos } from "../src/db/schema";
 import { eq } from "drizzle-orm";
 import {
+  DEMO_BIOS,
   KEVORKOVA_CARD,
   LEBEDEVA_CARD,
   VZMETNEV_CARD,
@@ -47,7 +48,9 @@ async function main() {
       birthDate: "1993-08-18",
       sourceUrl: "https://www.kinopoisk.ru/name/4531331/",
       card: VZMETNEV_CARD,
-      bio: "Снимается в сериалах и кино с 2013 года. Фильмография на платформах: «Мажор» (Кинопоиск), «Трудные подростки» (Wink), «Ивановы-Ивановы» (СТС / Premier), «Любовь Советского Союза» (Кинопоиск, прокат 2024), «Август» (Okko, 2025). Комфортен в драме, криминале, военном кино.",
+      bio: DEMO_BIOS.vzmetnev,
+      hint: "«Любовь СССР» · «Август» · Кинопоиск",
+      verified: true,
     })
     .where(eq(people.slug, "vzmetnev"));
 
@@ -70,8 +73,28 @@ async function main() {
     })),
   );
 
-  await db.update(people).set({ card: LEBEDEVA_CARD }).where(eq(people.slug, "lebedeva"));
-  await db.update(people).set({ card: KEVORKOVA_CARD, agencyId: "akter1" }).where(eq(people.slug, "kevorkova"));
+  await db
+    .update(people)
+    .set({
+      card: LEBEDEVA_CARD,
+      bio: DEMO_BIOS.lebedeva,
+      hint: "«Тихий январь» · Sreda · СКД",
+      verified: true,
+      city: "Москва",
+    })
+    .where(eq(people.slug, "lebedeva"));
+  await db
+    .update(people)
+    .set({
+      card: KEVORKOVA_CARD,
+      agencyId: "akter1",
+      bio: DEMO_BIOS.kevorkova,
+      hint: "Агентство «Актёр 1» · 78 в ростере",
+      verified: true,
+      city: "Москва",
+      sourceUrl: "https://akter1.ru/",
+    })
+    .where(eq(people.slug, "kevorkova"));
 
   console.log(`demo cards: ${KEEP.join(", ")}`);
   await client.end({ timeout: 5 });

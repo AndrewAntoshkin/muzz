@@ -671,6 +671,55 @@ function AgentLayout({ person, card }: { person: PersonProfile; card: PersonCard
             </section>
           ) : null}
 
+          {card.castings?.length ? (
+            <section className="detail-block">
+              <div className="detail-block__head">
+                <h2 className="detail-block__title">Запросы в работе</h2>
+              </div>
+              <div className="responses-list">
+                {card.castings.map((row) => (
+                  <Link
+                    key={row.title}
+                    href={row.href || "/castings"}
+                    className="response-row"
+                    style={{ textDecoration: "none", color: "inherit" }}
+                  >
+                    <div>
+                      <div className="response-row__name">{row.title}</div>
+                      <div className="response-row__meta">{row.meta}</div>
+                    </div>
+                    {row.count ? (
+                      <div className="response-row__stat">
+                        <strong>{row.count}</strong> кандидатов
+                      </div>
+                    ) : null}
+                    {row.tag ? <span className="tag tag-blue">{row.tag}</span> : null}
+                  </Link>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          {card.clients?.length ? (
+            <section className="detail-block">
+              <div className="detail-block__head">
+                <h2 className="detail-block__title">Ростер · ключевые</h2>
+              </div>
+              <div className="responses-list">
+                {card.clients.map((row) => (
+                  <div key={row.name} className="response-row">
+                    <div>
+                      <div className="response-row__name">{row.name}</div>
+                      <div className="response-row__meta">{row.meta}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          <Filmography credits={card.credits || []} title="Сопровождение проектов" />
+
           <section className="detail-block">
             <div className="detail-block__head">
               <h2 className="detail-block__title">Агентство</h2>
@@ -720,6 +769,24 @@ function AgentLayout({ person, card }: { person: PersonProfile; card: PersonCard
               </button>
             </section>
           </HideIfOwn>
+          {card.terms?.length ? (
+            <section className="detail-side__panel">
+              <div className="detail-side__title">Контакты</div>
+              <KvList rows={card.terms} />
+            </section>
+          ) : null}
+          {card.chips?.length ? (
+            <section className="detail-side__panel">
+              <div className="detail-side__title">Специализация</div>
+              <div className="search-filter__chips">
+                {card.chips.map((chip, i) => (
+                  <span className={i < 4 ? "search-chip is-on" : "search-chip"} key={chip}>
+                    {chip}
+                  </span>
+                ))}
+              </div>
+            </section>
+          ) : null}
         </aside>
       </div>
     </div>

@@ -10,8 +10,8 @@ import {
 
 export { SESSION_COOKIE, toSessionUser, type SessionUser };
 
-export const DEMO_LOGIN = "demo";
-export const DEMO_PASSWORD = "demo";
+export const DEMO_LOGIN = "andrew";
+export const DEMO_PASSWORD = "CadrShow26";
 
 export async function hashPassword(password: string) {
   return hash(password, 10);

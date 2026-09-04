@@ -114,8 +114,8 @@ export async function ensureDemoUser() {
   await db.insert(users).values({
     id,
     login: DEMO_LOGIN,
-    firstName: "Демо",
-    lastName: "Кадр",
+    firstName: "Андрей",
+    lastName: "Антошкин",
     role: "actor",
     passwordHash,
     isDemo: true,
