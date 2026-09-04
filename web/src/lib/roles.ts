@@ -112,6 +112,7 @@ export const DEMO_ROLES: Record<RoleId, DemoRole> = {
       { id: "projects", label: "Проекты", href: "/projects", live: true },
       { id: "castings", label: "Мои кастинги", href: "/castings", live: true },
       { id: "responses", label: "Отклики", href: "/responses", live: true },
+      { id: "search", label: "База", href: "/search", live: true },
       { id: "messages", label: "Сообщения", href: "/messages", count: "3", live: true },
     ],
     blockTitle: "Проекты",

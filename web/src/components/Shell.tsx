@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   IconBack,
@@ -30,6 +30,7 @@ const NAV_ICONS: Record<string, ReactNode> = {
   responses: <IconResponses />,
   messages: <IconMessages />,
   roster: <IconFaces />,
+  search: <IconFaces />,
 };
 
 function NavRow({
@@ -80,6 +81,7 @@ function NavRow({
 export function Shell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { role, cfg, user, logout } = useAuth();
   const { unread, notice, ready, profilePatches } = useWorkspace();
   const [publishOpen, setPublishOpen] = useState(false);
@@ -167,7 +169,9 @@ export function Shell({ children }: { children: ReactNode }) {
               ? "projects"
               : onSearchPage && mine
                 ? "roster"
-                : "";
+                : onSearchPage
+                  ? "search"
+                  : "";
 
   return (
     <div className={`app-frame${navOpen ? " is-nav-open" : ""}`}>
@@ -283,20 +287,25 @@ export function Shell({ children }: { children: ReactNode }) {
             onNavigate={() => setNavOpen(false)}
           />
           {user?.isDemo ? (
-            <details className="sidebar-demo" open>
-              <summary className="sidebar-demo__title">Войти как</summary>
-              <div className="search-filter__chips">
+            <label className="sidebar-demo">
+              <span className="sidebar-demo__title">Войти как</span>
+              <select
+                className="sidebar-demo__select"
+                value={role}
+                aria-label="Роль демо"
+                onChange={(e) => {
+                  const next = e.target.value as RoleId;
+                  setNavOpen(false);
+                  router.push(switchRoleHref(pathname, searchParams, next));
+                }}
+              >
                 {ROLE_SWITCH.map(([key, label]) => (
-                  <Link
-                    key={key}
-                    href={switchRoleHref(pathname, searchParams, key)}
-                    className={key === role ? "search-chip is-on" : "search-chip"}
-                  >
+                  <option key={key} value={key}>
                     {label}
-                  </Link>
+                  </option>
                 ))}
-              </div>
-            </details>
+              </select>
+            </label>
           ) : (
             <button type="button" className="sidebar-item sidebar-item--quiet" onClick={() => void logout()}>
               <span className="sidebar-item__label">Выйти</span>
