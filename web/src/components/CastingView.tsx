@@ -220,7 +220,13 @@ export function CastingView({ slug }: { slug: string }) {
                 </Link>
               </div>
               <div className="responses-list">
-                {(casting.applicants ?? []).map((person) => (
+                {(casting.applicants ?? [])
+                  .filter((person) => {
+                    const slug = person.href?.replace(/^\/people\//, "");
+                    if (slug) return !liveApps.some((a) => a.actorSlug === slug);
+                    return !liveApps.some((a) => a.actorName === person.name);
+                  })
+                  .map((person) => (
                   <div key={person.name} className="response-row">
                     {person.avatar ? <img src={person.avatar} alt="" /> : null}
                     <div>
@@ -234,14 +240,43 @@ export function CastingView({ slug }: { slug: string }) {
                   </div>
                 ))}
                 {liveApps.map((app) => (
-                  <div key={app.id} className="response-row">
-                    {app.actorAvatar ? <img src={app.actorAvatar} alt="" /> : <span className="project-team-card__ava">{app.actorName.slice(0, 2)}</span>}
+                  <Link
+                    key={app.id}
+                    href={withRole(`/responses?casting=${casting.slug}&app=${app.id}`, role)}
+                    className="response-row"
+                    style={{ textDecoration: "none", color: "inherit" }}
+                  >
+                    {app.actorAvatar ? (
+                      <img src={app.actorAvatar} alt="" />
+                    ) : (
+                      <span className="project-team-card__ava">{app.actorName.slice(0, 2)}</span>
+                    )}
                     <div>
                       <div className="response-row__name">{app.actorName}</div>
-                      <div className="response-row__meta">{app.note || "Отклик из «Кадра»"}</div>
+                      <div className="response-row__meta">
+                        {app.source === "agent"
+                          ? app.note || "Предложение агента"
+                          : app.note || "Отклик из «Кадра»"}
+                      </div>
                     </div>
-                    <span className="tag tag-blue">{app.status === "shortlist" ? "В шорт-лист" : app.status === "invited" ? "Приглашение" : "Новая"}</span>
-                  </div>
+                    <span
+                      className={`tag ${
+                        app.status === "shortlist" || app.status === "invited"
+                          ? "tag-green"
+                          : app.source === "agent"
+                            ? "tag-blue"
+                            : "tag-gray"
+                      }`}
+                    >
+                      {app.source === "agent" && app.status === "sent"
+                        ? "Предложение агента"
+                        : app.status === "shortlist"
+                          ? "В шорт-лист"
+                          : app.status === "invited"
+                            ? "Приглашение"
+                            : "Новая"}
+                    </span>
+                  </Link>
                 ))}
               </div>
             </section>

@@ -6,7 +6,7 @@ import {
 } from "@/lib/productions";
 import type { RoleId } from "@/lib/roles";
 
-export const WORKSPACE_KEY = "kadr-workspace-v5";
+export const WORKSPACE_KEY = "kadr-workspace-v6";
 
 export type Availability = "open" | "busy" | "hold";
 

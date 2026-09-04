@@ -508,9 +508,11 @@ body[data-page="home"] .app-right-rail .rail-event__date {
   flex: 1;
 }
 
-.settings-page__link {
-  margin-top: 12px;
-  font-size: 14px;
+.compose-hint {
+  margin: -4px 0 8px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-muted);
 }
 
 .settings-page__hint {

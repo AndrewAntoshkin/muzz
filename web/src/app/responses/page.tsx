@@ -76,10 +76,18 @@ function ResponsesInner() {
                 const project = c ? getProject(c.projectSlug) : null;
                 const title =
                   role === "actor" ? (c?.title ?? "Кастинг") : item.actorName;
+                const projectBit =
+                  project?.title &&
+                  c?.title &&
+                  !c.title.replace(/[«»]/g, "").includes(project.title.replace(/[«»]/g, ""))
+                    ? project.title
+                    : role === "actor"
+                      ? project?.title
+                      : null;
                 const subtitle =
                   role === "actor"
-                    ? [project?.title, KIND_LABEL[item.kind]].filter(Boolean).join(" · ")
-                    : [c?.title, project?.title, KIND_LABEL[item.kind]].filter(Boolean).join(" · ");
+                    ? [projectBit, KIND_LABEL[item.kind]].filter(Boolean).join(" · ")
+                    : [c?.title, projectBit, KIND_LABEL[item.kind]].filter(Boolean).join(" · ");
 
                 return (
                   <button

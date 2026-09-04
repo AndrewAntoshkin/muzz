@@ -387,6 +387,13 @@ function CastingForm({
   );
 }
 
+function castingTalentFilter(casting: { title: string; roleLabel?: string }): "actor" | "actress" | "any" {
+  const hay = `${casting.title} ${casting.roleLabel ?? ""}`.toLowerCase();
+  if (/актрис|женск/.test(hay)) return "actress";
+  if (/мужск|вторая муж|актёр(?!с)/.test(hay)) return "actor";
+  return "any";
+}
+
 function ProposeForm({
   roster,
   presetCasting,
@@ -396,19 +403,31 @@ function ProposeForm({
   presetCasting: string;
   onDone: () => void;
 }) {
-  const { proposeActor, castings, getProject } = useWorkspace();
+  const { proposeActor, castings, getProject, flash } = useWorkspace();
   const [castingSlug, setCastingSlug] = useState(presetCasting || castings[0]?.slug || "");
-  const [actorSlug, setActorSlug] = useState(roster[0]?.slug || "");
+  const [actorSlug, setActorSlug] = useState("");
   const [note, setNote] = useState("");
   const [q, setQ] = useState("");
 
+  const selectedCasting = castings.find((c) => c.slug === castingSlug) ?? castings[0];
+  const talentFilter = selectedCasting ? castingTalentFilter(selectedCasting) : "any";
+
+  const rosterForCasting = useMemo(() => {
+    if (talentFilter === "any") return roster;
+    return roster.filter((p) => p.profession === talentFilter);
+  }, [roster, talentFilter]);
+
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
-    if (!query) return roster;
-    return roster.filter((p) => `${p.name} ${p.role} ${p.city}`.toLowerCase().includes(query));
-  }, [roster, q]);
+    if (!query) return rosterForCasting;
+    return rosterForCasting.filter((p) => `${p.name} ${p.role} ${p.city}`.toLowerCase().includes(query));
+  }, [rosterForCasting, q]);
 
-  const person = roster.find((p) => p.slug === actorSlug) ?? filtered[0];
+  const person =
+    filtered.find((p) => p.slug === actorSlug) ??
+    rosterForCasting.find((p) => p.slug === actorSlug) ??
+    filtered[0] ??
+    null;
 
   if (!roster.length) {
     return <p style={{ fontSize: 15, color: "var(--text-muted)" }}>Ростер агентства пока пуст.</p>;
@@ -420,11 +439,26 @@ function ProposeForm({
       onSubmit={(e) => {
         e.preventDefault();
         if (!person || !castingSlug) return;
+        if (talentFilter !== "any" && person.profession !== talentFilter) {
+          flash(
+            talentFilter === "actress"
+              ? "На эту роль нужны актрисы из ростера"
+              : "На эту роль нужны актёры из ростера",
+          );
+          return;
+        }
         if (proposeActor(castingSlug, person, note.trim())) onDone();
       }}
     >
       <Field label="Кастинг">
-        <select value={castingSlug} onChange={(e) => setCastingSlug(e.target.value)} required>
+        <select
+          value={castingSlug}
+          onChange={(e) => {
+            setCastingSlug(e.target.value);
+            setActorSlug("");
+          }}
+          required
+        >
           {castings.map((c) => {
             const project = getProject(c.projectSlug);
             return (
@@ -439,18 +473,31 @@ function ProposeForm({
       <Field label="Поиск по ростеру">
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Имя актёра…" />
       </Field>
+      {talentFilter !== "any" ? (
+        <p className="compose-hint">
+          {talentFilter === "actress"
+            ? "Показаны актрисы — под типаж выбранной роли"
+            : "Показаны актёры — под типаж выбранной роли"}
+        </p>
+      ) : null}
       <div className="kadr-picker">
-        {filtered.slice(0, 24).map((p) => (
-          <button
-            type="button"
-            key={p.slug}
-            className={p.slug === person?.slug ? "kadr-picker__item is-on" : "kadr-picker__item"}
-            onClick={() => setActorSlug(p.slug)}
-          >
-            {p.imageUrl ? <img src={p.imageUrl} alt="" /> : <span>{p.initials || p.name.slice(0, 1)}</span>}
-            <em>{p.name}</em>
-          </button>
-        ))}
+        {filtered.length ? (
+          filtered.slice(0, 24).map((p) => (
+            <button
+              type="button"
+              key={p.slug}
+              className={p.slug === person?.slug ? "kadr-picker__item is-on" : "kadr-picker__item"}
+              onClick={() => setActorSlug(p.slug)}
+            >
+              {p.imageUrl ? <img src={p.imageUrl} alt="" /> : <span>{p.initials || p.name.slice(0, 1)}</span>}
+              <em>{p.name}</em>
+            </button>
+          ))
+        ) : (
+          <p className="compose-hint" style={{ gridColumn: "1 / -1" }}>
+            В ростере нет подходящих по полу кандидатов на эту роль.
+          </p>
+        )}
       </div>
       <Field label="Комментарий кастинг-директору">
         <textarea rows={3} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Почему этот актёр на роль…" />
