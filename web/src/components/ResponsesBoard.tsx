@@ -201,11 +201,13 @@ export function ResponseCards({
   role,
   getCastingTitle,
   getProjectTitle,
+  from = "casting",
 }: {
   rows: Application[];
   role: RoleId;
   getCastingTitle: (slug: string) => string | undefined;
   getProjectTitle: (castingSlug: string) => string | undefined;
+  from?: "casting" | "all";
 }) {
   return (
     <div className="response-cards">
@@ -224,54 +226,29 @@ export function ResponseCards({
         const subtitle =
           role === "actor"
             ? [projectBit, KIND_LABEL[item.kind]].filter(Boolean).join(" · ")
-            : [castingTitle, projectBit, KIND_LABEL[item.kind]].filter(Boolean).join(" · ");
-        const detailHref = withRole(`/responses/${item.id}`, role);
+            : [item.actorMeta || castingTitle, projectBit, KIND_LABEL[item.kind]].filter(Boolean).join(" · ");
+        const detailHref = withRole(
+          from === "all" ? `/responses/${item.id}?from=all` : `/responses/${item.id}`,
+          role,
+        );
 
         return (
-          <article key={item.id} className="response-card response-card--rich">
-            <Link href={detailHref} className="response-card__hit">
-              <span className="response-card__top">
-                {item.actorAvatar ? (
-                  <img src={item.actorAvatar} alt="" className="response-card__ava" />
-                ) : (
-                  <span className="response-card__ava response-card__ava--empty" />
-                )}
-                <span className="response-card__main">
-                  <span className="response-card__title">{title}</span>
-                  <span className="response-card__sub">{subtitle}</span>
-                  {item.actorMeta && role !== "actor" ? (
-                    <span className="response-card__meta-line">{item.actorMeta}</span>
-                  ) : null}
-                  {item.note ? <span className="response-card__note">{item.note}</span> : null}
-                </span>
-                <span className="response-card__side">
-                  {item.match ? <span className="response-card__match">{item.match} совпадение</span> : null}
-                  <span className={`tag ${statusTag(item.status)}`}>{STATUS_LABEL[item.status]}</span>
-                </span>
-              </span>
-            </Link>
-            {item.tape ? (
-              <div className="response-card__tape">
-                <ResponseTape tape={item.tape} role={role} />
-              </div>
-            ) : null}
-            {role !== "actor" ? (
-              <div className="response-card__foot">
-                <Link href={withRole(`/people/${item.actorSlug}`, role)} className="link-accent">
-                  Профиль →
-                </Link>
-                <Link href={detailHref} className="link-accent">
-                  Открыть отклик →
-                </Link>
-              </div>
+          <Link key={item.id} href={detailHref} className="response-card">
+            {item.actorAvatar ? (
+              <img src={item.actorAvatar} alt="" className="response-card__ava" />
             ) : (
-              <div className="response-card__foot">
-                <Link href={detailHref} className="link-accent">
-                  Открыть →
-                </Link>
-              </div>
+              <span className="response-card__ava response-card__ava--empty" />
             )}
-          </article>
+            <span className="response-card__main">
+              <span className="response-card__title">{title}</span>
+              <span className="response-card__sub">{subtitle}</span>
+              {item.note ? <span className="response-card__note">{item.note}</span> : null}
+            </span>
+            <span className="response-card__side">
+              {item.match ? <span className="response-card__match">{item.match}</span> : null}
+              <span className={`tag ${statusTag(item.status)}`}>{STATUS_LABEL[item.status]}</span>
+            </span>
+          </Link>
         );
       })}
     </div>

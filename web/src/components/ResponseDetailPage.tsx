@@ -24,6 +24,7 @@ export function ResponseDetailPage({
   project,
   onStatus,
   backHref,
+  backLabel = "← К откликам",
 }: {
   item: Application;
   role: RoleId;
@@ -31,6 +32,7 @@ export function ResponseDetailPage({
   project: Project | null;
   onStatus: (status: AppStatus) => void;
   backHref: string;
+  backLabel?: string;
 }) {
   const created = new Date(item.createdAt).toLocaleString("ru-RU", {
     day: "numeric",
@@ -42,12 +44,12 @@ export function ResponseDetailPage({
   return (
     <div className="app-main__body app-main__body--catalog">
       <main className="page-area">
-        <div className="page-scroll detail-page response-detail">
+        <div className="page-scroll detail-page response-detail" id="response-detail">
           <div className="detail-grid">
             <div>
               <header className="catalog-page__head catalog-page__head--stack" style={{ marginBottom: 18 }}>
-                <Link href={backHref} className="hub-block__link">
-                  ← К откликам
+                <Link href={backHref} className="catalog-page__back">
+                  {backLabel}
                 </Link>
                 <p className="response-detail__eyebrow">{KIND_LABEL[item.kind]}</p>
                 <h1 className="catalog-page__title">

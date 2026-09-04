@@ -46,10 +46,10 @@ export function CastingResponsesView({ slug }: { slug: string }) {
   return (
     <div className="app-main__body app-main__body--catalog">
       <main className="page-area">
-        <div className="page-scroll catalog-page">
+        <div className="page-scroll catalog-page" id="casting-responses">
           <header className="catalog-page__head catalog-page__head--stack">
-            <Link href={withRole(`/castings/${casting.slug}`, role)} className="hub-block__link">
-              ← К кастингу
+            <Link href={withRole(`/castings/${casting.slug}`, role)} className="catalog-page__back">
+              ← {casting.title}
             </Link>
             <h1 className="catalog-page__title">
               Отклики · {casting.title}
@@ -74,6 +74,7 @@ export function CastingResponsesView({ slug }: { slug: string }) {
             <ResponseCards
               rows={rows}
               role={role}
+              from="casting"
               getCastingTitle={(s) => getCasting(s)?.title}
               getProjectTitle={(s) => {
                 const c = getCasting(s);

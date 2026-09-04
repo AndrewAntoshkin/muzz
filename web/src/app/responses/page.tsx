@@ -81,6 +81,7 @@ function ResponsesInner() {
             <ResponseCards
               rows={rows}
               role={role}
+              from="all"
               getCastingTitle={(s) => getCasting(s)?.title}
               getProjectTitle={(s) => {
                 const c = getCasting(s);

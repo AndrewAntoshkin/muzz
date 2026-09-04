@@ -83,7 +83,7 @@ export function Shell({ children }: { children: ReactNode }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { role, cfg, user, logout } = useAuth();
-  const { unread, notice, ready, profilePatches } = useWorkspace();
+  const { unread, notice, ready, profilePatches, applications } = useWorkspace();
   const [publishOpen, setPublishOpen] = useState(false);
   const [projectSettingsOpen, setProjectSettingsOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
@@ -97,16 +97,32 @@ export function Shell({ children }: { children: ReactNode }) {
   const onSearchPage = pathname === "/search" || pathname.startsWith("/faces");
   const onProjects = pathname.startsWith("/projects");
   const onSearch = onSearchPage || (role === "actor" && onProjects);
+  const onCastingResponses = /^\/castings\/[^/]+\/responses\/?$/.test(pathname);
   const onCastings = pathname.startsWith("/castings");
   const onMessages = pathname.startsWith("/messages");
-  const onResponses = pathname.startsWith("/responses");
+  const onResponseDetail = /^\/responses\/[^/]+/.test(pathname);
+  const onResponsesList = pathname === "/responses";
+  const onResponses = onResponsesList || onResponseDetail || onCastingResponses;
   const onSettings = pathname.startsWith("/settings");
   const onCompose = pathname.startsWith("/compose");
   const onProfile = pathname.startsWith("/people/");
-  const castingDetail = /^\/castings\/[^/]+/.test(pathname);
+  const castingDetail = /^\/castings\/[^/]+\/?$/.test(pathname);
   const projectDetail = /^\/projects\/[^/]+/.test(pathname);
   const projectSlug = projectDetail ? pathname.match(/^\/projects\/([^/]+)/)?.[1] : undefined;
-  const backTo = backHref(pathname, role, { onHome, onProfile, castingDetail, projectDetail });
+  const responseId = onResponseDetail ? pathname.match(/^\/responses\/([^/]+)/)?.[1] : undefined;
+  const responseApp = responseId ? applications.find((a) => a.id === responseId) : undefined;
+  const fromAll = searchParams.get("from") === "all";
+  const backTo = backHref(pathname, role, {
+    onHome,
+    onProfile,
+    castingDetail,
+    projectDetail,
+    onCastingResponses,
+    onResponseDetail,
+    onResponsesList,
+    responseCastingSlug: responseApp?.castingSlug,
+    fromAll,
+  });
   const crumb = onProfile
     ? "Профиль"
     : onSettings
@@ -119,13 +135,17 @@ export function Shell({ children }: { children: ReactNode }) {
             : "Поиск"
           : onProjects
             ? cfg.nav.find((n) => n.id === "projects")?.label || "Проекты"
-            : onCastings
-              ? cfg.nav.find((n) => n.id === "castings")?.label || "Кастинги"
-              : onMessages
-                ? "Сообщения"
-                : onResponses
-                  ? cfg.nav.find((n) => n.id === "responses")?.label || "Мои отклики"
-                  : "Главная";
+            : onCastingResponses
+              ? "Отклики"
+              : onCastings
+                ? cfg.nav.find((n) => n.id === "castings")?.label || "Кастинги"
+                : onMessages
+                  ? "Сообщения"
+                  : onResponseDetail
+                    ? "Отклик"
+                    : onResponses
+                      ? cfg.nav.find((n) => n.id === "responses")?.label || "Мои отклики"
+                      : "Главная";
 
   useEffect(() => {
     const page =
@@ -135,12 +155,12 @@ export function Shell({ children }: { children: ReactNode }) {
           ? "search"
           : onProjects
             ? "projects"
-            : onCastings
-              ? "castings"
-              : onMessages
-                ? "messages"
-                : onResponses
-                  ? "responses"
+            : onCastingResponses || onResponseDetail || onResponsesList
+              ? "responses"
+              : onCastings
+                ? "castings"
+                : onMessages
+                  ? "messages"
                   : onSettings
                     ? "settings"
                     : onCompose
@@ -153,16 +173,30 @@ export function Shell({ children }: { children: ReactNode }) {
     document.body.setAttribute("data-page-title", crumb);
     document.body.setAttribute("data-profession", role);
     document.body.setAttribute("data-user-name", cfg.name);
-  }, [onHome, onSearchPage, onProjects, onProfile, onSettings, onCompose, crumb, role, cfg.name]);
+  }, [
+    onHome,
+    onSearchPage,
+    onProjects,
+    onCastings,
+    onCastingResponses,
+    onResponseDetail,
+    onResponsesList,
+    onProfile,
+    onSettings,
+    onCompose,
+    crumb,
+    role,
+    cfg.name,
+  ]);
 
   const activeNav = onHome
     ? "home"
-    : onCastings
-      ? "castings"
-      : onMessages
-        ? "messages"
-        : onResponses
-          ? "responses"
+    : onCastingResponses || onResponses
+      ? "responses"
+      : onCastings
+        ? "castings"
+        : onMessages
+          ? "messages"
           : onSettings
             ? "settings"
             : onProjects && role !== "actor"
@@ -450,15 +484,45 @@ function composeTitle(type: string | null) {
 function backHref(
   pathname: string,
   role: RoleId,
-  flags: { onHome: boolean; onProfile: boolean; castingDetail: boolean; projectDetail: boolean },
+  flags: {
+    onHome: boolean;
+    onProfile: boolean;
+    castingDetail: boolean;
+    projectDetail: boolean;
+    onCastingResponses: boolean;
+    onResponseDetail: boolean;
+    onResponsesList: boolean;
+    responseCastingSlug?: string;
+    fromAll?: boolean;
+  },
 ) {
   if (flags.onHome) return null;
+
+  // Отклик → список откликов кастинга (или все, если открыт оттуда)
+  if (flags.onResponseDetail) {
+    if (flags.fromAll || !flags.responseCastingSlug) return withRole("/responses", role);
+    return withRole(`/castings/${flags.responseCastingSlug}/responses`, role);
+  }
+
+  // Отклики кастинга → сам кастинг
+  if (flags.onCastingResponses) {
+    const slug = pathname.match(/^\/castings\/([^/]+)/)?.[1];
+    return slug ? withRole(`/castings/${slug}`, role) : withRole("/castings", role);
+  }
+
+  // Все отклики → главная
+  if (flags.onResponsesList) return withRole("/", role);
+
   if (flags.onProfile) {
     return role === "actor" ? withRole("/", role) : withRole("/search", role);
   }
+
+  // Кастинг → список кастингов
   if (flags.castingDetail) return withRole("/castings", role);
+
   if (flags.projectDetail) {
     return role === "casting" ? withRole("/projects", role) : withRole("/", role);
   }
+
   return withRole("/", role);
 }
