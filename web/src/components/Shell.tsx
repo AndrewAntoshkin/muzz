@@ -14,11 +14,14 @@ import {
   IconResponses,
   IconSettings,
 } from "./icons";
-import { ROLE_SWITCH, switchRoleHref, withRole, type RoleId } from "@/lib/roles";
+import { ROLE_SWITCH, profileSlug, switchRoleHref, withRole, type RoleId } from "@/lib/roles";
 import { useAuth } from "./AuthProvider";
 import { useWorkspace } from "./useWorkspace";
 import { DropdownMenu } from "./DropdownMenu";
 import { ProjectSettingsModal } from "./ProjectSettingsModal";
+import { StatusModal } from "./StatusModal";
+import { ProfileEditModal } from "./ProfileEditModal";
+import { VZMETNEV_CARD, DEMO_BIOS } from "@/lib/demo-profiles";
 
 const NAV_ICONS: Record<string, ReactNode> = {
   home: <IconHome />,
@@ -38,6 +41,7 @@ function NavRow({
   active,
   quiet,
   live,
+  onNavigate,
 }: {
   href: string;
   id: string;
@@ -47,6 +51,7 @@ function NavRow({
   active?: boolean;
   quiet?: boolean;
   live?: boolean;
+  onNavigate?: () => void;
 }) {
   const cls = ["sidebar-item", active ? "is-active" : "", quiet ? "sidebar-item--quiet" : ""]
     .filter(Boolean)
@@ -60,7 +65,7 @@ function NavRow({
   );
   if (live) {
     return (
-      <Link href={href} className={cls} data-nav={id}>
+      <Link href={href} className={cls} data-nav={id} onClick={onNavigate}>
         {inner}
       </Link>
     );
@@ -76,9 +81,12 @@ export function Shell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { role, cfg, user, logout } = useAuth();
-  const { unread, notice, ready } = useWorkspace();
+  const { unread, notice, ready, profilePatches } = useWorkspace();
   const [publishOpen, setPublishOpen] = useState(false);
   const [projectSettingsOpen, setProjectSettingsOpen] = useState(false);
+  const [statusOpen, setStatusOpen] = useState(false);
+  const [profileEditOpen, setProfileEditOpen] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
   const plusBtn = useRef<HTMLButtonElement>(null);
   const mine = searchParams.get("mine") === "1";
   const composeType = searchParams.get("type");
@@ -162,13 +170,24 @@ export function Shell({ children }: { children: ReactNode }) {
                 : "";
 
   return (
-    <div className="app-frame">
+    <div className={`app-frame${navOpen ? " is-nav-open" : ""}`}>
+      <button
+        type="button"
+        className="nav-scrim"
+        aria-label="Закрыть меню"
+        hidden={!navOpen}
+        onClick={() => setNavOpen(false)}
+      />
       <aside className="sidebar-panel" id="app-sidebar">
         <div className="sidebar-head">
-          <Link href={withRole("/", role)} className="sidebar-brand__link" aria-label="На главную">
+          <Link href={withRole("/", role)} className="sidebar-brand__link" aria-label="На главную" onClick={() => setNavOpen(false)}>
             <img src="/assets/logo.svg" alt="cadr" width={58} height={20} />
           </Link>
-          <Link href={withRole("/search", role)} className={onSearch ? "sidebar-search is-active" : "sidebar-search"}>
+          <Link
+            href={withRole("/search", role)}
+            className={onSearch ? "sidebar-search is-active" : "sidebar-search"}
+            onClick={() => setNavOpen(false)}
+          >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
               <circle cx="11" cy="11" r="7" />
               <path d="m20 20-3.5-3.5" />
@@ -189,6 +208,7 @@ export function Shell({ children }: { children: ReactNode }) {
                 count={item.id === "messages" ? (unread ? String(unread) : undefined) : item.count}
                 active={activeNav === item.id || (item.id === "roster" && onSearchPage)}
                 live={item.live}
+                onNavigate={() => setNavOpen(false)}
               />
             ))}
           </nav>
@@ -204,6 +224,7 @@ export function Shell({ children }: { children: ReactNode }) {
                   label={t.name}
                   icon={<IconFolder />}
                   live={t.live}
+                  onNavigate={() => setNavOpen(false)}
                 />
               ))}
             </nav>
@@ -220,6 +241,7 @@ export function Shell({ children }: { children: ReactNode }) {
                   label={item.label}
                   quiet
                   live={item.live}
+                  onNavigate={() => setNavOpen(false)}
                 />
               ))}
             </nav>
@@ -231,6 +253,7 @@ export function Shell({ children }: { children: ReactNode }) {
             href={withRole(cfg.profile, role)}
             className={onProfile && pathname === cfg.profile ? "sidebar-profile is-active" : "sidebar-profile"}
             data-nav="profile"
+            onClick={() => setNavOpen(false)}
           >
             <span className="sidebar-profile__avatar">
               {cfg.avatar ? (
@@ -250,7 +273,15 @@ export function Shell({ children }: { children: ReactNode }) {
               <span className="sidebar-profile__role">{cfg.label}</span>
             </span>
           </Link>
-          <NavRow href={withRole("/settings", role)} id="settings" label="Настройки" icon={<IconSettings />} live active={onSettings} />
+          <NavRow
+            href={withRole("/settings", role)}
+            id="settings"
+            label="Настройки"
+            icon={<IconSettings />}
+            live
+            active={onSettings}
+            onNavigate={() => setNavOpen(false)}
+          />
           {user?.isDemo ? (
             <details className="sidebar-demo" open>
               <summary className="sidebar-demo__title">Войти как</summary>
@@ -282,6 +313,17 @@ export function Shell({ children }: { children: ReactNode }) {
       <div className="app-main">
         <header className="app-topbar ss-head">
           <div className="ss-head__lead">
+            <button
+              type="button"
+              className="ss-head__menu"
+              aria-label="Меню"
+              aria-expanded={navOpen}
+              onClick={() => setNavOpen((v) => !v)}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M4 7h16M4 12h16M4 17h16" />
+              </svg>
+            </button>
             {backTo ? (
               <Link href={backTo} className="ss-head__back" aria-label="Назад">
                 <IconBack />
@@ -308,7 +350,7 @@ export function Shell({ children }: { children: ReactNode }) {
                 ref={plusBtn}
                 type="button"
                 className="ss-head__plus"
-                aria-label="Опубликовать"
+                aria-label={role === "actor" ? "Статус и профиль" : "Опубликовать"}
                 aria-expanded={publishOpen}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -328,7 +370,29 @@ export function Shell({ children }: { children: ReactNode }) {
                 onClose={() => setPublishOpen(false)}
               >
                 {cfg.plus.map((p) =>
-                  p.href ? (
+                  p.action === "status" ? (
+                    <button
+                      key={p.label}
+                      type="button"
+                      onClick={() => {
+                        setPublishOpen(false);
+                        setStatusOpen(true);
+                      }}
+                    >
+                      {p.label}
+                    </button>
+                  ) : p.action === "profile" ? (
+                    <button
+                      key={p.label}
+                      type="button"
+                      onClick={() => {
+                        setPublishOpen(false);
+                        setProfileEditOpen(true);
+                      }}
+                    >
+                      {p.label}
+                    </button>
+                  ) : p.href ? (
                     <Link key={p.label} href={withRole(p.href, role)} onClick={() => setPublishOpen(false)}>
                       {p.label}
                     </Link>
@@ -343,6 +407,22 @@ export function Shell({ children }: { children: ReactNode }) {
         {children}
         {projectDetail && role === "casting" && projectSettingsOpen && ready && projectSlug ? (
           <ProjectSettingsModal projectSlug={projectSlug} onClose={() => setProjectSettingsOpen(false)} />
+        ) : null}
+        {statusOpen ? <StatusModal onClose={() => setStatusOpen(false)} /> : null}
+        {profileEditOpen ? (
+          <ProfileEditModal
+            personSlug={profileSlug(cfg)}
+            initial={profilePatches[profileSlug(cfg)] || {}}
+            defaults={{
+              bio: DEMO_BIOS.vzmetnev,
+              city: cfg.city,
+              params: VZMETNEV_CARD.params || [],
+              appearance: VZMETNEV_CARD.appearance || [],
+              languages: VZMETNEV_CARD.languages || [],
+              skills: VZMETNEV_CARD.skills || [],
+            }}
+            onClose={() => setProfileEditOpen(false)}
+          />
         ) : null}
         {notice ? <div className="kadr-toast">{notice}</div> : null}
       </div>

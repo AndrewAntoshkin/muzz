@@ -22,7 +22,7 @@ export type DemoRole = {
   blockTitle: string;
   block: { href: string; name: string; live?: boolean }[];
   recent: { href: string; label: string; live?: boolean }[];
-  plus: { href?: string; label: string }[];
+  plus: { href?: string; action?: "status" | "profile"; label: string }[];
   hub: {
     lead: string;
     metrics: [string, string, string][];
@@ -66,7 +66,10 @@ export const DEMO_ROLES: Record<RoleId, DemoRole> = {
       { href: "/people/lebedeva", label: "Анна Лебедева", live: true },
       { href: "/people/vzmetnev", label: "Мой профиль", live: true },
     ],
-    plus: [{ href: "/compose?type=post", label: "Пост в ленту" }],
+    plus: [
+      { action: "status", label: "Обновить статус" },
+      { action: "profile", label: "Редактировать профиль" },
+    ],
     hub: {
       lead: "Вторая мужская «Тихий январь» в шорт-листе · 2 непрочитанных · с июля открыт.",
       metrics: [

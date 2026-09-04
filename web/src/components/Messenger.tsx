@@ -44,8 +44,10 @@ function Avatar({
 
 function DemoMessenger() {
   const { role, threads, sendMessage, markRead } = useWorkspace();
+  const searchParams = useSearchParams();
+  const initialThread = searchParams.get("thread");
   const [q, setQ] = useState("");
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(initialThread);
   const bodyRef = useRef<HTMLDivElement>(null);
   const [draft, setDraft] = useState("");
 
@@ -134,6 +136,7 @@ function DemoMessenger() {
       draft={draft}
       setDraft={setDraft}
       onSend={send}
+      startInThread={Boolean(initialThread)}
     />
   );
 }
@@ -255,6 +258,7 @@ function LiveMessenger({ initialThread }: { initialThread?: string | null }) {
         setDraft={setDraft}
         onSend={() => void send()}
         emptyHint="Пока нет переписок. Напишите человеку с аккаунтом с его профиля."
+        startInThread={Boolean(initialThread)}
       />
     </>
   );
@@ -274,6 +278,7 @@ function MessengerLayout({
   setDraft,
   onSend,
   emptyHint = "Нет переписок",
+  startInThread = false,
 }: {
   q: string;
   setQ: (v: string) => void;
@@ -307,9 +312,12 @@ function MessengerLayout({
   setDraft: (v: string) => void;
   onSend: () => void;
   emptyHint?: string;
+  startInThread?: boolean;
 }) {
+  const [mobileThread, setMobileThread] = useState(startInThread);
+
   return (
-    <div className="msg-layout">
+    <div className={`msg-layout${mobileThread && peer ? " is-thread" : ""}`}>
       <aside className="msg-list">
         <div className="msg-list__head">
           <div className="msg-list__title">{unreadN ? `Непрочитанных · ${unreadN}` : "Все чаты"}</div>
@@ -329,7 +337,10 @@ function MessengerLayout({
                 type="button"
                 key={t.id}
                 className={`msg-row${t.active ? " is-active" : ""}${t.unread ? " is-unread" : ""}`}
-                onClick={() => onSelect(t.id)}
+                onClick={() => {
+                  onSelect(t.id);
+                  setMobileThread(true);
+                }}
               >
                 <Avatar src={t.avatar} initials={t.initials} bg={t.bg} />
                 <span className="msg-row__main">
@@ -349,10 +360,22 @@ function MessengerLayout({
       {peer ? (
         <section className="msg-thread">
           <div className="msg-thread__head">
+            <button
+              type="button"
+              className="msg-thread__back"
+              aria-label="К списку чатов"
+              onClick={() => setMobileThread(false)}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
             <Avatar src={peer.avatar} initials={peer.initials} bg={peer.bg} size={40} />
             <div className="msg-thread__who">
               <div className="name">{peer.name}</div>
-              <div className="meta">{peer.roleLabel}</div>
+              <div className="meta" title={peer.roleLabel}>
+                {peer.roleLabel}
+              </div>
             </div>
             <div className="actions">
               {peer.profileHref ? (

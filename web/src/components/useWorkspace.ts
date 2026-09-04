@@ -410,6 +410,41 @@ function useWorkspaceValue() {
     flash("Демо-данные сброшены");
   }, [flash]);
 
+  const publishStatus = useCallback(
+    (text: string, availability: import("@/lib/workspace").Availability) => {
+      const slug = actorSlug;
+      update((prev) => {
+        const pulse = {
+          id: `pulse-${slug}-${Date.now()}`,
+          personSlug: slug,
+          name: cfg.name,
+          avatar: cfg.avatar,
+          text,
+          availability,
+          updatedAt: Date.now(),
+        };
+        const rest = (prev.pulses || []).filter((p) => p.personSlug !== slug);
+        return { ...prev, pulses: [pulse, ...rest] };
+      });
+      flash("Статус обновлён — виден CD и агентам");
+    },
+    [actorSlug, cfg.avatar, cfg.name, flash, update],
+  );
+
+  const saveProfilePatch = useCallback(
+    (slug: string, patch: import("@/lib/workspace").ProfilePatch) => {
+      update((prev) => ({
+        ...prev,
+        profilePatches: {
+          ...(prev.profilePatches || {}),
+          [slug]: { ...(prev.profilePatches || {})[slug], ...patch },
+        },
+      }));
+      flash("Профиль обновлён");
+    },
+    [flash, update],
+  );
+
   return {
     ready,
     notice,
@@ -421,6 +456,8 @@ function useWorkspaceValue() {
     applications: state.applications,
     myApplications,
     posts: state.posts,
+    pulses: state.pulses ?? [],
+    profilePatches: state.profilePatches ?? {},
     threads,
     unread,
     saved: state.saved,
@@ -442,6 +479,8 @@ function useWorkspaceValue() {
     updateProject,
     addCasting,
     addPost,
+    publishStatus,
+    saveProfilePatch,
     sendMessage,
     markRead,
     toggleSaved,

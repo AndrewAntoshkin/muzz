@@ -1,6 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import type { PersonProfile } from "@/lib/people";
-import { VZMETNEV_CARD } from "@/lib/demo-profiles";
+import { VZMETNEV_CARD, DEMO_BIOS } from "@/lib/demo-profiles";
 import { LINK_LABELS, assetSrc, initialsOf } from "@/lib/labels";
 import {
   ageLabel,
@@ -13,9 +15,16 @@ import {
   type Showreel,
 } from "@/lib/person-card";
 import { castingsForCd, getProject, projectsForCd } from "@/lib/productions";
+import { AVAILABILITY_LABEL } from "@/lib/workspace";
+import { useMemo, useState } from "react";
 import { AnketaTabs } from "./AnketaTabs";
 import { IconVerified } from "./icons";
 import { HideIfOwn, ProfileViewerActions } from "./ProfileViewerActions";
+import { ProfileEditModal } from "./ProfileEditModal";
+import { StatusModal } from "./StatusModal";
+import { useWorkspace } from "./useWorkspace";
+import { profileSlug } from "@/lib/roles";
+import { useDemoRole } from "./useDemoRole";
 
 const WEEKDAYS = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"];
 const VIDEO_KINDS = new Set(["vimeo", "youtube", "video"]);
@@ -140,14 +149,20 @@ function educationLines(card: PersonCard): string[] {
     .filter(Boolean);
 }
 
-function Anketa({ card }: { card: PersonCard }) {
+function Anketa({
+  card,
+  onEditSection,
+}: {
+  card: PersonCard;
+  onEditSection?: (section: "params" | "appearance" | "languages" | "skills") => void;
+}) {
   const params = (card.params || []).filter((row) => !isEducationLabel(row.label));
   const education = educationLines(card);
   const cols = [
-    params.length ? { title: "Параметры", rows: params } : null,
-    card.appearance?.length ? { title: "Внешность", rows: card.appearance } : null,
-    card.languages?.length ? { title: "Языки", rows: card.languages } : null,
-  ].filter(Boolean) as { title: string; rows: KvPair[] }[];
+    params.length ? { title: "Параметры", rows: params, key: "params" as const } : null,
+    card.appearance?.length ? { title: "Внешность", rows: card.appearance, key: "appearance" as const } : null,
+    card.languages?.length ? { title: "Языки", rows: card.languages, key: "languages" as const } : null,
+  ].filter(Boolean) as { title: string; rows: KvPair[]; key: "params" | "appearance" | "languages" }[];
 
   if (!cols.length && !education.length && !card.skills?.length) return null;
 
@@ -155,6 +170,11 @@ function Anketa({ card }: { card: PersonCard }) {
     <section className="detail-block">
       <div className="detail-block__head">
         <h2 className="detail-block__title">Анкета</h2>
+        {onEditSection ? (
+          <button type="button" className="hub-block__link" onClick={() => onEditSection("params")}>
+            Редактировать
+          </button>
+        ) : null}
       </div>
       {cols.length ? <AnketaTabs cols={cols} /> : null}
       {education.length ? (
@@ -169,7 +189,16 @@ function Anketa({ card }: { card: PersonCard }) {
       ) : null}
       {card.skills?.length ? (
         <div className={cols.length || education.length ? "kadr-skills" : undefined}>
-          <h3 className="kadr-anketa__title">Спецнавыки</h3>
+          <div className="detail-block__head" style={{ padding: 0, marginBottom: 8 }}>
+            <h3 className="kadr-anketa__title" style={{ margin: 0 }}>
+              Спецнавыки
+            </h3>
+            {onEditSection ? (
+              <button type="button" className="hub-block__link" onClick={() => onEditSection("skills")}>
+                Изменить
+              </button>
+            ) : null}
+          </div>
           <div className="search-filter__chips">
             {card.skills.map((skill) => (
               <span className="search-chip" key={skill}>
@@ -199,14 +228,39 @@ function quotedAgency(name: string) {
   return `агентство «${inner}»`;
 }
 
-function cardFor(person: PersonProfile): PersonCard {
-  const card = asCard(person.card);
-  if (person.slug !== "vzmetnev") return card;
+function cardFor(person: PersonProfile, patch?: import("@/lib/workspace").ProfilePatch): PersonCard {
+  const base = asCard(person.card);
+  const card =
+    person.slug === "vzmetnev"
+      ? {
+          ...VZMETNEV_CARD,
+          ...base,
+          showreel: base.showreel ?? VZMETNEV_CARD.showreel,
+          schedule: base.schedule ?? VZMETNEV_CARD.schedule,
+          params: base.params?.length ? base.params : VZMETNEV_CARD.params,
+          appearance: base.appearance?.length ? base.appearance : VZMETNEV_CARD.appearance,
+          languages: base.languages?.length ? base.languages : VZMETNEV_CARD.languages,
+          skills: base.skills?.length ? base.skills : VZMETNEV_CARD.skills,
+        }
+      : base;
+  if (!patch) return card;
   return {
     ...card,
-    showreel: card.showreel ?? VZMETNEV_CARD.showreel,
-    schedule: card.schedule ?? VZMETNEV_CARD.schedule,
+    params: patch.params ?? card.params,
+    appearance: patch.appearance ?? card.appearance,
+    languages: patch.languages ?? card.languages,
+    skills: patch.skills ?? card.skills,
+    height: kvValue(patch.params ?? card.params, "Рост") || card.height,
   };
+}
+
+export function ProfileView({ person }: { person: PersonProfile }) {
+  const { profilePatches } = useWorkspace();
+  const patch = profilePatches[person.slug];
+  const card = cardFor(person, patch);
+  if (person.profession === "casting") return <CastingLayout person={person} card={card} />;
+  if (person.profession === "agent") return <AgentLayout person={person} card={card} />;
+  return <ActorLayout person={person} card={card} />;
 }
 
 function videoLink(person: PersonProfile) {
@@ -349,6 +403,13 @@ function ScheduleBlock({ card, feminine }: { card: PersonCard; feminine: boolean
 }
 
 function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard }) {
+  const { cfg } = useDemoRole();
+  const { pulses, profilePatches } = useWorkspace();
+  const [editOpen, setEditOpen] = useState(false);
+  const [editTab, setEditTab] = useState<"about" | "params" | "appearance" | "languages" | "skills">("about");
+  const [statusOpen, setStatusOpen] = useState(false);
+  const isOwn = person.slug === profileSlug(cfg);
+  const patch = profilePatches[person.slug];
   const feminine = person.profession === "actress";
   const height = card.height || kvValue(card.params, "Рост");
   const manager = card.manager;
@@ -356,8 +417,27 @@ function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard
   const agentName = person.agentName;
   const hasAgency = Boolean(agencyName || agentName);
   const showreel = resolveShowreel(person, card);
-  const openLabel = feminine ? "Открыта к предложениям" : "Открыт к предложениям";
+  const pulse = pulses.find((p) => p.personSlug === person.slug);
+  const openLabel = pulse
+    ? AVAILABILITY_LABEL[pulse.availability]
+    : feminine
+      ? "Открыта к предложениям"
+      : "Открыт к предложениям";
   const agencyLine = agencyName ? quotedAgency(agencyName) : null;
+  const bio = patch?.bio ?? person.bio;
+  const city = patch?.city ?? person.city;
+
+  const defaults = useMemo(
+    () => ({
+      bio: person.bio || (person.slug === "vzmetnev" ? DEMO_BIOS.vzmetnev : ""),
+      city: person.city || "",
+      params: card.params || VZMETNEV_CARD.params || [],
+      appearance: card.appearance || VZMETNEV_CARD.appearance || [],
+      languages: card.languages || VZMETNEV_CARD.languages || [],
+      skills: card.skills || VZMETNEV_CARD.skills || [],
+    }),
+    [person, card],
+  );
 
   return (
     <div className="page-scroll detail-page">
@@ -370,28 +450,30 @@ function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard
                 <h1 className="detail-hero__title">{person.name}</h1>
                 {person.verified ? <VerifiedBadge feminine={feminine} /> : null}
               </div>
-              <MetaLine bits={[person.role, person.city, ageLabel(person.birthDate), height, ...(card.heroMeta || [])]} />
-              {person.bio ? (
-                <p className="kadr-bio">{person.bio}</p>
+              <MetaLine bits={[person.role, city, ageLabel(person.birthDate), height, ...(card.heroMeta || [])]} />
+              {bio ? (
+                <p className="kadr-bio">{bio}</p>
               ) : agencyName && !/^главн/i.test(agencyName) ? (
                 <p className="kadr-bio">
                   {person.role}
-                  {person.city ? ` · ${person.city}` : ""} · {quotedAgency(agencyName)}
+                  {city ? ` · ${city}` : ""} · {quotedAgency(agencyName)}
                 </p>
               ) : null}
-              <div className="detail-hero__actions">
-                <button type="button" className="btn-primary">
-                  Пригласить на кастинг
-                </button>
-                <button type="button" className="btn-secondary">
-                  Запросить доступность
-                </button>
-                {person.sourceUrl ? (
-                  <a href={person.sourceUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary">
-                    Анкета агентства
-                  </a>
-                ) : null}
-              </div>
+              {pulse ? (
+                <div className="profile-pulse">
+                  <span className="tag tag-green">{AVAILABILITY_LABEL[pulse.availability]}</span>
+                  <p>{pulse.text}</p>
+                </div>
+              ) : null}
+              <ProfileViewerActions
+                personSlug={person.slug}
+                profession={person.profession}
+                onEditProfile={() => {
+                  setEditTab("about");
+                  setEditOpen(true);
+                }}
+                onEditStatus={() => setStatusOpen(true)}
+              />
               {manager ? (
                 <div className="callout kadr-manager">
                   <div className="kadr-manager__who">
@@ -421,7 +503,17 @@ function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard
             </div>
           </section>
 
-          <Anketa card={card} />
+          <Anketa
+            card={card}
+            onEditSection={
+              isOwn
+                ? (section) => {
+                    setEditTab(section);
+                    setEditOpen(true);
+                  }
+                : undefined
+            }
+          />
           {showreel ? <ShowreelBlock data={showreel} /> : null}
           <Filmography credits={card.credits || []} />
           <PhotoGrid
@@ -439,9 +531,16 @@ function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard
         <aside className="detail-side">
           <section className="detail-side__panel kadr-open-panel">
             <div className="detail-side__title kadr-open-title">{openLabel}</div>
-            <button type="button" className="btn-primary btn-block">
-              Запросить доступность
-            </button>
+            {isOwn ? (
+              <button type="button" className="btn-primary btn-block" onClick={() => setStatusOpen(true)}>
+                Обновить статус
+              </button>
+            ) : (
+              <button type="button" className="btn-primary btn-block">
+                Запросить доступность
+              </button>
+            )}
+            {pulse?.text ? <p className="profile-pulse-side">{pulse.text}</p> : null}
           </section>
           {hasAgency ? (
             <section className="detail-side__panel">
@@ -496,6 +595,16 @@ function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard
           ) : null}
         </aside>
       </div>
+      {editOpen ? (
+        <ProfileEditModal
+          personSlug={person.slug}
+          initial={patch || {}}
+          defaults={defaults}
+          initialTab={editTab}
+          onClose={() => setEditOpen(false)}
+        />
+      ) : null}
+      {statusOpen ? <StatusModal onClose={() => setStatusOpen(false)} /> : null}
     </div>
   );
 }
@@ -793,9 +902,3 @@ function AgentLayout({ person, card }: { person: PersonProfile; card: PersonCard
   );
 }
 
-export function ProfileView({ person }: { person: PersonProfile }) {
-  const card = cardFor(person);
-  if (person.profession === "casting") return <CastingLayout person={person} card={card} />;
-  if (person.profession === "agent") return <AgentLayout person={person} card={card} />;
-  return <ActorLayout person={person} card={card} />;
-}

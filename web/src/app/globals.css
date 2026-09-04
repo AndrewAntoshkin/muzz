@@ -527,7 +527,27 @@ body[data-page="home"] .app-right-rail .rail-event__date {
 @media (max-width: 768px) {
   .app-main__body--messages .msg-layout {
     grid-template-columns: 1fr !important;
-    grid-template-rows: minmax(220px, 38vh) 1fr;
+    grid-template-rows: 1fr !important;
+  }
+
+  .app-main__body--messages .msg-layout:not(.is-thread) .msg-thread {
+    display: none !important;
+  }
+
+  .app-main__body--messages .msg-layout.is-thread .msg-list {
+    display: none !important;
+  }
+
+  .app-main__body--messages .msg-layout.is-thread .msg-thread {
+    display: flex !important;
+  }
+
+  .app-main__body--messages .msg-thread__back {
+    display: inline-flex !important;
+  }
+
+  .app-main__body--messages .msg-thread__head .actions .btn-secondary {
+    padding-inline: 10px;
   }
 
   .kadr-app-row {
@@ -1548,6 +1568,25 @@ button.btn-primary {
   -webkit-line-clamp: unset;
 }
 
+.app-main__body--messages .msg-thread__back {
+  display: none;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  margin-left: -6px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: hsla(0, 0%, 97%, 0.7);
+  cursor: pointer;
+}
+
+.app-main__body--messages .msg-thread__back:hover {
+  background: hsla(0, 0%, 97%, 0.06);
+}
+
 .app-main__body--messages .msg-thread__head .actions {
   display: flex;
   flex-shrink: 0;
@@ -2447,3 +2486,116 @@ body[data-page="auth"] .app-shell,
 body[data-page="auth"] .app-frame {
   display: none;
 }
+
+.proj-settings-dialog--sm {
+  max-width: 480px;
+}
+
+.status-avail-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profile-pulse {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: hsla(0, 0%, 97%, 0.04);
+  border: 1px solid hsla(0, 0%, 97%, 0.08);
+}
+
+.profile-pulse p {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: hsla(0, 0%, 97%, 0.78);
+}
+
+.profile-pulse-side {
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+.pulse-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 12px;
+  border-radius: 14px;
+  background: hsla(0, 0%, 97%, 0.03);
+  border: 1px solid hsla(0, 0%, 97%, 0.07);
+}
+
+.pulse-strip__head {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: hsla(0, 0%, 97%, 0.45);
+  text-transform: uppercase;
+}
+
+.pulse-card {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 10px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  background: hsla(0, 0%, 97%, 0.03);
+}
+
+.pulse-card:hover {
+  background: hsla(0, 0%, 97%, 0.06);
+}
+
+.pulse-card img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.pulse-card strong {
+  display: block;
+  font-size: 14px;
+}
+
+.pulse-card em {
+  display: block;
+  margin-top: 2px;
+  font-style: normal;
+  font-size: 12px;
+  color: #7ddea3;
+}
+
+.pulse-card span span {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: hsla(0, 0%, 97%, 0.62);
+}
+
+@media (max-width: 640px) {
+  .detail-hero__actions {
+    flex-wrap: wrap;
+  }
+
+  .detail-hero__actions .btn-primary,
+  .detail-hero__actions .btn-secondary {
+    flex: 1 1 auto;
+  }
+
+  .app-main__body--messages .msg-thread__head .actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: 46%;
+  }
+}
+

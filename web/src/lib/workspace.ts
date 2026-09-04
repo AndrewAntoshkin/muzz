@@ -6,7 +6,34 @@ import {
 } from "@/lib/productions";
 import type { RoleId } from "@/lib/roles";
 
-export const WORKSPACE_KEY = "kadr-workspace-v4";
+export const WORKSPACE_KEY = "kadr-workspace-v5";
+
+export type Availability = "open" | "busy" | "hold";
+
+export const AVAILABILITY_LABEL: Record<Availability, string> = {
+  open: "Открыт к предложениям",
+  busy: "Занят на проекте",
+  hold: "Hold · ограниченно",
+};
+
+export type ActorPulse = {
+  id: string;
+  personSlug: string;
+  name: string;
+  avatar: string;
+  text: string;
+  availability: Availability;
+  updatedAt: number;
+};
+
+export type ProfilePatch = {
+  bio?: string;
+  city?: string;
+  params?: { label: string; value: string }[];
+  appearance?: { label: string; value: string }[];
+  languages?: { label: string; value: string }[];
+  skills?: string[];
+};
 
 export type AppStatus = "sent" | "shortlist" | "invited" | "declined";
 export type AppKind = "apply" | "selftape" | "propose";
@@ -75,6 +102,8 @@ export type WorkspaceState = {
   threads: ChatThread[];
   saved: string[];
   settings: WorkspaceSettings;
+  pulses: ActorPulse[];
+  profilePatches: Record<string, ProfilePatch>;
 };
 
 const COVERS = [
@@ -227,6 +256,18 @@ export function seedState(): WorkspaceState {
     ],
     saved: ["casting:tihiy-yanvar-second", "casting:okno-hosts"],
     settings: { notifyEmail: true, notifyPush: false },
+    profilePatches: {},
+    pulses: [
+      {
+        id: "pulse-vz-1",
+        personSlug: "vzmetnev",
+        name: "Александр Взметнев",
+        avatar: "/assets/actors/vzmetnev-avatar.jpg",
+        text: "Самопроба «Тихий январь» в шорт-листе. С июля открыт: драма, военное, криминал. Экспедиции до 3 недель.",
+        availability: "open",
+        updatedAt: Date.parse("2026-05-28T12:30:00Z"),
+      },
+    ],
     threads: [
       {
         id: "lebedeva-vzmetnev",
@@ -496,6 +537,8 @@ export function loadWorkspace(): WorkspaceState {
       ...cloneSeed(),
       ...parsed,
       settings: { ...cloneSeed().settings, ...parsed.settings },
+      pulses: Array.isArray(parsed.pulses) ? parsed.pulses : cloneSeed().pulses,
+      profilePatches: parsed.profilePatches && typeof parsed.profilePatches === "object" ? parsed.profilePatches : {},
     };
   } catch {
     return cloneSeed();

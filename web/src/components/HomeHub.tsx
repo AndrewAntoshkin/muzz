@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo } from "react";
 import type { FaceCard } from "@/lib/people";
 import { profileSlug, roleAgencyId, withRole } from "@/lib/roles";
+import { AVAILABILITY_LABEL } from "@/lib/workspace";
 import { useDemoRole } from "./useDemoRole";
 import { useWorkspace } from "./useWorkspace";
 import { PersonCard } from "./PersonCard";
@@ -25,6 +26,7 @@ export function HomeHub({ faces }: { faces: FaceCard[] }) {
     castings,
     projects,
     posts,
+    pulses,
     myApplications,
     applications,
     unread,
@@ -133,6 +135,25 @@ export function HomeHub({ faces }: { faces: FaceCard[] }) {
                 </Link>
               </header>
               <div className="feed-list feed-list--compact">
+                {(role === "casting" || role === "agent") && pulses.length ? (
+                  <section className="pulse-strip" aria-label="Статусы актёров">
+                    <div className="pulse-strip__head">Статусы актёров</div>
+                    {pulses.slice(0, 4).map((p) => (
+                      <Link
+                        key={p.id}
+                        href={withRole(`/people/${p.personSlug}`, role)}
+                        className="pulse-card"
+                      >
+                        <img src={p.avatar} alt="" width={40} height={40} />
+                        <span>
+                          <strong>{p.name}</strong>
+                          <em>{AVAILABILITY_LABEL[p.availability]}</em>
+                          <span>{p.text}</span>
+                        </span>
+                      </Link>
+                    ))}
+                  </section>
+                ) : null}
                 {posts
                   .filter((post) => (role === "actor" ? post.authorRole === "actor" : false))
                   .slice(0, 1)

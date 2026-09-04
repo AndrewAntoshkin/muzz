@@ -496,16 +496,70 @@ body[data-page="projects"] .page-scroll.catalog-page {
   border-radius: 16px;
   box-shadow: 0 24px 32px -12px hsla(0, 0%, 7%, 0.18);
 }
-.app-topbar__publish-menu a {
+.app-topbar__publish-menu a,
+.app-topbar__publish-menu button {
   display: block;
+  width: 100%;
   padding: 10px 12px;
+  border: none;
   border-radius: 10px;
+  background: transparent;
   color: hsla(0, 0%, 97%, 0.76);
+  text-align: left;
   text-decoration: none;
+  font: inherit;
   font-size: 14px;
+  cursor: pointer;
 }
-.app-topbar__publish-menu a:hover {
+.app-topbar__publish-menu a:hover,
+.app-topbar__publish-menu button:hover {
   background: hsla(0, 0%, 97%, 0.08);
+}
+
+.ss-head__menu {
+  display: none;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  margin-right: 4px;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 10px;
+  background: hsla(0, 0%, 97%, 0.05);
+  color: hsla(0, 0%, 97%, 0.76);
+  cursor: pointer;
+}
+
+.nav-scrim {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .ss-head__menu {
+    display: inline-flex;
+  }
+
+  .nav-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    border: none;
+    background: rgba(0, 0, 0, 0.45);
+  }
+
+  .nav-scrim[hidden] {
+    display: none !important;
+  }
+
+  .app-frame.is-nav-open .sidebar-panel {
+    display: flex !important;
+    position: fixed;
+    z-index: 50;
+    width: min(300px, 88vw);
+    box-shadow: 16px 0 40px rgba(0, 0, 0, 0.35);
+  }
 }
 
 /* —— Right rail: RightSidebar_sidebar 480 / 400 / 340 —— home only —— */

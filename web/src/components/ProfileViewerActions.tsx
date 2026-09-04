@@ -51,9 +51,13 @@ function WriteButton({ personSlug, label, primary }: { personSlug: string; label
 export function ProfileViewerActions({
   personSlug,
   profession,
+  onEditProfile,
+  onEditStatus,
 }: {
   personSlug: string;
   profession?: string;
+  onEditProfile?: () => void;
+  onEditStatus?: () => void;
 }) {
   const { role, cfg } = useAuth();
   const isTalent = profession === "actor" || profession === "actress";
@@ -70,12 +74,24 @@ export function ProfileViewerActions({
           : { href: "/responses", label: "Мои отклики" };
     return (
       <div className="detail-hero__actions">
-        <Link href={withRole("/settings", role)} className="btn-primary">
-          Редактировать
-        </Link>
-        <Link href={withRole(second.href, role)} className="btn-secondary">
-          {second.label}
-        </Link>
+        {onEditProfile ? (
+          <button type="button" className="btn-primary" onClick={onEditProfile}>
+            Редактировать профиль
+          </button>
+        ) : (
+          <Link href={withRole("/settings", role)} className="btn-primary">
+            Редактировать
+          </Link>
+        )}
+        {onEditStatus ? (
+          <button type="button" className="btn-secondary" onClick={onEditStatus}>
+            Обновить статус
+          </button>
+        ) : (
+          <Link href={withRole(second.href, role)} className="btn-secondary">
+            {second.label}
+          </Link>
+        )}
       </div>
     );
   }
