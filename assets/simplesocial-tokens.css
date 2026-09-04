@@ -1,0 +1,102 @@
+/**
+ * SimpleSocial tokens — solid surfaces, no glass
+ * Reference: ui8-simple-social.vercel.app
+ */
+
+:root {
+  --ss-canvas: #444444;
+  --ss-surface: #2e2e2e;
+  --ss-surface-solid: #2e2e2e;
+  --ss-surface-elevated: #333333;
+  --ss-surface-hover: #333333;
+  --ss-surface-subtle: hsla(0, 0%, 97%, 0.02);
+  --ss-surface-active: hsla(0, 0%, 97%, 0.1);
+  --ss-surface-input: hsla(0, 0%, 97%, 0.05);
+  --ss-surface-modal: #232222;
+  --ss-surface-panel: #282828;
+
+  --ss-text-primary: hsla(0, 0%, 97%, 0.95);
+  --ss-text-secondary: hsla(0, 0%, 97%, 0.76);
+  --ss-text-muted: hsla(0, 0%, 97%, 0.4);
+  --ss-text-faint: hsla(0, 0%, 97%, 0.22);
+  --ss-text-on-accent: hsla(0, 0%, 97%, 0.7);
+
+  --ss-accent-like: #bd3027;
+  --ss-accent-like-soft: rgba(189, 48, 39, 0.9);
+  --ss-accent-repost: #55f08b;
+  --ss-accent-repost-soft: rgba(124, 255, 176, 0.7);
+  --ss-accent-badge: #bd3027;
+  --ss-accent-orange: rgba(255, 77, 0, 0.9);
+
+  --ss-border: hsla(0, 0%, 97%, 0.06);
+  --ss-border-strong: hsla(0, 0%, 97%, 0.1);
+  --ss-border-input: transparent;
+
+  --ss-radius-xs: 8px;
+  --ss-radius-sm: 12px;
+  --ss-radius-md: 16px;
+  --ss-radius-lg: 20px;
+  --ss-radius-xl: 32px;
+  --ss-radius-pill: 999px;
+  --ss-radius-avatar: 50%;
+
+  --ss-font-display: 'Rubik', system-ui, sans-serif;
+  --ss-font-body: 'Inter', 'Rubik', system-ui, sans-serif;
+  --ss-font-size-xs: 10px;
+  --ss-font-size-sm: 12px;
+  --ss-font-size-base: 14px;
+  --ss-font-size-md: 16px;
+  --ss-font-size-lg: 18px;
+  --ss-font-weight-normal: 400;
+  --ss-font-weight-medium: 500;
+  --ss-font-weight-semibold: 600;
+  --ss-font-weight-bold: 700;
+  --ss-line-height-tight: 1.2;
+  --ss-line-height-base: 1.4;
+  --ss-line-height-relaxed: 1.5;
+  --ss-letter-spacing: 0.025em;
+
+  --ss-space-1: 4px;
+  --ss-space-2: 8px;
+  --ss-space-3: 12px;
+  --ss-space-4: 16px;
+  --ss-space-5: 20px;
+  --ss-space-6: 24px;
+  --ss-space-8: 32px;
+
+  --ss-sidebar-width: 280px;
+  --ss-sidebar-compact: 72px;
+  --ss-rail-width: 400px;
+  --ss-content-max: 660px;
+  --ss-nav-item-height: 48px;
+
+  --ss-shadow-dropdown: 0 24px 32px -12px hsla(0, 0%, 7%, 0.1);
+  --ss-transition-fast: 0.12s ease;
+  --ss-transition-base: 0.2s ease;
+
+  --shell: var(--ss-surface);
+  --sidebar: var(--ss-surface);
+  --sidebar-border: var(--ss-border);
+  --sidebar-active: var(--ss-surface-active);
+  --sidebar-active-border: transparent;
+  --sidebar-muted: var(--ss-text-muted);
+  --sidebar-badge: var(--ss-accent-badge);
+  --page: var(--ss-canvas);
+  --block: var(--ss-surface-subtle);
+  --block-muted: var(--ss-surface-input);
+  --hairline: var(--ss-border);
+  --text: var(--ss-text-primary);
+  --text-muted: var(--ss-text-secondary);
+  --text-faint: var(--ss-text-muted);
+  --radius: var(--ss-radius-sm);
+  --radius-lg: var(--ss-radius-lg);
+  --radius-panel: var(--ss-radius-lg);
+  --tag-green-bg: rgba(85, 240, 139, 0.12);
+  --tag-green-fg: var(--ss-accent-repost);
+  --tag-blue-bg: hsla(0, 0%, 97%, 0.08);
+  --tag-blue-fg: var(--ss-text-secondary);
+  --tag-orange-bg: rgba(189, 48, 39, 0.15);
+  --tag-orange-fg: var(--ss-accent-like);
+  --tag-gray-bg: hsla(0, 0%, 97%, 0.08);
+  --tag-gray-fg: var(--ss-text-muted);
+}

@@ -1,0 +1,886 @@
+{
+  "imported": [
+    "akter1.ru",
+    "castingrus.ru",
+    "thomasagency.ru",
+    "1choice.ru",
+    "agnikino.ru",
+    "a-kadr.com",
+    "viva-art.ru",
+    "bureaump.ru",
+    "gm-production.ru",
+    "akter21.ru",
+    "sputniki.spb.ru",
+    "nb-actors.com",
+    "actorsbaze.ru",
+    "action-agency.ru",
+    "nekstudio.ru",
+    "artburo.info",
+    "aalitza.ru",
+    "lenatalents.ru",
+    "art-profi.net",
+    "agentgranovskaya.ru",
+    "moviecasting.ru",
+    "castingkino.ru",
+    "alevtina.com",
+    "mart-kinomedia.ru",
+    "sayanaavgust.tilda.ws",
+    "elenkino.ru",
+    "kc-agency.ru",
+    "nazmetova.ru",
+    "union-agent.ru",
+    "starovamarina.ru",
+    "xn----8sbjrckmmupehhp.xn--p1ai",
+    "agent-bocharova.ru",
+    "pcnika.ru",
+    "ognirampi.com",
+    "agentmorozova.ru",
+    "nevokino.ru",
+    "sz-talents.ru",
+    "perovaagent.ru",
+    "kinostart1212.ru",
+    "freshfilms.su",
+    "nevskaya-agency.ru",
+    "savelyev.guru",
+    "egorovaleksandra.ru",
+    "actoragency.ru",
+    "akter2012.ru",
+    "aka-agent.ru",
+    "radikino.ru",
+    "ethnocast.ru",
+    "novakino.ru",
+    "karnaeva.ru",
+    "grechishkino.ru",
+    "kinokventin.ru",
+    "vasilkova-oscar.ru",
+    "unostagency.ru",
+    "kasatova.ru",
+    "aan1.ru",
+    "talentsbyaction.ru",
+    "sevenfilms.ru",
+    "casting.ostankino.tv",
+    "ya-actors.ru",
+    "jullywood.ru",
+    "michaelryzhovagency.com",
+    "egorov-actors.ru",
+    "muratova-agency.ru",
+    "natashafenkina.com",
+    "mx-agency.ru",
+    "ivacommunity.org",
+    "tvari.agency",
+    "veragency.ru",
+    "dapank.ru",
+    "kr-agency.ru",
+    "trend-talent-agency.com",
+    "agentgroza.ru",
+    "kinotandem.ru",
+    "agentstvokinoprostranstvo.ru",
+    "dartalent.ru",
+    "telushkina-actor-agency.ru",
+    "actor-community.ru",
+    "nashutinskaya.ru",
+    "stayaagency.com",
+    "art-progress.ru",
+    "houseofarts.pro",
+    "agencyzvezda.ru",
+    "jptalent.ru",
+    "lezerko.ru",
+    "neskuchnoekino.ru",
+    "nightactor.ru",
+    "annamatulis.com",
+    "la-blazh.ru",
+    "sovagency.ru",
+    "wanted.su",
+    "w1actors.ru",
+    "yulia-actors.ru",
+    "letalimechtali.ru",
+    "vihryanagency.ru",
+    "dk-actors.ru",
+    "21stars.ru",
+    "xn--8-dtbgdic.xn--p1ai",
+    "nd-media.ru",
+    "polubviagency.ru"
+  ],
+  "agencies": [
+    {
+      "host": "akter1.ru",
+      "url": "http://akter1.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "1choice.ru",
+      "url": "http://www.1choice.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "agnikino.ru",
+      "url": "http://agnikino.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "castingrus.ru",
+      "url": "https://castingrus.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "thomasagency.ru",
+      "url": "http://www.thomasagency.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "a-kadr.com",
+      "url": "https://a-kadr.com/",
+      "status": "imported"
+    },
+    {
+      "host": "viva-art.ru",
+      "url": "http://viva-art.ru/agentstvo.html",
+      "status": "imported"
+    },
+    {
+      "host": "bureaump.ru",
+      "url": "https://bureaump.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "gm-production.ru",
+      "url": "https://gm-production.ru/ru/",
+      "status": "imported"
+    },
+    {
+      "host": "akter21.ru",
+      "url": "http://akter21.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "sputniki.spb.ru",
+      "url": "http://www.sputniki.spb.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "fart-agency.ru",
+      "url": "https://fart-agency.ru/",
+      "status": "queued"
+    },
+    {
+      "host": "nb-actors.com",
+      "url": "http://nb-actors.com/",
+      "status": "imported"
+    },
+    {
+      "host": "actorsbaze.ru",
+      "url": "https://actorsbaze.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "safarovai.ru",
+      "url": "https://safarovai.ru/",
+      "status": "queued"
+    },
+    {
+      "host": "action-agency.ru",
+      "url": "https://action-agency.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "svcasting.com",
+      "url": "http://www.svcasting.com/",
+      "status": "queued"
+    },
+    {
+      "host": "quantum-agent.ru",
+      "url": "https://quantum-agent.ru/",
+      "status": "queued"
+    },
+    {
+      "host": "nekstudio.ru",
+      "url": "http://nekstudio.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "artburo.info",
+      "url": "http://artburo.info/",
+      "status": "imported"
+    },
+    {
+      "host": "aalitza.ru",
+      "url": "http://aalitza.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "pi-art-m.ru",
+      "url": "http://pi-art-m.ru/",
+      "status": "queued"
+    },
+    {
+      "host": "mar4uk.com",
+      "url": "http://www.mar4uk.com/",
+      "status": "queued"
+    },
+    {
+      "host": "art-pogrebnyak.com",
+      "url": "http://art-pogrebnyak.com/",
+      "status": "queued"
+    },
+    {
+      "host": "lenatalents.ru",
+      "url": "https://lenatalents.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "art-profi.net",
+      "url": "http://art-profi.net/",
+      "status": "imported"
+    },
+    {
+      "host": "truactors.com",
+      "url": "https://truactors.com/",
+      "status": "queued"
+    },
+    {
+      "host": "agencyok.ru",
+      "url": "https://agencyok.ru/",
+      "status": "queued"
+    },
+    {
+      "host": "art-kit.su",
+      "url": "http://www.art-kit.su/",
+      "status": "queued"
+    },
+    {
+      "host": "agentgranovskaya.ru",
+      "url": "https://agentgranovskaya.ru",
+      "status": "imported"
+    },
+    {
+      "host": "brelenka.agency",
+      "url": "https://brelenka.agency/",
+      "status": "queued"
+    },
+    {
+      "host": "moviecasting.ru",
+      "url": "https://moviecasting.ru/index.php",
+      "status": "imported"
+    },
+    {
+      "host": "castingkino.ru",
+      "url": "http://castingkino.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "alevtina.com",
+      "url": "https://www.alevtina.com/",
+      "status": "imported"
+    },
+    {
+      "host": "mart-kinomedia.ru",
+      "url": "http://mart-kinomedia.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "sayanaavgust.tilda.ws",
+      "url": "http://sayanaavgust.tilda.ws/",
+      "status": "imported"
+    },
+    {
+      "host": "actoroff.ru",
+      "url": "http://www.actoroff.ru/",
+      "status": "queued"
+    },
+    {
+      "host": "elenkino.ru",
+      "url": "http://elenkino.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "kc-agency.ru",
+      "url": "http://kc-agency.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "nazmetova.ru",
+      "url": "http://nazmetova.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "union-agent.ru",
+      "url": "https://union-agent.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "starovamarina.ru",
+      "url": "https://starovamarina.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "xn----8sbjrckmmupehhp.xn--p1ai",
+      "url": "http://xn----8sbjrckmmupehhp.xn--p1ai/",
+      "status": "imported"
+    },
+    {
+      "host": "agent-bocharova.ru",
+      "url": "http://www.agent-bocharova.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "pcnika.ru",
+      "url": "http://pcnika.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "bestcast.ru",
+      "url": "http://bestcast.ru/",
+      "status": "queued"
+    },
+    {
+      "host": "talent4cast.ru",
+      "url": "https://talent4cast.ru/",
+      "status": "queued"
+    },
+    {
+      "host": "ognirampi.com",
+      "url": "https://www.ognirampi.com",
+      "status": "imported"
+    },
+    {
+      "host": "agentmorozova.ru",
+      "url": "https://agentmorozova.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "amici-amigos.ru",
+      "url": "http://www.amici-amigos.ru/",
+      "status": "queued"
+    },
+    {
+      "host": "nevokino.ru",
+      "url": "http://www.nevokino.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "sz-talents.ru",
+      "url": "https://sz-talents.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "actorsmcg.com",
+      "url": "https://actorsmcg.com/all_actors",
+      "status": "queued"
+    },
+    {
+      "host": "perovaagent.ru",
+      "url": "https://perovaagent.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "kinostart1212.ru",
+      "url": "http://kinostart1212.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "lublukino.com",
+      "url": "http://lublukino.com/",
+      "status": "queued"
+    },
+    {
+      "host": "freshfilms.su",
+      "url": "http://www.freshfilms.su/",
+      "status": "imported"
+    },
+    {
+      "host": "nevskaya-agency.ru",
+      "url": "https://nevskaya-agency.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "savelyev.guru",
+      "url": "http://savelyev.guru/",
+      "status": "imported"
+    },
+    {
+      "host": "egorovaleksandra.ru",
+      "url": "https://egorovaleksandra.ru",
+      "status": "imported"
+    },
+    {
+      "host": "actoragency.ru",
+      "url": "http://actoragency.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "star-rain.com",
+      "url": "http://star-rain.com/",
+      "status": "queued"
+    },
+    {
+      "host": "proaktor.ru",
+      "url": "http://proaktor.ru/",
+      "status": "queued"
+    },
+    {
+      "host": "akter2012.ru",
+      "url": "http://akter2012.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "castingcinema.ru",
+      "url": "http://castingcinema.ru/",
+      "status": "queued"
+    },
+    {
+      "host": "lumpen.agency",
+      "url": "https://lumpen.agency/all",
+      "status": "queued"
+    },
+    {
+      "host": "bazaagency.ru",
+      "url": "https://bazaagency.ru/",
+      "status": "queued"
+    },
+    {
+      "host": "artel-ts.ru",
+      "url": "http://artel-ts.ru/",
+      "status": "queued"
+    },
+    {
+      "host": "aka-agent.ru",
+      "url": "https://aka-agent.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "kino-code.tilda.ws",
+      "url": "http://kino-code.tilda.ws/",
+      "status": "queued"
+    },
+    {
+      "host": "radikino.ru",
+      "url": "http://radikino.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "ethnocast.ru",
+      "url": "https://www.ethnocast.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "harizma.agency",
+      "url": "https://www.harizma.agency/",
+      "status": "queued"
+    },
+    {
+      "host": "chaplin.agency",
+      "url": "http://chaplin.agency/",
+      "status": "queued"
+    },
+    {
+      "host": "korytovagency.ru",
+      "url": "https://korytovagency.ru",
+      "status": "queued"
+    },
+    {
+      "host": "pozitiv-art.media",
+      "url": "http://pozitiv-art.media/",
+      "status": "queued"
+    },
+    {
+      "host": "actors-plus.ru",
+      "url": "https://www.actors-plus.ru/",
+      "status": "queued"
+    },
+    {
+      "host": "novakino.ru",
+      "url": "https://novakino.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "karnaeva.ru",
+      "url": "https://karnaeva.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "grechishkino.ru",
+      "url": "http://www.grechishkino.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "kinokventin.ru",
+      "url": "http://kinokventin.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "shpakagency.com",
+      "url": "http://shpakagency.com/",
+      "status": "queued"
+    },
+    {
+      "host": "vasilkova-oscar.ru",
+      "url": "http://vasilkova-oscar.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "unostagency.ru",
+      "url": "http://unostagency.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "kasatova.ru",
+      "url": "http://kasatova.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "aan1.ru",
+      "url": "https://www.aan1.ru",
+      "status": "imported"
+    },
+    {
+      "host": "talentsbyaction.ru",
+      "url": "https://talentsbyaction.ru",
+      "status": "imported"
+    },
+    {
+      "host": "objective-agency.ru",
+      "url": "https://objective-agency.ru/",
+      "status": "queued"
+    },
+    {
+      "host": "nrmedia.ru",
+      "url": "https://nrmedia.ru/catalog",
+      "status": "queued"
+    },
+    {
+      "host": "sevenfilms.ru",
+      "url": "https://sevenfilms.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "casting.ostankino.tv",
+      "url": "https://casting.ostankino.tv/actors",
+      "status": "imported"
+    },
+    {
+      "host": "agentmoiseeva.ru",
+      "url": "https://agentmoiseeva.ru/",
+      "status": "queued"
+    },
+    {
+      "host": "ya-actors.ru",
+      "url": "https://ya-actors.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "vladekagency.com",
+      "url": "https://vladekagency.com",
+      "status": "queued"
+    },
+    {
+      "host": "april-agency.ru",
+      "url": "http://www.April-agency.ru",
+      "status": "queued"
+    },
+    {
+      "host": "jullywood.ru",
+      "url": "http://www.jullywood.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "michaelryzhovagency.com",
+      "url": "http://michaelryzhovagency.com",
+      "status": "imported"
+    },
+    {
+      "host": "egorov-actors.ru",
+      "url": "https://egorov-actors.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "abnagency.ru",
+      "url": "https://abnagency.ru/",
+      "status": "queued"
+    },
+    {
+      "host": "muratova-agency.ru",
+      "url": "http://muratova-agency.ru",
+      "status": "imported"
+    },
+    {
+      "host": "natashafenkina.com",
+      "url": "https://www.natashafenkina.com/",
+      "status": "imported"
+    },
+    {
+      "host": "yayest.art",
+      "url": "https://yayest.art/",
+      "status": "queued"
+    },
+    {
+      "host": "mx-agency.ru",
+      "url": "https://mx-agency.ru",
+      "status": "imported"
+    },
+    {
+      "host": "ivacommunity.org",
+      "url": "https://www.ivacommunity.org/",
+      "status": "imported"
+    },
+    {
+      "host": "kinofly.ru",
+      "url": "https://www.kinofly.ru",
+      "status": "queued"
+    },
+    {
+      "host": "kinoart.tj",
+      "url": "http://www.kinoart.tj/ru/index.html",
+      "status": "queued"
+    },
+    {
+      "host": "mariraeva-actors.ru",
+      "url": "https://mariraeva-actors.ru",
+      "status": "queued"
+    },
+    {
+      "host": "tvari.agency",
+      "url": "https://tvari.agency/",
+      "status": "imported"
+    },
+    {
+      "host": "veragency.ru",
+      "url": "http://veragency.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "dapank.ru",
+      "url": "https://dapank.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "kr-agency.ru",
+      "url": "https://kr-agency.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "trend-talent-agency.com",
+      "url": "https://trend-talent-agency.com/",
+      "status": "imported"
+    },
+    {
+      "host": "agentgroza.ru",
+      "url": "https://agentgroza.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "kinotandem.ru",
+      "url": "https://kinotandem.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "agentstvokinoprostranstvo.ru",
+      "url": "https://agentstvokinoprostranstvo.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "dartalent.ru",
+      "url": "http://dartalent.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "telushkina-actor-agency.ru",
+      "url": "http://telushkina-actor-agency.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "actor-community.ru",
+      "url": "https://actor-community.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "nashutinskaya.ru",
+      "url": "https://nashutinskaya.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "stayaagency.com",
+      "url": "https://stayaagency.com/",
+      "status": "imported"
+    },
+    {
+      "host": "art-progress.ru",
+      "url": "https://art-progress.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "houseofarts.pro",
+      "url": "https://houseofarts.pro/",
+      "status": "imported"
+    },
+    {
+      "host": "agencyzvezda.ru",
+      "url": "https://agencyzvezda.ru",
+      "status": "imported"
+    },
+    {
+      "host": "jptalent.ru",
+      "url": "https://jptalent.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "artstill-agency.ru",
+      "url": "https://artstill-agency.ru/",
+      "status": "queued"
+    },
+    {
+      "host": "lezerko.ru",
+      "url": "https://lezerko.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "kazakova-talents.ru",
+      "url": "http://www.kazakova-talents.ru",
+      "status": "queued"
+    },
+    {
+      "host": "more-kastinga.tilda.ws",
+      "url": "http://more-kastinga.tilda.ws/mkt",
+      "status": "queued"
+    },
+    {
+      "host": "if-actors.ru",
+      "url": "https://if-actors.ru",
+      "status": "queued"
+    },
+    {
+      "host": "borisova.actors.tilda.ws",
+      "url": "http://borisova.actors.tilda.ws",
+      "status": "queued"
+    },
+    {
+      "host": "neskuchnoekino.ru",
+      "url": "https://neskuchnoekino.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "nightactor.ru",
+      "url": "https://nightactor.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "abraagency.ru",
+      "url": "https://abraagency.ru/",
+      "status": "queued"
+    },
+    {
+      "host": "kochnevaagency.ru",
+      "url": "https://kochnevaagency.ru/",
+      "status": "queued"
+    },
+    {
+      "host": "nooracting.com",
+      "url": "http://nooracting.com",
+      "status": "queued"
+    },
+    {
+      "host": "granat-actors.ru",
+      "url": "https://granat-actors.ru/",
+      "status": "queued"
+    },
+    {
+      "host": "ania-k.ru",
+      "url": "http://ania-k.ru/",
+      "status": "queued"
+    },
+    {
+      "host": "annamatulis.com",
+      "url": "https://annamatulis.com",
+      "status": "imported"
+    },
+    {
+      "host": "starlab-agent.ru",
+      "url": "https://starlab-agent.ru/",
+      "status": "queued"
+    },
+    {
+      "host": "paraactors.ru",
+      "url": "https://paraactors.ru",
+      "status": "queued"
+    },
+    {
+      "host": "la-blazh.ru",
+      "url": "http://la-blazh.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "lucky-actors.ru",
+      "url": "https://lucky-actors.ru/",
+      "status": "queued"
+    },
+    {
+      "host": "sovagency.ru",
+      "url": "https://sovagency.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "agentstvopremera.ru",
+      "url": "https://agentstvopremera.ru",
+      "status": "queued"
+    },
+    {
+      "host": "wanted.su",
+      "url": "https://wanted.su",
+      "status": "imported"
+    },
+    {
+      "host": "w1actors.ru",
+      "url": "https://w1actors.ru",
+      "status": "imported"
+    },
+    {
+      "host": "yulia-actors.ru",
+      "url": "https://yulia-actors.ru",
+      "status": "imported"
+    },
+    {
+      "host": "letalimechtali.ru",
+      "url": "https://letalimechtali.ru",
+      "status": "imported"
+    },
+    {
+      "host": "vihryanagency.ru",
+      "url": "https://vihryanagency.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "massterskaya.ru",
+      "url": "https://massterskaya.ru/",
+      "status": "queued"
+    },
+    {
+      "host": "dk-actors.ru",
+      "url": "https://dk-actors.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "21stars.ru",
+      "url": "https://21stars.ru/",
+      "status": "imported"
+    },
+    {
+      "host": "focusactors.ru",
+      "url": "https://focusactors.ru/",
+      "status": "queued"
+    },
+    {
+      "host": "xn--8-dtbgdic.xn--p1ai",
+      "url": "https://xn--8-dtbgdic.xn--p1ai/",
+      "status": "imported"
+    },
+    {
+      "host": "nd-media.ru",
+      "url": "https://nd-media.ru/агентство",
+      "status": "imported"
+    },
+    {
+      "host": "polubviagency.ru",
+      "url": "https://polubviagency.ru/",
+      "status": "imported"
+    }
+  ]
+}

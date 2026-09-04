@@ -1,0 +1,510 @@
+import {
+  CASTINGS,
+  PROJECTS,
+  type Casting,
+  type Project,
+} from "@/lib/productions";
+import type { RoleId } from "@/lib/roles";
+
+export const WORKSPACE_KEY = "kadr-workspace-v1";
+
+export type AppStatus = "sent" | "shortlist" | "invited" | "declined";
+export type AppKind = "apply" | "selftape" | "propose";
+
+export type Application = {
+  id: string;
+  castingSlug: string;
+  actorSlug: string;
+  actorName: string;
+  actorAvatar: string | null;
+  kind: AppKind;
+  note: string;
+  status: AppStatus;
+  source: "actor" | "agent";
+  createdAt: number;
+};
+
+export type FeedPost = {
+  id: string;
+  authorRole: RoleId;
+  authorName: string;
+  authorAvatar: string;
+  text: string;
+  createdAt: number;
+};
+
+export type ChatPeer = {
+  name: string;
+  roleLabel: string;
+  avatar?: string;
+  initials?: string;
+  bg?: string;
+  profileHref?: string;
+  extraHref?: string;
+  extraLabel?: string;
+};
+
+export type ChatLine = {
+  id: string;
+  authorRole: RoleId | "studio";
+  text: string;
+  time: string;
+  createdAt: number;
+  card?: { title: string; meta: string; href: string };
+};
+
+export type ChatThread = {
+  id: string;
+  roles: RoleId[];
+  views: Partial<Record<RoleId, ChatPeer>>;
+  unreadFor: RoleId[];
+  messages: ChatLine[];
+};
+
+export type WorkspaceSettings = {
+  notifyEmail: boolean;
+  notifyPush: boolean;
+};
+
+export type WorkspaceState = {
+  v: 1;
+  projects: Project[];
+  castings: Casting[];
+  applications: Application[];
+  posts: FeedPost[];
+  threads: ChatThread[];
+  saved: string[];
+  settings: WorkspaceSettings;
+};
+
+const COVERS = [
+  "/assets/figma/post-01.png",
+  "/assets/figma/post-04.png",
+  "/assets/figma/post-06.png",
+  "/assets/figma/hero-01.png",
+];
+
+export const STATUS_LABEL: Record<AppStatus, string> = {
+  sent: "Отправлено",
+  shortlist: "Шорт-лист",
+  invited: "Приглашение на очные",
+  declined: "Отклонено",
+};
+
+export const KIND_LABEL: Record<AppKind, string> = {
+  apply: "Отклик",
+  selftape: "Самопроба",
+  propose: "Предложение агента",
+};
+
+function line(
+  id: string,
+  authorRole: ChatLine["authorRole"],
+  text: string,
+  time: string,
+  createdAt: number,
+  card?: ChatLine["card"],
+): ChatLine {
+  return { id, authorRole, text, time, createdAt, card };
+}
+
+export function seedState(): WorkspaceState {
+  return {
+    v: 1,
+    projects: [],
+    castings: [],
+    applications: [
+      {
+        id: "app-ty-vz",
+        castingSlug: "tihiy-yanvar-lead",
+        actorSlug: "vzmetnev",
+        actorName: "Александр Взметнев",
+        actorAvatar: "/assets/actors/vzmetnev-avatar.jpg",
+        kind: "selftape",
+        note: "Самопроба готова, ссылка в сообщениях.",
+        status: "sent",
+        source: "actor",
+        createdAt: Date.parse("2026-05-28T11:00:00Z"),
+      },
+      {
+        id: "app-ty-ustyugov",
+        castingSlug: "tihiy-yanvar-lead",
+        actorSlug: "ustyugov-aleksandr",
+        actorName: "Александр Устюгов",
+        actorAvatar: "/assets/actors/akter1/ustyugov-aleksandr.jpg",
+        kind: "propose",
+        note: "Из ростера «Актёр 1» на вторую мужскую / перекрыть типаж.",
+        status: "sent",
+        source: "agent",
+        createdAt: Date.parse("2026-05-27T15:00:00Z"),
+      },
+      {
+        id: "app-okno-chadov",
+        castingSlug: "okno-hosts",
+        actorSlug: "chadov-aleksej",
+        actorName: "Алексей Чадов",
+        actorAvatar: "/assets/actors/akter1/chadov-aleksej.jpeg",
+        kind: "apply",
+        note: "",
+        status: "shortlist",
+        source: "actor",
+        createdAt: Date.parse("2026-05-22T10:00:00Z"),
+      },
+      {
+        id: "app-k14-lerman",
+        castingSlug: "komnata-14-episode",
+        actorSlug: "lerman-olga",
+        actorName: "Ольга Лерман",
+        actorAvatar: "/assets/actors/akter1/lerman-olga.png",
+        kind: "apply",
+        note: "",
+        status: "declined",
+        source: "actor",
+        createdAt: Date.parse("2026-05-18T09:00:00Z"),
+      },
+    ],
+    posts: [],
+    saved: [],
+    settings: { notifyEmail: true, notifyPush: false },
+    threads: [
+      {
+        id: "lebedeva-vzmetnev",
+        roles: ["actor", "casting"],
+        unreadFor: ["actor", "casting"],
+        views: {
+          actor: {
+            name: "Анна Лебедева",
+            roleLabel: "Кастинг-директор · «Тихий январь»",
+            avatar: "/assets/figma/avatar-02.png",
+            profileHref: "/people/lebedeva",
+            extraHref: "/castings/tihiy-yanvar-lead",
+            extraLabel: "К кастингу",
+          },
+          casting: {
+            name: "Александр Взметнев",
+            roleLabel: "Актёр",
+            avatar: "/assets/actors/vzmetnev-avatar.jpg",
+            profileHref: "/people/vzmetnev",
+          },
+        },
+        messages: [
+          line(
+            "t1-1",
+            "casting",
+            "Александр, здравствуйте! Передаю информацию от Sreda — мы открыли кастинг на главную роль в «Тихом январе». По вашему типажу вы попадаете, хотим пригласить на самопробу.",
+            "14:22",
+            Date.parse("2026-05-27T14:22:00Z"),
+            {
+              title: "Главная роль · актриса 28–34 — «Тихий январь»",
+              meta: "Sreda Production · до 6 июня",
+              href: "/castings/tihiy-yanvar-lead",
+            },
+          ),
+          line(
+            "t1-2",
+            "actor",
+            "Спасибо, посмотрел. Когда дедлайн самопробы?",
+            "14:35",
+            Date.parse("2026-05-27T14:35:00Z"),
+          ),
+          line(
+            "t1-3",
+            "casting",
+            "6 июня. Сцены прикрепляю. На очный кастинг пригласим в окне 10–14 июня, если попадёте в шорт-лист.",
+            "14:40",
+            Date.parse("2026-05-27T14:40:00Z"),
+          ),
+          line(
+            "t1-4",
+            "actor",
+            "Самопроба готова, отправил ссылку.",
+            "11:00",
+            Date.parse("2026-05-28T11:00:00Z"),
+          ),
+          line(
+            "t1-5",
+            "casting",
+            "Жду самопробу до 6 июня — сцены во вложении. Если что — пишите, я на связи.",
+            "12:08",
+            Date.parse("2026-05-28T12:08:00Z"),
+          ),
+        ],
+      },
+      {
+        id: "kevorkova-lebedeva",
+        roles: ["agent", "casting"],
+        unreadFor: ["agent", "casting"],
+        views: {
+          agent: {
+            name: "Анна Лебедева",
+            roleLabel: "Кастинг-директор · «Тихий январь»",
+            avatar: "/assets/figma/avatar-02.png",
+            profileHref: "/people/lebedeva",
+            extraHref: "/castings/tihiy-yanvar-lead",
+            extraLabel: "К кастингу",
+          },
+          casting: {
+            name: "Анна Кеворкова",
+            roleLabel: "Агент · «Актёр 1»",
+            avatar: "/assets/figma/avatar-01.png",
+            profileHref: "/people/kevorkova",
+          },
+        },
+        messages: [
+          line(
+            "t2-1",
+            "casting",
+            "Нужна актриса 28–34 на главную, есть кто из ростера?",
+            "10:20",
+            Date.parse("2026-05-28T10:20:00Z"),
+          ),
+          line(
+            "t2-2",
+            "agent",
+            "Могу предложить Устюгова на вторую роль. На главную посмотрю Лерман и Шиловскую.",
+            "11:05",
+            Date.parse("2026-05-28T11:05:00Z"),
+          ),
+        ],
+      },
+      {
+        id: "kevorkova-vzmetnev",
+        roles: ["agent", "actor"],
+        unreadFor: ["actor"],
+        views: {
+          agent: {
+            name: "Александр Взметнев",
+            roleLabel: "Актёр",
+            avatar: "/assets/actors/vzmetnev-avatar.jpg",
+            profileHref: "/people/vzmetnev",
+          },
+          actor: {
+            name: "Анна Кеворкова",
+            roleLabel: "Агент · «Актёр 1»",
+            avatar: "/assets/figma/avatar-01.png",
+            profileHref: "/people/kevorkova",
+          },
+        },
+        messages: [
+          line(
+            "t3-1",
+            "actor",
+            "Договор по «Августу» — когда подпишем?",
+            "вчера",
+            Date.parse("2026-05-27T18:00:00Z"),
+          ),
+          line(
+            "t3-2",
+            "agent",
+            "Юристы Sreda обещали сегодня. Как пришлют — сразу вам.",
+            "вчера",
+            Date.parse("2026-05-27T18:40:00Z"),
+          ),
+        ],
+      },
+      {
+        id: "sreda-vzmetnev",
+        roles: ["actor"],
+        unreadFor: [],
+        views: {
+          actor: {
+            name: "Sreda Production",
+            roleLabel: "Студия · Кинопоиск",
+            avatar: "/assets/figma/avatar-04.png",
+          },
+        },
+        messages: [
+          line(
+            "t4-1",
+            "studio",
+            "Договор отправили на почту, проверьте пункт 4 и dates 10–14 июня.",
+            "вчера",
+            Date.parse("2026-05-27T16:00:00Z"),
+          ),
+        ],
+      },
+      {
+        id: "okno-vzmetnev",
+        roles: ["actor"],
+        unreadFor: ["actor"],
+        views: {
+          actor: {
+            name: "Студия Окно",
+            roleLabel: "Документальный сериал · KION",
+            initials: "СО",
+            bg: "#3D5C4A",
+            extraHref: "/castings/okno-hosts",
+            extraLabel: "К кастингу",
+          },
+        },
+        messages: [
+          line(
+            "t5-1",
+            "studio",
+            "Приглашаем на очные пробы 14 июня, Москва. Ищем эпизод в док-сериал — скиньте показ-карту.",
+            "2 дня",
+            Date.parse("2026-05-26T12:00:00Z"),
+          ),
+        ],
+      },
+      {
+        id: "sreda-kevorkova",
+        roles: ["agent"],
+        unreadFor: [],
+        views: {
+          agent: {
+            name: "Sreda Production",
+            roleLabel: "Студия · занятость ростера",
+            avatar: "/assets/figma/avatar-04.png",
+          },
+        },
+        messages: [
+          line(
+            "t6-1",
+            "studio",
+            "Подтвердите занятость Устюгова на июнь.",
+            "2 дня",
+            Date.parse("2026-05-26T09:00:00Z"),
+          ),
+        ],
+      },
+      {
+        id: "sreda-lebedeva",
+        roles: ["casting"],
+        unreadFor: [],
+        views: {
+          casting: {
+            name: "Sreda Production",
+            roleLabel: "Студия · «Тихий январь»",
+            avatar: "/assets/figma/avatar-04.png",
+            extraHref: "/projects/tihiy-yanvar",
+            extraLabel: "К проекту",
+          },
+        },
+        messages: [
+          line(
+            "t7-1",
+            "studio",
+            "Подтверждаю даты 10–14 июня. Шорт-лист нужен к пятнице.",
+            "вчера",
+            Date.parse("2026-05-27T17:00:00Z"),
+          ),
+        ],
+      },
+    ],
+  };
+}
+
+export function cloneSeed(): WorkspaceState {
+  return structuredClone(seedState());
+}
+
+export function loadWorkspace(): WorkspaceState {
+  if (typeof window === "undefined") return cloneSeed();
+  try {
+    const raw = localStorage.getItem(WORKSPACE_KEY);
+    if (!raw) {
+      const seed = cloneSeed();
+      localStorage.setItem(WORKSPACE_KEY, JSON.stringify(seed));
+      return seed;
+    }
+    const parsed = JSON.parse(raw) as WorkspaceState;
+    if (parsed?.v !== 1 || !Array.isArray(parsed.threads)) return cloneSeed();
+    return {
+      ...cloneSeed(),
+      ...parsed,
+      settings: { ...cloneSeed().settings, ...parsed.settings },
+    };
+  } catch {
+    return cloneSeed();
+  }
+}
+
+export function saveWorkspace(state: WorkspaceState) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(WORKSPACE_KEY, JSON.stringify(state));
+}
+
+export function allProjects(state: WorkspaceState): Project[] {
+  const overrides = new Map(state.projects.map((p) => [p.slug, p]));
+  const extra = state.projects.filter((p) => !PROJECTS.some((s) => s.slug === p.slug));
+  const seeds = PROJECTS.map((p) => {
+    const over = overrides.get(p.slug);
+    return over ? { ...p, ...over } : p;
+  });
+  return [...extra, ...seeds];
+}
+
+export function allCastings(state: WorkspaceState): Casting[] {
+  const extra = state.castings.filter((c) => !CASTINGS.some((s) => s.slug === c.slug));
+  return [...extra, ...CASTINGS];
+}
+
+export function findProject(state: WorkspaceState, slug: string) {
+  return allProjects(state).find((p) => p.slug === slug) ?? null;
+}
+
+export function findCasting(state: WorkspaceState, slug: string) {
+  return allCastings(state).find((c) => c.slug === slug) ?? null;
+}
+
+export function castingsOfProject(state: WorkspaceState, projectSlug: string) {
+  return allCastings(state).filter((c) => c.projectSlug === projectSlug);
+}
+
+export function projectsOfCd(state: WorkspaceState, cdSlug: string) {
+  const list = allCastings(state);
+  const fromCastings = new Set(list.filter((c) => c.cdSlug === cdSlug).map((c) => c.projectSlug));
+  return allProjects(state).filter((p) => p.cdSlug === cdSlug || fromCastings.has(p.slug));
+}
+
+export function castingsOfCd(state: WorkspaceState, cdSlug: string) {
+  return allCastings(state).filter((c) => c.cdSlug === cdSlug);
+}
+
+export function responseCount(state: WorkspaceState, casting: Casting) {
+  const extra = state.applications.filter((a) => a.castingSlug === casting.slug).length;
+  const seeded = CASTINGS.some((c) => c.slug === casting.slug);
+  return seeded ? casting.responses + extra : extra;
+}
+
+export function decodeSlug(slug: string) {
+  try {
+    return decodeURIComponent(slug);
+  } catch {
+    return slug;
+  }
+}
+
+export function slugify(text: string) {
+  const base = text
+    .toLowerCase()
+    .replace(/[«»"']/g, "")
+    .replace(/[^a-z0-9а-яё]+/gi, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 48);
+  return `${base || "item"}-${Date.now().toString(36)}`;
+}
+
+export function nowTime() {
+  return new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+}
+
+export function coverFor(index: number) {
+  return COVERS[index % COVERS.length];
+}
+
+export function lastLine(thread: ChatThread) {
+  return thread.messages[thread.messages.length - 1] ?? null;
+}
+
+export function threadsFor(state: WorkspaceState, role: RoleId) {
+  return state.threads
+    .filter((t) => t.roles.includes(role) && t.views[role])
+    .slice()
+    .sort((a, b) => (lastLine(b)?.createdAt ?? 0) - (lastLine(a)?.createdAt ?? 0));
+}
+
+export function unreadCount(state: WorkspaceState, role: RoleId) {
+  return threadsFor(state, role).filter((t) => t.unreadFor.includes(role)).length;
+}
