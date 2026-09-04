@@ -60,15 +60,15 @@ export const DEMO_ROLES: Record<RoleId, DemoRole> = {
       { id: "messages", label: "Сообщения", href: "/messages", count: "3", live: true },
     ],
     blockTitle: "Агентство",
-    block: [{ href: "/people/kevorkova", name: "MS Talents · агент", live: true }],
+    block: [{ href: "/people/kevorkova", name: "«Актёр 1» · агент", live: true }],
     recent: [
-      { href: "/castings/tihiy-yanvar-lead", label: "«Тихий январь»", live: true },
+      { href: "/castings/tihiy-yanvar-second", label: "Вторая мужская · «Тихий январь»", live: true },
       { href: "/people/lebedeva", label: "Анна Лебедева", live: true },
       { href: "/people/vzmetnev", label: "Мой профиль", live: true },
     ],
     plus: [{ href: "/compose?type=post", label: "Пост в ленту" }],
     hub: {
-      lead: "Самопроба «Тихий январь» в шорт-листе · 2 непрочитанных · с июля открыт.",
+      lead: "Вторая мужская «Тихий январь» в шорт-листе · 2 непрочитанных · с июля открыт.",
       metrics: [
         ["3", "кастинга в работе", "1 срочный"],
         ["2", "активных отклика", "1 в шорт-листе"],
@@ -81,13 +81,13 @@ export const DEMO_ROLES: Record<RoleId, DemoRole> = {
       peopleLead: "Кастинг-директора, агент и коллеги",
     },
     now: [
-      { kind: "Дедлайн", title: "Самопроба «Тихий январь»", meta: "до 6 июня · Sreda · Кинопоиск", urgent: true },
+      { kind: "Дедлайн", title: "Самопроба · вторая мужская", meta: "«Тихий январь» · до 6 июня · Sreda", urgent: true },
       { kind: "Hold", title: "Очные 10–14 июня", meta: "если пройдёте шорт-лист" },
       { kind: "Сообщение", title: "Анна Кеворкова", meta: "«Окно» · очные 14 июня" },
     ],
     messages: [
-      { initials: "АЛ", bg: "#5C4A45", name: "Анна Лебедева", text: "Жду самопробу до 6 июня — сцены во вложении.", time: "2 ч", unread: true },
-      { img: "/assets/figma/avatar-01.png", name: "Ксения Воронина", text: "Прислали правки по договору, посмотри пункт 4.", time: "вчера" },
+      { initials: "АЛ", bg: "#5C4A45", name: "Анна Лебедева", text: "Приняла, вы в шорт-листе. Подтвержу слот завтра.", time: "2 ч", unread: true },
+      { img: "/assets/figma/avatar-01.png", name: "Анна Кеворкова", text: "Студия Окно зовёт на очные 14 июня.", time: "вчера" },
       { initials: "СО", bg: "#3D5C4A", name: "Студия Окно", text: "Приглашаем на очные пробы 14 июня, Москва.", time: "2 дня" },
     ],
     events: [
@@ -198,9 +198,9 @@ export const DEMO_ROLES: Record<RoleId, DemoRole> = {
       { kind: "Кастинг", title: "8 ролей под ростер", meta: "Устюгов, Чадов, Лерман" },
     ],
     messages: [
-      { img: "/assets/figma/avatar-02.png", name: "Анна Лебедева", text: "Нужна актриса 28–34 на главную, есть кто из ростера?", time: "40 мин", unread: true },
+      { img: "/assets/figma/avatar-02.png", name: "Анна Лебедева", text: "Нужна актриса 28–34 на главную и мужчина 30–40 на вторую.", time: "40 мин", unread: true },
       { img: "/assets/actors/vzmetnev-avatar.jpg", name: "Александр Взметнев", text: "Договор по «Августу» — когда подпишем?", time: "вчера" },
-      { initials: "Sreda", bg: "#3D5C4A", name: "Sreda Production", text: "Подтвердите занятость Устюгова на июнь.", time: "2 дня" },
+      { initials: "СУ", bg: "#5C4A45", name: "Sreda", text: "Нужно подтверждение занятости Устюгова на июнь.", time: "2 дня" },
     ],
     events: [
       ["10", "июн", "Самопробы «Тихий январь»", "Срок для ростера", "2026-06-10"],

@@ -139,8 +139,8 @@ function agentActions(ws: ReturnType<typeof useWorkspace>): ActionItem[] {
   return [
     {
       kind: "Бриф",
-      title: "Лебедева · главная 28–34",
-      meta: "«Тихий январь» · Sreda · самопробы до 6 июня",
+      title: "Лебедева · главная + вторая",
+      meta: "«Тихий январь» · 28–34 и мужская 30–40 · до 6 июня",
       href: "/compose?type=propose&casting=tihiy-yanvar-lead",
       urgent: true,
     },

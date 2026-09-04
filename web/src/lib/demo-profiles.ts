@@ -111,11 +111,11 @@ export const LEBEDEVA_CARD: PersonCard = {
       href: "/castings/tihiy-yanvar-lead",
     },
     {
-      title: "Эпизоды · «Комната 14»",
-      meta: "Короткий метр · period 1950-е · до 30 мая",
-      count: "57",
-      tag: "Открыто",
-      href: "/castings/komnata-14-episode",
+      title: "Вторая мужская · «Тихий январь»",
+      meta: "Sreda · 30–40 · до 6 июня",
+      count: "64",
+      tag: "Срочно",
+      href: "/castings/tihiy-yanvar-second",
     },
     {
       title: "Ведущие · «Окно»",

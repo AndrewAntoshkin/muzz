@@ -6,7 +6,7 @@ import {
 } from "@/lib/productions";
 import type { RoleId } from "@/lib/roles";
 
-export const WORKSPACE_KEY = "kadr-workspace-v2";
+export const WORKSPACE_KEY = "kadr-workspace-v4";
 
 export type AppStatus = "sent" | "shortlist" | "invited" | "declined";
 export type AppKind = "apply" | "selftape" | "propose";
@@ -116,24 +116,24 @@ export function seedState(): WorkspaceState {
     applications: [
       {
         id: "app-ty-vz",
-        castingSlug: "tihiy-yanvar-lead",
+        castingSlug: "tihiy-yanvar-second",
         actorSlug: "vzmetnev",
         actorName: "Александр Взметнев",
         actorAvatar: "/assets/actors/vzmetnev-avatar.jpg",
         kind: "selftape",
-        note: "Самопроба по сценам 12 и 27. Ссылка в переписке с Лебедевой.",
+        note: "Самопроба по сценам «Кухня» и «Школа». Ссылка в переписке с Лебедевой.",
         status: "shortlist",
         source: "actor",
         createdAt: Date.parse("2026-05-28T11:00:00Z"),
       },
       {
         id: "app-ty-ustyugov",
-        castingSlug: "tihiy-yanvar-lead",
+        castingSlug: "tihiy-yanvar-second",
         actorSlug: "ustyugov-aleksandr",
         actorName: "Александр Устюгов",
         actorAvatar: "/assets/actors/akter1/ustyugov-aleksandr.jpg",
         kind: "propose",
-        note: "Предложение агента на вторую мужскую / перекрыть типаж главной.",
+        note: "Предложение агента на вторую мужскую из ростера «Актёр 1».",
         status: "sent",
         source: "agent",
         createdAt: Date.parse("2026-05-27T15:00:00Z"),
@@ -225,7 +225,7 @@ export function seedState(): WorkspaceState {
         createdAt: Date.parse("2026-05-28T12:30:00Z"),
       },
     ],
-    saved: ["tihiy-yanvar-lead", "okno-hosts"],
+    saved: ["casting:tihiy-yanvar-second", "casting:okno-hosts"],
     settings: { notifyEmail: true, notifyPush: false },
     threads: [
       {
@@ -238,7 +238,7 @@ export function seedState(): WorkspaceState {
             roleLabel: "Кастинг-директор · «Тихий январь»",
             avatar: "/assets/figma/avatar-02.png",
             profileHref: "/people/lebedeva",
-            extraHref: "/castings/tihiy-yanvar-lead",
+            extraHref: "/castings/tihiy-yanvar-second",
             extraLabel: "К кастингу",
           },
           casting: {
@@ -252,13 +252,13 @@ export function seedState(): WorkspaceState {
           line(
             "t1-1",
             "casting",
-            "Александр, здравствуйте! Передаю информацию от Sreda — мы открыли кастинг на главную роль в «Тихом январе». По вашему типажу вы попадаете, хотим пригласить на самопробу.",
+            "Александр, здравствуйте! По «Тихому январю» открыта вторая мужская 30–40. По типажу вы попадаете — приглашаем на самопробу.",
             "14:22",
             Date.parse("2026-05-27T14:22:00Z"),
             {
-              title: "Главная роль · актриса 28–34 — «Тихий январь»",
+              title: "Вторая мужская · 30–40 — «Тихий январь»",
               meta: "Sreda Production · до 6 июня",
-              href: "/castings/tihiy-yanvar-lead",
+              href: "/castings/tihiy-yanvar-second",
             },
           ),
           line(
@@ -271,7 +271,7 @@ export function seedState(): WorkspaceState {
           line(
             "t1-3",
             "casting",
-            "6 июня. Сцены прикрепляю. На очный кастинг пригласим в окне 10–14 июня, если попадёте в шорт-лист.",
+            "6 июня. Сцены «Кухня» и «Школа» прикрепляю. Очные 10–14 июня, если попадёте в шорт-лист.",
             "14:40",
             Date.parse("2026-05-27T14:40:00Z"),
           ),
@@ -285,7 +285,7 @@ export function seedState(): WorkspaceState {
           line(
             "t1-5",
             "casting",
-            "Жду самопробу до 6 июня — сцены во вложении. Если что — пишите, я на связи.",
+            "Приняла, вы в шорт-листе. Держите 10–14 июня свободными — подтвержу слот завтра.",
             "12:08",
             Date.parse("2026-05-28T12:08:00Z"),
           ),
@@ -315,21 +315,21 @@ export function seedState(): WorkspaceState {
           line(
             "t2-1",
             "casting",
-            "Нужна актриса 28–34 на главную, есть кто из ростера?",
+            "Нужна актриса 28–34 на главную и мужчина 30–40 на вторую. Есть кто из ростера?",
             "10:20",
             Date.parse("2026-05-28T10:20:00Z"),
           ),
           line(
             "t2-2",
             "agent",
-            "На главную женскую — Лерман и Шиловская, обе в типаже 28–34. На вторую мужскую готов предложить Устюгова: занятость на июнь подтвержу сегодня до 18:00.",
+            "На главную — Лерман и Шиловская. На вторую мужскую — Устюгов; Взметнев уже сам в шорт-листе у вас.",
             "11:05",
             Date.parse("2026-05-28T11:05:00Z"),
           ),
           line(
             "t2-3",
             "casting",
-            "Лерман интересна. Пришлите самопробу по сценам 12/27 и актуальные фото в образе «север». Устюгова тоже смотрю — пусть будет в шорт-листе на вторую.",
+            "Лерман интересна — пришлите самопробу по сценам 12/27. Устюгова тоже беру в шорт-лист на вторую.",
             "12:40",
             Date.parse("2026-05-28T12:40:00Z"),
           ),
@@ -364,7 +364,7 @@ export function seedState(): WorkspaceState {
           line(
             "t3-1",
             "actor",
-            "Договор по «Августу» — когда подпишем? И по «Тихому январю» Лебедева ждёт самопробу.",
+            "Договор по «Августу» — когда подпишем? И по второй мужской в «Тихом январе» Лебедева ждёт самопробу.",
             "18:00",
             Date.parse("2026-05-27T18:00:00Z"),
           ),
@@ -399,7 +399,7 @@ export function seedState(): WorkspaceState {
           line(
             "t4-1",
             "studio",
-            "Договор отправили на почту, проверьте пункт 4 и dates 10–14 июня.",
+            "Договор отправили на почту, проверьте пункт 4 и даты 10–14 июня.",
             "вчера",
             Date.parse("2026-05-27T16:00:00Z"),
           ),

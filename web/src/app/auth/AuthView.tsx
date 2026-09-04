@@ -181,7 +181,7 @@ export function AuthView() {
               disabled={busy}
               onClick={() => void enter("/api/auth/demo")}
             >
-              Войти как демо · andrew / CadrShow26
+              Войти демо-аккаунтом
             </button>
           </>
         )}

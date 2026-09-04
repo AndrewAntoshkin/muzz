@@ -51,6 +51,16 @@ export function HomeHub({ faces }: { faces: FaceCard[] }) {
 
   const feedCastings = useMemo(() => {
     if (role === "casting") return castingsForCd(cdSlug);
+    if (role === "actor") {
+      const preferred = ["tihiy-yanvar-second", "okno-hosts"];
+      return [...castings].sort((a, b) => {
+        const ai = preferred.indexOf(a.slug);
+        const bi = preferred.indexOf(b.slug);
+        const av = ai === -1 ? preferred.length : ai;
+        const bv = bi === -1 ? preferred.length : bi;
+        return av - bv;
+      });
+    }
     return castings;
   }, [role, castings, castingsForCd, cdSlug]);
 
@@ -123,7 +133,10 @@ export function HomeHub({ faces }: { faces: FaceCard[] }) {
                 </Link>
               </header>
               <div className="feed-list feed-list--compact">
-                {posts.slice(0, role === "actor" ? 1 : 0).map((post) => (
+                {posts
+                  .filter((post) => (role === "actor" ? post.authorRole === "actor" : false))
+                  .slice(0, 1)
+                  .map((post) => (
                   <article key={post.id} className="feed-card">
                     <div className="feed-card__top">
                       <img src={post.authorAvatar} alt="" className="feed-card__avatar" width={40} height={40} />
