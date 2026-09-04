@@ -157,7 +157,7 @@ body[data-page="home"] .hub-column,
 .response-tile__cover {
   position: relative;
   display: block;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 1 / 1;
   overflow: hidden;
   background: #2a2a2a;
 }
