@@ -100,14 +100,16 @@ body[data-page="messages"] .page-scroll.detail-page {
 }
 
 body[data-page="castings"] .page-scroll.catalog-page,
-body[data-page="projects"] .page-scroll.catalog-page {
+body[data-page="projects"] .page-scroll.catalog-page,
+body[data-page="responses"] .page-scroll.catalog-page {
   max-width: none !important;
   margin-inline: 0 !important;
   padding: 0 24px 24px !important;
 }
 
 body[data-page="castings"] .catalog-page__head,
-body[data-page="projects"] .catalog-page__head {
+body[data-page="projects"] .catalog-page__head,
+body[data-page="responses"] .catalog-page__head {
   padding-inline: 0 !important;
 }
 
@@ -130,82 +132,101 @@ body[data-page="home"] .hub-column,
 }
 
 .response-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
   padding-bottom: 32px;
 }
 
-.response-card {
-  display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) auto;
-  gap: 14px;
-  align-items: center;
-  width: 100%;
+.response-tile {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
   margin: 0;
-  padding: 12px;
-  border: none;
   border-radius: 20px;
+  overflow: hidden;
   background: hsla(0, 0%, 97%, 0.02);
   color: inherit;
-  text-align: left;
   text-decoration: none;
-  cursor: pointer;
-  font: inherit;
-  box-sizing: border-box;
 }
 
-.response-card:hover,
-.response-card.is-active {
+.response-tile:hover {
   background: hsla(0, 0%, 97%, 0.05);
 }
 
-.response-card__side {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.response-card__match {
-  font-size: 12px;
-  color: var(--text-muted);
-  white-space: nowrap;
-}
-
-.response-card__ava {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  object-fit: cover;
+.response-tile__cover {
+  position: relative;
   display: block;
-}
-
-.response-card__ava--empty {
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
   background: #2a2a2a;
 }
 
-.response-card__main {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+.response-tile__cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
 }
 
-.response-card__title {
+.response-tile__cover-empty {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #2a2a2a;
+}
+
+.response-tile__match {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+}
+
+.response-tile__body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  min-width: 0;
+}
+
+.response-tile__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.response-tile__kind {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.response-tile__title {
   font-weight: 650;
   font-size: 15px;
   line-height: 1.3;
 }
 
-.response-card__sub {
+.response-tile__sub {
   font-size: 13px;
   color: var(--text-muted);
   line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.response-card__note {
+.response-tile__note {
   font-size: 13px;
   color: var(--text-faint, #888);
   line-height: 1.4;
@@ -213,11 +234,18 @@ body[data-page="home"] .hub-column,
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  margin-top: 2px;
 }
 
-.response-card .tag {
-  flex-shrink: 0;
+@media (max-width: 1100px) {
+  .response-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .response-cards {
+    grid-template-columns: 1fr;
+  }
 }
 
 .response-tape {
@@ -537,31 +565,6 @@ a.response-tape:hover {
 }
 
 @media (max-width: 640px) {
-  .response-card {
-    grid-template-columns: 44px minmax(0, 1fr);
-    grid-template-areas:
-      "ava main"
-      "side side";
-  }
-
-  .response-card__ava {
-    grid-area: ava;
-    width: 44px;
-    height: 44px;
-  }
-
-  .response-card__main {
-    grid-area: main;
-  }
-
-  .response-card__side {
-    grid-area: side;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-  }
-
   .response-tape {
     grid-template-columns: 72px minmax(0, 1fr);
   }

@@ -226,27 +226,27 @@ export function ResponseCards({
         const subtitle =
           role === "actor"
             ? [projectBit, KIND_LABEL[item.kind]].filter(Boolean).join(" · ")
-            : [item.actorMeta || castingTitle, projectBit, KIND_LABEL[item.kind]].filter(Boolean).join(" · ");
+            : [castingTitle, projectBit, KIND_LABEL[item.kind]].filter(Boolean).join(" · ");
         const detailHref = withRole(
           from === "all" ? `/responses/${item.id}?from=all` : `/responses/${item.id}`,
           role,
         );
+        const cover = item.actorAvatar || item.tape?.poster || null;
 
         return (
-          <Link key={item.id} href={detailHref} className="response-card">
-            {item.actorAvatar ? (
-              <img src={item.actorAvatar} alt="" className="response-card__ava" />
-            ) : (
-              <span className="response-card__ava response-card__ava--empty" />
-            )}
-            <span className="response-card__main">
-              <span className="response-card__title">{title}</span>
-              <span className="response-card__sub">{subtitle}</span>
-              {item.note ? <span className="response-card__note">{item.note}</span> : null}
+          <Link key={item.id} href={detailHref} className="response-tile">
+            <span className="response-tile__cover">
+              {cover ? <img src={cover} alt="" /> : <span className="response-tile__cover-empty" />}
+              {item.match ? <span className="response-tile__match">{item.match}</span> : null}
             </span>
-            <span className="response-card__side">
-              {item.match ? <span className="response-card__match">{item.match}</span> : null}
-              <span className={`tag ${statusTag(item.status)}`}>{STATUS_LABEL[item.status]}</span>
+            <span className="response-tile__body">
+              <span className="response-tile__tags">
+                <span className="response-tile__kind">{KIND_LABEL[item.kind]}</span>
+                <span className={`tag ${statusTag(item.status)}`}>{STATUS_LABEL[item.status]}</span>
+              </span>
+              <span className="response-tile__title">{title}</span>
+              {subtitle ? <span className="response-tile__sub">{subtitle}</span> : null}
+              {item.note ? <span className="response-tile__note">{item.note}</span> : null}
             </span>
           </Link>
         );
