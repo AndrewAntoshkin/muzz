@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   IconBack,
   IconCasting,
@@ -14,14 +14,10 @@ import {
   IconResponses,
   IconSettings,
 } from "./icons";
-import { ROLE_SWITCH, profileSlug, switchRoleHref, withRole, type RoleId } from "@/lib/roles";
+import { ROLE_SWITCH, switchRoleHref, withRole, type RoleId } from "@/lib/roles";
 import { useAuth } from "./AuthProvider";
 import { useWorkspace } from "./useWorkspace";
-import { DropdownMenu } from "./DropdownMenu";
 import { ProjectSettingsModal } from "./ProjectSettingsModal";
-import { StatusModal } from "./StatusModal";
-import { ProfileEditModal } from "./ProfileEditModal";
-import { VZMETNEV_CARD, DEMO_BIOS } from "@/lib/demo-profiles";
 
 const NAV_ICONS: Record<string, ReactNode> = {
   home: <IconHome />,
@@ -83,13 +79,9 @@ export function Shell({ children }: { children: ReactNode }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { role, cfg, user, logout } = useAuth();
-  const { unread, notice, ready, profilePatches, applications } = useWorkspace();
-  const [publishOpen, setPublishOpen] = useState(false);
+  const { unread, notice, ready, applications } = useWorkspace();
   const [projectSettingsOpen, setProjectSettingsOpen] = useState(false);
-  const [statusOpen, setStatusOpen] = useState(false);
-  const [profileEditOpen, setProfileEditOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
-  const plusBtn = useRef<HTMLButtonElement>(null);
   const mine = searchParams.get("mine") === "1";
   const composeType = searchParams.get("type");
 
@@ -290,30 +282,12 @@ export function Shell({ children }: { children: ReactNode }) {
         </div>
 
         <div className="sidebar-foot">
-          <Link
-            href={withRole(cfg.profile, role)}
-            className={onProfile && pathname === cfg.profile ? "sidebar-profile is-active" : "sidebar-profile"}
-            data-nav="profile"
-            onClick={() => setNavOpen(false)}
-          >
-            <span className="sidebar-profile__avatar">
-              {cfg.avatar ? (
-                <img src={cfg.avatar} alt="" width={44} height={44} />
-              ) : (
-                <span className="msg-ava msg-ava--initials" style={{ width: 44, height: 44 }}>
-                  {(cfg.name || "?")
-                    .split(/\s+/)
-                    .slice(0, 2)
-                    .map((p) => p[0]?.toUpperCase() ?? "")
-                    .join("")}
-                </span>
-              )}
-            </span>
+          <div className="sidebar-profile sidebar-profile--plain">
             <span className="sidebar-profile__body">
               <span className="sidebar-profile__name">{cfg.name}</span>
               <span className="sidebar-profile__role">{cfg.label}</span>
             </span>
-          </Link>
+          </div>
           <NavRow
             href={withRole("/settings", role)}
             id="settings"
@@ -379,96 +353,35 @@ export function Shell({ children }: { children: ReactNode }) {
               {crumb}
             </h1>
           </div>
-          {projectDetail && role === "casting" ? (
-            <div className="app-topbar__publish-wrap">
+          <div className="ss-head__actions">
+            {projectDetail && role === "casting" ? (
               <button
                 type="button"
-                className="btn-secondary"
+                className="btn-secondary btn-sm"
                 onClick={() => setProjectSettingsOpen(true)}
-                style={{ whiteSpace: "nowrap" }}
               >
                 Настройки проекта
               </button>
-            </div>
-          ) : onCompose || onSettings ? null : (
-            <div className={`app-topbar__publish-wrap${publishOpen ? " is-open" : ""}`} data-publish>
-              <button
-                ref={plusBtn}
-                type="button"
-                className="ss-head__plus"
-                aria-label={role === "actor" ? "Статус и профиль" : "Опубликовать"}
-                aria-expanded={publishOpen}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setPublishOpen((v) => !v);
-                }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-                  <path d="M12 5v14M5 12h14" />
-                </svg>
-              </button>
-              <DropdownMenu
-                open={publishOpen}
-                anchorRef={plusBtn}
-                align="right"
-                className="app-topbar__publish-menu"
-                role="menu"
-                onClose={() => setPublishOpen(false)}
-              >
-                {cfg.plus.map((p) =>
-                  p.action === "status" ? (
-                    <button
-                      key={p.label}
-                      type="button"
-                      onClick={() => {
-                        setPublishOpen(false);
-                        setStatusOpen(true);
-                      }}
-                    >
-                      {p.label}
-                    </button>
-                  ) : p.action === "profile" ? (
-                    <button
-                      key={p.label}
-                      type="button"
-                      onClick={() => {
-                        setPublishOpen(false);
-                        setProfileEditOpen(true);
-                      }}
-                    >
-                      {p.label}
-                    </button>
-                  ) : p.href ? (
-                    <Link key={p.label} href={withRole(p.href, role)} onClick={() => setPublishOpen(false)}>
-                      {p.label}
-                    </Link>
-                  ) : (
-                    <span key={p.label}>{p.label}</span>
-                  ),
-                )}
-              </DropdownMenu>
-            </div>
-          )}
+            ) : null}
+            <Link href={withRole(cfg.profile, role)} className="ss-head__me" aria-label="Профиль">
+              {role === "actor" ? <span className="ss-head__plan">Pro</span> : null}
+              {cfg.avatar ? (
+                <img src={cfg.avatar} alt="" className="ss-head__ava" width={36} height={36} />
+              ) : (
+                <span className="ss-head__ava ss-head__ava--fallback">
+                  {(cfg.name || "?")
+                    .split(/\s+/)
+                    .slice(0, 2)
+                    .map((p) => p[0]?.toUpperCase() ?? "")
+                    .join("")}
+                </span>
+              )}
+            </Link>
+          </div>
         </header>
         {children}
         {projectDetail && role === "casting" && projectSettingsOpen && ready && projectSlug ? (
           <ProjectSettingsModal projectSlug={projectSlug} onClose={() => setProjectSettingsOpen(false)} />
-        ) : null}
-        {statusOpen ? <StatusModal onClose={() => setStatusOpen(false)} /> : null}
-        {profileEditOpen ? (
-          <ProfileEditModal
-            personSlug={profileSlug(cfg)}
-            initial={profilePatches[profileSlug(cfg)] || {}}
-            defaults={{
-              bio: DEMO_BIOS.vzmetnev,
-              city: cfg.city,
-              params: VZMETNEV_CARD.params || [],
-              appearance: VZMETNEV_CARD.appearance || [],
-              languages: VZMETNEV_CARD.languages || [],
-              skills: VZMETNEV_CARD.skills || [],
-            }}
-            onClose={() => setProfileEditOpen(false)}
-          />
         ) : null}
         {notice ? <div className="kadr-toast">{notice}</div> : null}
       </div>

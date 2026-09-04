@@ -44,7 +44,7 @@ export default function ProjectsPage() {
           </header>
 
           <div className="catalog-results">
-            <div className="catalog-feed-list feed-list">
+            <div className="projects-grid">
               {list.map((p) => {
                 const related = castingsForProject(p.slug);
                 return (

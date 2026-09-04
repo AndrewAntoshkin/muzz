@@ -15,6 +15,61 @@
   width: 100%;
 }
 
+.ss-head__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.ss-head__me {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.ss-head__plan {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: hsla(42, 80%, 52%, 0.18);
+  color: hsl(42, 90%, 72%);
+}
+
+.ss-head__ava {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  background: #2a2a2a;
+}
+
+.ss-head__ava--fallback {
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 650;
+  color: #fff;
+}
+
+.sidebar-profile--plain {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  pointer-events: none;
+}
+
+.sidebar-profile--plain .sidebar-profile__avatar {
+  display: none;
+}
+
 /* Lists stay a reading column. Detail pages (casting/project/profile) use the wide grid. */
 .page-scroll.catalog-page {
   max-width: 800px !important;
@@ -44,13 +99,15 @@ body[data-page="messages"] .page-scroll.detail-page {
   margin-inline: 0 !important;
 }
 
-body[data-page="castings"] .page-scroll.catalog-page {
+body[data-page="castings"] .page-scroll.catalog-page,
+body[data-page="projects"] .page-scroll.catalog-page {
   max-width: none !important;
   margin-inline: 0 !important;
   padding: 0 24px 24px !important;
 }
 
-body[data-page="castings"] .catalog-page__head {
+body[data-page="castings"] .catalog-page__head,
+body[data-page="projects"] .catalog-page__head {
   padding-inline: 0 !important;
 }
 
@@ -813,6 +870,32 @@ body[data-page="home"] .app-right-rail .rail-event__date {
 
 @media (max-width: 720px) {
   .casting-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  min-width: 0;
+  width: 100%;
+}
+
+.projects-grid .feed-card {
+  margin: 0;
+  height: 100%;
+}
+
+.projects-grid .feed-card__text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (max-width: 720px) {
+  .projects-grid {
     grid-template-columns: 1fr;
   }
 }
