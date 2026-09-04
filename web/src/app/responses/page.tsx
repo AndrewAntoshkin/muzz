@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { Suspense, useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo } from "react";
 import { withRole } from "@/lib/roles";
 import { useWorkspace } from "@/components/useWorkspace";
 import { ResponseCards } from "@/components/ResponsesBoard";
@@ -16,9 +16,16 @@ export default function ResponsesPage() {
 }
 
 function ResponsesInner() {
+  const router = useRouter();
   const params = useSearchParams();
-  const { role, myApplications, applications, getCasting, getProject } = useWorkspace();
+  const { role, myApplications, applications, getCasting, getProject, ready } = useWorkspace();
   const filterSlug = params.get("casting") || "";
+  const openId = params.get("app") || "";
+
+  useEffect(() => {
+    if (!ready || !openId) return;
+    router.replace(withRole(`/responses/${openId}`, role));
+  }, [ready, openId, role, router]);
 
   const rows = useMemo(() => {
     const list =
@@ -36,6 +43,18 @@ function ResponsesInner() {
       : role === "agent"
         ? "Статус ваших предложений актёров на роли"
         : "Статус ваших откликов и приглашений";
+
+  if (openId) {
+    return (
+      <div className="app-main__body app-main__body--catalog">
+        <main className="page-area">
+          <div className="page-scroll catalog-page">
+            <p className="catalog-page__lead catalog-page__lead--solo">Открываю отклик…</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="app-main__body app-main__body--catalog">
