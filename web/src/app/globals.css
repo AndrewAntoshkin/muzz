@@ -44,8 +44,14 @@ body[data-page="messages"] .page-scroll.detail-page {
   margin-inline: 0 !important;
 }
 
-body[data-page="messages"] .page-scroll > * {
+body[data-page="castings"] .page-scroll.catalog-page {
   max-width: none !important;
+  margin-inline: 0 !important;
+  padding: 0 24px 24px !important;
+}
+
+body[data-page="castings"] .catalog-page__head {
+  padding-inline: 0 !important;
 }
 
 /* Home: main feed column cap */
@@ -793,10 +799,16 @@ body[data-page="home"] .app-right-rail .rail-event__date {
 
 .casting-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   min-width: 0;
   width: 100%;
+}
+
+@media (max-width: 1100px) {
+  .casting-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 720px) {
