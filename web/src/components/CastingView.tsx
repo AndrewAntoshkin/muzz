@@ -119,7 +119,7 @@ export function CastingView({ slug }: { slug: string }) {
               </p>
               <div className="detail-hero__actions">
                 {role === "casting" ? (
-                  <Link href={withRole(`/responses?casting=${casting.slug}`, role)} className="btn-primary">
+                  <Link href={withRole(`/castings/${casting.slug}/responses`, role)} className="btn-primary">
                     Смотреть отклики
                   </Link>
                 ) : role === "agent" ? (
@@ -169,23 +169,39 @@ export function CastingView({ slug }: { slug: string }) {
             <section className="detail-block">
               <div className="detail-block__head">
                 <h2 className="detail-block__title">Сцены для самопробы</h2>
-                <a href="#scenes" className="detail-block__link" onClick={(e) => e.preventDefault()}>
-                  Скачать все сцены (.pdf)
-                </a>
+                {casting.scenesPdf ? (
+                  <a href={casting.scenesPdf} className="detail-block__link" download>
+                    Скачать все сцены (.pdf)
+                  </a>
+                ) : null}
               </div>
               <div className="scenes-list">
-                {casting.scenes.map((scene) => (
-                  <a key={scene.num} href="#scene" className="scene-row" onClick={(e) => e.preventDefault()}>
-                    <span className="scene-row__num">{scene.num}</span>
-                    <div>
-                      <div className="scene-row__title">{scene.title}</div>
-                      <div className="scene-row__meta">{scene.meta}</div>
+                {casting.scenes.map((scene) => {
+                  const body = (
+                    <>
+                      <span className="scene-row__num">{scene.num}</span>
+                      <div>
+                        <div className="scene-row__title">{scene.title}</div>
+                        <div className="scene-row__meta">{scene.meta}</div>
+                      </div>
+                      <div className="scene-row__dl">
+                        <strong>{scene.duration}</strong> минимум
+                      </div>
+                    </>
+                  );
+                  if (scene.href) {
+                    return (
+                      <a key={scene.num} href={scene.href} className="scene-row" download>
+                        {body}
+                      </a>
+                    );
+                  }
+                  return (
+                    <div key={scene.num} className="scene-row">
+                      {body}
                     </div>
-                    <div className="scene-row__dl">
-                      <strong>{scene.duration}</strong> минимум
-                    </div>
-                  </a>
-                ))}
+                  );
+                })}
               </div>
               <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 10 }}>
                 Слейт-стандарт: имя · рост · агентство · «{project?.title ?? casting.title} · самопроба». Вертикально, естественный свет, без музыки.
@@ -215,7 +231,7 @@ export function CastingView({ slug }: { slug: string }) {
                 <h2 className="detail-block__title">
                   Кто уже откликнулся · {n}
                 </h2>
-                <Link href={withRole(`/responses?casting=${casting.slug}`, role)} className="detail-block__link">
+                <Link href={withRole(`/castings/${casting.slug}/responses`, role)} className="detail-block__link">
                   Все отклики →
                 </Link>
               </div>
@@ -242,7 +258,7 @@ export function CastingView({ slug }: { slug: string }) {
                 {liveApps.map((app) => (
                   <Link
                     key={app.id}
-                    href={withRole(`/responses?casting=${casting.slug}&app=${app.id}`, role)}
+                    href={withRole(`/responses/${app.id}`, role)}
                     className="response-row"
                     style={{ textDecoration: "none", color: "inherit" }}
                   >
@@ -254,11 +270,17 @@ export function CastingView({ slug }: { slug: string }) {
                     <div>
                       <div className="response-row__name">{app.actorName}</div>
                       <div className="response-row__meta">
-                        {app.source === "agent"
-                          ? app.note || "Предложение агента"
-                          : app.note || "Отклик из «Кадра»"}
+                        {app.actorMeta ||
+                          (app.source === "agent"
+                            ? app.note || "Предложение агента"
+                            : app.note || "Отклик из «Кадра»")}
                       </div>
                     </div>
+                    {app.match ? (
+                      <div className="response-row__stat">
+                        <strong>{app.match}</strong> совпадение
+                      </div>
+                    ) : null}
                     <span
                       className={`tag ${
                         app.status === "shortlist" || app.status === "invited"

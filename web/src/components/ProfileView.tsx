@@ -16,7 +16,7 @@ import {
 } from "@/lib/person-card";
 import { castingsForCd, getProject, projectsForCd } from "@/lib/productions";
 import { AVAILABILITY_LABEL } from "@/lib/workspace";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnketaTabs } from "./AnketaTabs";
 import { IconVerified } from "./icons";
 import { HideIfOwn, ProfileViewerActions } from "./ProfileViewerActions";
@@ -116,7 +116,35 @@ function Filmography({ credits, title = "Фильмография" }: { credits:
   );
 }
 
+function PhotoLightbox({ src, onClose }: { src: string; onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [onClose]);
+
+  return (
+    <div className="photo-lightbox" role="dialog" aria-modal="true" aria-label="Просмотр фото">
+      <button type="button" className="photo-lightbox__backdrop" aria-label="Закрыть" onClick={onClose} />
+      <div className="photo-lightbox__stage">
+        <button type="button" className="photo-lightbox__close" aria-label="Закрыть" onClick={onClose}>
+          ×
+        </button>
+        <img src={src} alt="" className="photo-lightbox__img" />
+      </div>
+    </div>
+  );
+}
+
 function PhotoGrid({ photos }: { photos: PersonProfile["photos"] }) {
+  const [openSrc, setOpenSrc] = useState<string | null>(null);
   if (!photos.length) return null;
   return (
     <section className="detail-block">
@@ -126,11 +154,18 @@ function PhotoGrid({ photos }: { photos: PersonProfile["photos"] }) {
       </div>
       <div className="kadr-photos">
         {photos.map((photo) => (
-          <a key={photo.id} href={photo.url} target="_blank" rel="noopener noreferrer">
+          <button
+            key={photo.id}
+            type="button"
+            className="kadr-photos__btn"
+            onClick={() => setOpenSrc(photo.url)}
+            aria-label="Открыть фото"
+          >
             <img src={photo.url} alt="" loading="lazy" />
-          </a>
+          </button>
         ))}
       </div>
+      {openSrc ? <PhotoLightbox src={openSrc} onClose={() => setOpenSrc(null)} /> : null}
     </section>
   );
 }
@@ -212,10 +247,25 @@ function Anketa({
   );
 }
 
-function Avatar({ person }: { person: PersonProfile }) {
+function Avatar({
+  person,
+  onOpen,
+}: {
+  person: PersonProfile;
+  onOpen?: (src: string) => void;
+}) {
   const src = assetSrc(person.imageUrl);
   const initials = person.initials || initialsOf(person.name);
-  if (src) return <img className="kadr-avatar" src={src} alt="" />;
+  if (src) {
+    if (onOpen) {
+      return (
+        <button type="button" className="kadr-avatar-btn" onClick={() => onOpen(src)} aria-label="Открыть фото">
+          <img className="kadr-avatar" src={src} alt="" />
+        </button>
+      );
+    }
+    return <img className="kadr-avatar" src={src} alt="" />;
+  }
   return (
     <div className="kadr-avatar kadr-avatar--fallback" style={{ background: person.bg || "#5C4A45" }}>
       {initials}
@@ -408,6 +458,7 @@ function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard
   const [editOpen, setEditOpen] = useState(false);
   const [editTab, setEditTab] = useState<"about" | "params" | "appearance" | "languages" | "skills">("about");
   const [statusOpen, setStatusOpen] = useState(false);
+  const [photoSrc, setPhotoSrc] = useState<string | null>(null);
   const isOwn = person.slug === profileSlug(cfg);
   const patch = profilePatches[person.slug];
   const feminine = person.profession === "actress";
@@ -445,7 +496,7 @@ function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard
         <div>
           <section className="detail-hero">
             <div className="detail-hero__body kadr-hero-body">
-              <Avatar person={person} />
+              <Avatar person={person} onOpen={setPhotoSrc} />
               <div className="kadr-hero-title">
                 <h1 className="detail-hero__title">{person.name}</h1>
                 {person.verified ? <VerifiedBadge feminine={feminine} /> : null}
@@ -605,6 +656,7 @@ function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard
         />
       ) : null}
       {statusOpen ? <StatusModal onClose={() => setStatusOpen(false)} /> : null}
+      {photoSrc ? <PhotoLightbox src={photoSrc} onClose={() => setPhotoSrc(null)} /> : null}
     </div>
   );
 }

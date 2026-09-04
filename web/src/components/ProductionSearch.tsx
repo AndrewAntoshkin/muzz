@@ -234,7 +234,7 @@ function CastingCard({
   const cardHref = withRole(`/castings/${c.slug}`, role);
   const actionHref =
     role === "casting"
-      ? withRole(`/responses?casting=${c.slug}`, role)
+      ? withRole(`/castings/${c.slug}/responses`, role)
       : role === "agent"
         ? withRole(`/compose?type=propose&casting=${c.slug}`, role)
         : cardHref;

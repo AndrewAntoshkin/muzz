@@ -119,7 +119,7 @@ function castingActions(ws: ReturnType<typeof useWorkspace>): ActionItem[] {
       kind: a.source === "agent" ? "Агент" : "Самопроба",
       title: a.actorName,
       meta: c ? `${c.title} · ждать разбора` : "новый отклик",
-      href: `/responses?casting=${a.castingSlug}`,
+      href: `/responses/${a.id}`,
       urgent: a.source === "agent",
     };
   });

@@ -6,7 +6,7 @@ import {
 } from "@/lib/productions";
 import type { RoleId } from "@/lib/roles";
 
-export const WORKSPACE_KEY = "kadr-workspace-v6";
+export const WORKSPACE_KEY = "kadr-workspace-v9";
 
 export type Availability = "open" | "busy" | "hold";
 
@@ -38,6 +38,14 @@ export type ProfilePatch = {
 export type AppStatus = "sent" | "shortlist" | "invited" | "declined";
 export type AppKind = "apply" | "selftape" | "propose";
 
+export type AppTape = {
+  title: string;
+  poster: string;
+  duration?: string;
+  href?: string;
+  caption?: string;
+};
+
 export type Application = {
   id: string;
   castingSlug: string;
@@ -49,6 +57,9 @@ export type Application = {
   status: AppStatus;
   source: "actor" | "agent";
   createdAt: number;
+  match?: string;
+  actorMeta?: string;
+  tape?: AppTape;
 };
 
 export type FeedPost = {
@@ -154,6 +165,15 @@ export function seedState(): WorkspaceState {
         status: "shortlist",
         source: "actor",
         createdAt: Date.parse("2026-05-28T11:00:00Z"),
+        match: "91%",
+        actorMeta: "Актёр · 32 · Москва · «Мажор», «Любовь СССР»",
+        tape: {
+          title: "Самопроба · Кухня + Школа",
+          poster: "/assets/actors/vzmetnev-kinopoisk.jpg",
+          duration: "3:12",
+          caption: "Showreel · вертикаль · слейт в начале",
+          href: "/people/vzmetnev#showreel",
+        },
       },
       {
         id: "app-ty-ustyugov",
@@ -162,10 +182,61 @@ export function seedState(): WorkspaceState {
         actorName: "Александр Устюгов",
         actorAvatar: "/assets/actors/akter1/ustyugov-aleksandr.jpg",
         kind: "propose",
-        note: "Предложение агента на вторую мужскую из ростера «Актёр 1».",
+        note: "Предложение агента на вторую мужскую из ростера «Актёр 1». Занятость на июнь подтверждена.",
         status: "sent",
         source: "agent",
         createdAt: Date.parse("2026-05-27T15:00:00Z"),
+        match: "84%",
+        actorMeta: "Актёр · ростер «Актёр 1»",
+        tape: {
+          title: "Showreel Устюгова · 2023–2025",
+          poster: "/assets/actors/akter1/ustyugov-aleksandr.jpg",
+          duration: "1:48",
+          caption: "Драма / характер · предложение агента",
+          href: "/people/ustyugov-aleksandr#showreel",
+        },
+      },
+      {
+        id: "app-ty-metelkin",
+        castingSlug: "tihiy-yanvar-second",
+        actorSlug: "metelkin-aleksandr",
+        actorName: "Александр Метелкин",
+        actorAvatar: "/assets/actors/akter1/metelkin-aleksandr.jpg",
+        kind: "selftape",
+        note: "Самопроба одним файлом. Готов к очным 10–14 июня.",
+        status: "sent",
+        source: "actor",
+        createdAt: Date.parse("2026-05-28T16:20:00Z"),
+        match: "79%",
+        actorMeta: "Актёр · ростер «Актёр 1»",
+        tape: {
+          title: "Самопроба · сцена «Кухня»",
+          poster: "/assets/actors/akter1/metelkin-aleksandr.jpg",
+          duration: "2:05",
+          caption: "Только парная · слейт по стандарту",
+          href: "/people/metelkin-aleksandr#showreel",
+        },
+      },
+      {
+        id: "app-ty-chadov",
+        castingSlug: "tihiy-yanvar-second",
+        actorSlug: "chadov-aleksej",
+        actorName: "Алексей Чадов",
+        actorAvatar: "/assets/actors/akter1/chadov-aleksej.jpeg",
+        kind: "selftape",
+        note: "Обе сцены + короткий монолог. Могу на натуру в Мурманск.",
+        status: "invited",
+        source: "actor",
+        createdAt: Date.parse("2026-05-27T19:40:00Z"),
+        match: "88%",
+        actorMeta: "Актёр · ростер «Актёр 1»",
+        tape: {
+          title: "Самопроба · Кухня + Школа",
+          poster: "/assets/actors/akter1/chadov-aleksej.jpeg",
+          duration: "3:40",
+          caption: "Showreel-тон · приглашён на очные",
+          href: "/people/chadov-aleksej#showreel",
+        },
       },
       {
         id: "app-ty-lerman",
@@ -178,6 +249,78 @@ export function seedState(): WorkspaceState {
         status: "invited",
         source: "agent",
         createdAt: Date.parse("2026-05-28T09:30:00Z"),
+        match: "93%",
+        actorMeta: "Актриса · ростер «Актёр 1»",
+        tape: {
+          title: "Showreel Лерман · главная",
+          poster: "/assets/actors/akter1/lerman-olga.png",
+          duration: "2:10",
+          caption: "Предложение агента · сцены 01–03",
+          href: "/people/lerman-olga#showreel",
+        },
+      },
+      {
+        id: "app-ty-shilovskaya",
+        castingSlug: "tihiy-yanvar-lead",
+        actorSlug: "shilovskaya-aglaya",
+        actorName: "Аглая Шиловская",
+        actorAvatar: "/assets/actors/akter1/shilovskaya-aglaya.jpg",
+        kind: "selftape",
+        note: "Самопроба: «Звонок» + «Метель». Готова к очным 10–14 июня.",
+        status: "shortlist",
+        source: "actor",
+        createdAt: Date.parse("2026-05-28T12:10:00Z"),
+        match: "91%",
+        actorMeta: "Актриса · 30 · Москва",
+        tape: {
+          title: "Самопроба · Звонок + Метель",
+          poster: "/assets/actors/akter1/shilovskaya-aglaya.jpg",
+          duration: "3:05",
+          caption: "Showreel как самопроба · вертикаль",
+          href: "/people/shilovskaya-aglaya#showreel",
+        },
+      },
+      {
+        id: "app-ty-kutepova",
+        castingSlug: "tihiy-yanvar-lead",
+        actorSlug: "kutepova-polina",
+        actorName: "Полина Кутепова",
+        actorAvatar: "/assets/actors/akter1/kutepova-polina.jpg",
+        kind: "selftape",
+        note: "Все три сцены одним файлом. Могу на натуру в Мурманск.",
+        status: "sent",
+        source: "actor",
+        createdAt: Date.parse("2026-05-27T18:40:00Z"),
+        match: "87%",
+        actorMeta: "Актриса · ростер «Актёр 1»",
+        tape: {
+          title: "Самопроба · три сцены",
+          poster: "/assets/actors/akter1/kutepova-polina.jpg",
+          duration: "4:20",
+          caption: "Showreel · слейт по стандарту",
+          href: "/people/kutepova-polina#showreel",
+        },
+      },
+      {
+        id: "app-ty-hmelnickaya",
+        castingSlug: "tihiy-yanvar-lead",
+        actorSlug: "hmelnickaya-alyona",
+        actorName: "Алёна Хмельницкая",
+        actorAvatar: "/assets/actors/akter1/hmelnickaya-alyona.jpg",
+        kind: "propose",
+        note: "Предложение агента: сильный типаж учительницы, опыт в драме.",
+        status: "sent",
+        source: "agent",
+        createdAt: Date.parse("2026-05-26T16:00:00Z"),
+        match: "84%",
+        actorMeta: "Актриса · ростер «Актёр 1»",
+        tape: {
+          title: "Showreel Хмельницкой",
+          poster: "/assets/actors/akter1/hmelnickaya-alyona.jpg",
+          duration: "1:55",
+          caption: "Предложение агента · характер",
+          href: "/people/hmelnickaya-alyona#showreel",
+        },
       },
       {
         id: "app-okno-chadov",

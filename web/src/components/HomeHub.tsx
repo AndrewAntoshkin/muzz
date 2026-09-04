@@ -97,7 +97,7 @@ export function HomeHub({ faces }: { faces: FaceCard[] }) {
           ];
 
   function castingPrimaryHref(slug: string) {
-    if (role === "casting") return withRole(`/responses?casting=${slug}`, role);
+    if (role === "casting") return withRole(`/castings/${slug}/responses`, role);
     if (role === "agent") return withRole(`/compose?type=propose&casting=${slug}`, role);
     return withRole(`/castings/${slug}`, role);
   }

@@ -25,6 +25,9 @@ const pub = resolve(webRoot, "public/assets");
 mkdirSync(pub, { recursive: true });
 cpSync(resolve(assets, "logo.svg"), resolve(pub, "logo.svg"));
 cpSync(resolve(assets, "actors"), resolve(pub, "actors"), { recursive: true });
+if (existsSync(resolve(assets, "castings"))) {
+  cpSync(resolve(assets, "castings"), resolve(pub, "castings"), { recursive: true });
+}
 if (existsSync(resolve(assets, "ads"))) {
   cpSync(resolve(assets, "ads"), resolve(pub, "ads"), { recursive: true });
 }

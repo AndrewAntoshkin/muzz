@@ -55,6 +55,7 @@ export type CastingScene = {
   title: string;
   meta: string;
   duration: string;
+  href?: string;
 };
 
 export type CastingApplicant = {
@@ -262,6 +263,7 @@ export type Casting = {
   published?: string;
   timeline?: TimelineItem[];
   scenes?: CastingScene[];
+  scenesPdf?: string;
   applicants?: CastingApplicant[];
   docs?: ProjectDoc[];
 };
@@ -582,10 +584,29 @@ export const CASTINGS: Casting[] = [
       { date: "1 июля", title: "Старт препрода", meta: "съёмки с 5 августа", state: "future" },
     ],
     scenes: [
-      { num: "01", title: "«Звонок из школы» · с режиссёром", meta: "2 страницы · диалог с директором школы · крупный план", duration: "1:45" },
-      { num: "02", title: "«Метель» · монолог", meta: "1 страница · 1 на 1, без партнёра · средний план", duration: "1:10" },
-      { num: "03", title: "«Поезд» · парная", meta: "3 страницы · партнёр — мужчина 35–45 · общий план", duration: "2:30" },
+      {
+        num: "01",
+        title: "«Звонок из школы» · с режиссёром",
+        meta: "2 страницы · диалог с директором школы · крупный план",
+        duration: "1:45",
+        href: "/assets/castings/tihiy-yanvar/scene-lead-01-zvonok.pdf",
+      },
+      {
+        num: "02",
+        title: "«Метель» · монолог",
+        meta: "1 страница · 1 на 1, без партнёра · средний план",
+        duration: "1:10",
+        href: "/assets/castings/tihiy-yanvar/scene-lead-02-metel.pdf",
+      },
+      {
+        num: "03",
+        title: "«Поезд» · парная",
+        meta: "3 страницы · партнёр — мужчина 35–45 · общий план",
+        duration: "2:30",
+        href: "/assets/castings/tihiy-yanvar/scene-lead-03-poezd.pdf",
+      },
     ],
+    scenesPdf: "/assets/castings/tihiy-yanvar/scenes-lead-all.pdf",
     applicants: [
       {
         name: "Мария Коваль",
@@ -645,9 +666,22 @@ export const CASTINGS: Casting[] = [
       { date: "10–14 июня", title: "Очные пробы · Москва", meta: "студия Sreda", state: "future" },
     ],
     scenes: [
-      { num: "01", title: "«Кухня» · парная", meta: "2 страницы · диалог с героиней", duration: "1:50" },
-      { num: "02", title: "«Школа» · деловой", meta: "1 страница · короткий конфликт", duration: "1:05" },
+      {
+        num: "01",
+        title: "«Кухня» · парная",
+        meta: "2 страницы · диалог с героиней",
+        duration: "1:50",
+        href: "/assets/castings/tihiy-yanvar/scene-01-kuhnya.pdf",
+      },
+      {
+        num: "02",
+        title: "«Школа» · деловой",
+        meta: "1 страница · короткий конфликт",
+        duration: "1:05",
+        href: "/assets/castings/tihiy-yanvar/scene-02-shkola.pdf",
+      },
     ],
+    scenesPdf: "/assets/castings/tihiy-yanvar/scenes-all.pdf",
     applicants: [
       {
         name: "Александр Взметнев",
