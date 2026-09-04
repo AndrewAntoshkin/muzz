@@ -170,7 +170,7 @@ export function HomeHub({ faces }: { faces: FaceCard[] }) {
                     <p className="feed-card__text">{post.text}</p>
                   </article>
                 ))}
-                {feedCastings.map((p) => {
+                {(role === "casting" ? feedCastings : feedCastings.slice(0, 4)).map((p) => {
                   const project = getProject(p.projectSlug);
                   const cardHref = withRole(`/castings/${p.slug}`, role);
                   const actionHref = castingPrimaryHref(p.slug);
@@ -284,7 +284,7 @@ export function HomeHub({ faces }: { faces: FaceCard[] }) {
                 </Link>
               </header>
               <div className="feed-list feed-list--compact">
-                {visibleProjects.map((p) => {
+                {(role === "casting" ? visibleProjects : visibleProjects.slice(0, 4)).map((p) => {
                   const href = withRole(`/projects/${p.slug}`, role);
                   const related = castingsForProject(p.slug);
                   return (
@@ -335,7 +335,7 @@ export function HomeHub({ faces }: { faces: FaceCard[] }) {
                   <h2 className="hub-block__title">{hub.peopleTitle}</h2>
                   <p className="hub-block__lead">{hub.peopleLead}</p>
                 </div>
-                <Link href={withRole(role === "agent" ? "/search?mine=1" : "/search", role)} className="hub-block__link">
+                <Link href={withRole(role === "agent" ? "/search?mine=1" : role === "casting" ? "/faces" : "/search", role)} className="hub-block__link">
                   {role === "agent" ? `Ростер · ${people.length} →` : `Все ${people.length} →`}
                 </Link>
               </header>

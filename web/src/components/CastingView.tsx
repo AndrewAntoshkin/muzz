@@ -71,9 +71,9 @@ export function CastingView({ slug }: { slug: string }) {
   }
 
   return (
-    <div className="page-scroll detail-page">
+    <div className="page-scroll detail-page casting-detail">
       <div className="detail-grid">
-        <div>
+        <div className="casting-detail__main">
           <section className="detail-hero">
             <div className="detail-hero__img">
               <img src={casting.media} alt="" />
@@ -81,42 +81,37 @@ export function CastingView({ slug }: { slug: string }) {
             <div className="detail-hero__body">
               <p className="detail-hero__crumb">{crumb}</p>
               <h1 className="detail-hero__title">
-                {casting.title}
-                {project ? ` — ${project.title}` : ""}
+                <span className="casting-detail__role">{casting.title}</span>
+                {project ? <span className="casting-detail__film">{project.title}</span> : null}
               </h1>
-              <p className="detail-hero__meta">
-                {project ? (
-                  <Link
-                    href={withRole(`/projects/${project.slug}`, role)}
-                    style={{ textDecoration: "none", color: "inherit", display: "inline-flex", alignItems: "center", gap: 6 }}
-                  >
-                    <img
-                      src={project.studioAvatar}
-                      alt=""
-                      style={{ width: 24, height: 24, borderRadius: "50%", objectFit: "cover" }}
-                    />
-                    <strong>{project.studio}</strong>
-                  </Link>
-                ) : (
-                  <strong>{casting.cdName}</strong>
-                )}
+              {project ? (
+                <Link href={withRole(`/projects/${project.slug}`, role)} className="casting-detail__byline">
+                  <img src={project.studioAvatar} alt="" />
+                  <span>{project.studio}</span>
+                </Link>
+              ) : (
+                <div className="casting-detail__byline">{casting.cdName}</div>
+              )}
+              <dl className="casting-detail__stats">
                 {casting.published ? (
-                  <>
-                    <span>·</span>
-                    <span>Опубликовано {casting.published}</span>
-                  </>
+                  <div>
+                    <dt>Опубликовано</dt>
+                    <dd>{casting.published}</dd>
+                  </div>
                 ) : null}
-                <span>·</span>
-                <span className="tag tag-orange">Дедлайн · {casting.deadline}</span>
+                <div>
+                  <dt>Дедлайн</dt>
+                  <dd className="casting-detail__deadline">{casting.deadline}</dd>
+                </div>
                 {role !== "actor" ? (
-                  <>
-                    <span>·</span>
-                    <span>
-                      <strong>{n}</strong> {ruWord(n, "отклик", "отклика", "откликов")}
-                    </span>
-                  </>
+                  <div>
+                    <dt>Отклики</dt>
+                    <dd>
+                      {n} {ruWord(n, "отклик", "отклика", "откликов")}
+                    </dd>
+                  </div>
                 ) : null}
-              </p>
+              </dl>
               <div className="detail-hero__actions">
                 {role === "casting" ? (
                   <Link href={withRole(`/castings/${casting.slug}/responses`, role)} className="btn-primary">
@@ -149,12 +144,10 @@ export function CastingView({ slug }: { slug: string }) {
             <div className="detail-block__head">
               <h2 className="detail-block__title">О роли</h2>
             </div>
-            <p style={{ fontSize: 15, lineHeight: 1.6, color: "var(--text)" }}>{casting.text}</p>
-            {project?.logline ? (
-              <p style={{ fontSize: 14, lineHeight: 1.6, color: "var(--text-muted)", marginTop: 12 }}>{project.logline}</p>
-            ) : null}
+            <p className="casting-detail__lead">{casting.text}</p>
+            {project?.logline ? <p className="casting-detail__logline">{project.logline}</p> : null}
             {casting.facts.length ? (
-              <dl className="feed-card__facts" style={{ marginTop: 14 }}>
+              <dl className="feed-card__facts casting-detail__facts">
                 {casting.facts.map(([k, v]) => (
                   <div className="feed-card__fact" key={k}>
                     <dt>{k}</dt>
@@ -166,7 +159,7 @@ export function CastingView({ slug }: { slug: string }) {
           </section>
 
           {casting.scenes?.length ? (
-            <section className="detail-block">
+            <section className="casting-detail__files">
               <div className="detail-block__head">
                 <h2 className="detail-block__title">Сцены для самопробы</h2>
                 {casting.scenesPdf ? (
@@ -203,8 +196,9 @@ export function CastingView({ slug }: { slug: string }) {
                   );
                 })}
               </div>
-              <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 10 }}>
-                Слейт-стандарт: имя · рост · агентство · «{project?.title ?? casting.title} · самопроба». Вертикально, естественный свет, без музыки.
+              <p className="casting-detail__slate">
+                Слейт-стандарт: имя · рост · агентство · {project?.title ?? casting.title} · самопроба.
+                Вертикально, естественный свет, без музыки.
               </p>
             </section>
           ) : null}
@@ -213,11 +207,13 @@ export function CastingView({ slug }: { slug: string }) {
             <section className="detail-block">
               <div className="detail-block__head">
                 <h2 className="detail-block__title">Ваша самопроба</h2>
-                <span style={{ fontSize: 12, color: "var(--text-muted)" }}>до {casting.deadline}</span>
+                <span className="casting-detail__deadline-hint">до {casting.deadline}</span>
               </div>
               <div className="tape-upload">
                 <div className="tape-upload__title">Загрузите 1 видео до 500 МБ</div>
-                <div className="tape-upload__hint">MP4 / MOV. Желательно 1080p, вертикально. Сцены — одним файлом, склейка без переходов.</div>
+                <div className="tape-upload__hint">
+                  MP4 / MOV. Желательно 1080p, вертикально. Сцены — одним файлом, склейка без переходов.
+                </div>
                 <button type="button" className="btn-primary" onClick={() => applyToCasting(casting.slug, "selftape")}>
                   {applied ? "Самопроба отправлена" : "Выбрать файл"}
                 </button>
@@ -226,11 +222,9 @@ export function CastingView({ slug }: { slug: string }) {
           ) : null}
 
           {role === "casting" ? (
-            <section className="detail-block">
+            <section className="casting-detail__people">
               <div className="detail-block__head">
-                <h2 className="detail-block__title">
-                  Кто уже откликнулся · {n}
-                </h2>
+                <h2 className="detail-block__title">Кто уже откликнулся · {n}</h2>
                 <Link href={withRole(`/castings/${casting.slug}/responses`, role)} className="detail-block__link">
                   Все отклики →
                 </Link>
@@ -238,30 +232,25 @@ export function CastingView({ slug }: { slug: string }) {
               <div className="responses-list">
                 {(casting.applicants ?? [])
                   .filter((person) => {
-                    const slug = person.href?.replace(/^\/people\//, "");
-                    if (slug) return !liveApps.some((a) => a.actorSlug === slug);
+                    const personSlug = person.href?.replace(/^\/people\//, "");
+                    if (personSlug) return !liveApps.some((a) => a.actorSlug === personSlug);
                     return !liveApps.some((a) => a.actorName === person.name);
                   })
                   .map((person) => (
-                  <div key={person.name} className="response-row">
-                    {person.avatar ? <img src={person.avatar} alt="" /> : null}
-                    <div>
-                      <div className="response-row__name">{person.name}</div>
-                      <div className="response-row__meta">{person.meta}</div>
+                    <div key={person.name} className="response-row">
+                      {person.avatar ? <img src={person.avatar} alt="" /> : null}
+                      <div>
+                        <div className="response-row__name">{person.name}</div>
+                        <div className="response-row__meta">{person.meta}</div>
+                      </div>
+                      <div className="response-row__stat">
+                        <strong>{person.match}</strong> совпадение
+                      </div>
+                      <span className={`tag ${TAG_CLS[person.tagKind]}`}>{person.tag}</span>
                     </div>
-                    <div className="response-row__stat">
-                      <strong>{person.match}</strong> совпадение
-                    </div>
-                    <span className={`tag ${TAG_CLS[person.tagKind]}`}>{person.tag}</span>
-                  </div>
-                ))}
+                  ))}
                 {liveApps.map((app) => (
-                  <Link
-                    key={app.id}
-                    href={withRole(`/responses/${app.id}`, role)}
-                    className="response-row"
-                    style={{ textDecoration: "none", color: "inherit" }}
-                  >
+                  <Link key={app.id} href={withRole(`/responses/${app.id}`, role)} className="response-row">
                     {app.actorAvatar ? (
                       <img src={app.actorAvatar} alt="" />
                     ) : (
@@ -308,61 +297,54 @@ export function CastingView({ slug }: { slug: string }) {
         <aside className="detail-side">
           <section className="detail-side__panel">
             <div className="detail-side__title">Команда проекта</div>
-            {project ? (
-              <Link
-                href={withRole(`/projects/${project.slug}`, role)}
-                className="response-row"
-                style={{ gridTemplateColumns: "36px 1fr", padding: "6px 0", border: "none", textDecoration: "none", color: "inherit" }}
-              >
-                <img src={project.studioAvatar} alt="" style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover" }} />
-                <div>
-                  <div className="response-row__name">{project.studio}</div>
-                  <div className="response-row__meta">Продакшн-компания</div>
-                </div>
-              </Link>
-            ) : null}
-            {team.map((member) => {
-              const inner = (
-                <>
-                  {member.avatar ? (
-                    <img src={member.avatar} alt="" style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover" }} />
-                  ) : (
-                    <span className="project-team-card__ava" style={{ background: member.bg || "#2c2c2b", width: 36, height: 36 }}>
-                      {member.initials || member.name.slice(0, 2)}
-                    </span>
-                  )}
+            <div className="casting-team">
+              {project ? (
+                <Link href={withRole(`/projects/${project.slug}`, role)} className="casting-team__row">
+                  <img src={project.studioAvatar} alt="" />
                   <div>
-                    <div className="response-row__name">{member.name}</div>
-                    <div className="response-row__meta">{member.role}</div>
+                    <div className="response-row__name">{project.studio}</div>
+                    <div className="response-row__meta">Продакшн-компания</div>
                   </div>
-                </>
-              );
-              const rowStyle = { gridTemplateColumns: "36px 1fr", padding: "6px 0", border: "none", textDecoration: "none", color: "inherit" } as const;
-              if (member.href) {
-                return (
-                  <Link key={`${member.name}-${member.role}`} href={withRole(member.href, role)} className="response-row" style={rowStyle}>
-                    {inner}
-                  </Link>
+                </Link>
+              ) : null}
+              {team.map((member) => {
+                const inner = (
+                  <>
+                    {member.avatar ? (
+                      <img src={member.avatar} alt="" />
+                    ) : (
+                      <span className="project-team-card__ava" style={{ background: member.bg || "#2c2c2b" }}>
+                        {member.initials || member.name.slice(0, 2)}
+                      </span>
+                    )}
+                    <div>
+                      <div className="response-row__name">{member.name}</div>
+                      <div className="response-row__meta">{member.role}</div>
+                    </div>
+                  </>
                 );
-              }
-              return (
-                <div key={`${member.name}-${member.role}`} className="response-row" style={rowStyle}>
-                  {inner}
-                </div>
-              );
-            })}
-            {!project && (
-              <Link
-                href={withRole(`/people/${casting.cdSlug}`, role)}
-                className="response-row"
-                style={{ gridTemplateColumns: "1fr", padding: "6px 0", border: "none", textDecoration: "none", color: "inherit" }}
-              >
-                <div>
-                  <div className="response-row__name">{casting.cdName}</div>
-                  <div className="response-row__meta">Кастинг-директор</div>
-                </div>
-              </Link>
-            )}
+                if (member.href) {
+                  return (
+                    <Link key={`${member.name}-${member.role}`} href={withRole(member.href, role)} className="casting-team__row">
+                      {inner}
+                    </Link>
+                  );
+                }
+                return (
+                  <div key={`${member.name}-${member.role}`} className="casting-team__row">
+                    {inner}
+                  </div>
+                );
+              })}
+              {!project ? (
+                <Link href={withRole(`/people/${casting.cdSlug}`, role)} className="casting-team__row">
+                  <div>
+                    <div className="response-row__name">{casting.cdName}</div>
+                    <div className="response-row__meta">Кастинг-директор</div>
+                  </div>
+                </Link>
+              ) : null}
+            </div>
           </section>
 
           <section className="detail-side__panel">
@@ -381,7 +363,7 @@ export function CastingView({ slug }: { slug: string }) {
           {casting.docs?.length ? (
             <section className="detail-side__panel">
               <div className="detail-side__title">Документы</div>
-              <dl className="detail-kv">
+              <dl className="detail-kv detail-kv--stack">
                 {casting.docs.map((row) => (
                   <FragmentDoc key={row.label} label={row.label} value={row.value} />
                 ))}
@@ -390,14 +372,14 @@ export function CastingView({ slug }: { slug: string }) {
           ) : null}
 
           {project ? (
-            <section className="detail-side__panel" style={{ background: "rgba(85,240,139,0.08)", border: "none" }}>
-              <div className="detail-side__title" style={{ color: "#55f08b" }}>
+            <section className="detail-side__panel casting-detail__pulse">
+              <div className="detail-side__title">
                 {project.studio} · отвечает
               </div>
-              <p style={{ fontSize: 13, color: "#55f08b", lineHeight: 1.5, margin: "0 0 8px" }}>
+              <p>
                 Медиана ответа на отклик — <strong>1 день 6 часов</strong>. Конверсия в очные пробы — <strong>14%</strong>.
               </p>
-              <Link href={withRole(`/projects/${project.slug}`, role)} className="link-accent" style={{ fontWeight: 600, fontSize: 13 }}>
+              <Link href={withRole(`/projects/${project.slug}`, role)} className="casting-detail__side-link">
                 К проекту →
               </Link>
             </section>

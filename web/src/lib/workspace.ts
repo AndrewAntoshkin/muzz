@@ -4,6 +4,7 @@ import {
   type Casting,
   type Project,
 } from "@/lib/productions";
+import type { Credit, KvPair, Schedule, Showreel } from "@/lib/person-card";
 import type { RoleId } from "@/lib/roles";
 
 export const WORKSPACE_KEY = "kadr-workspace-v9";
@@ -26,13 +27,22 @@ export type ActorPulse = {
   updatedAt: number;
 };
 
+export type ProfileLink = { id: string; kind: string; url: string };
+export type ProfilePhoto = { id: string; url: string };
+
 export type ProfilePatch = {
   bio?: string;
   city?: string;
-  params?: { label: string; value: string }[];
-  appearance?: { label: string; value: string }[];
-  languages?: { label: string; value: string }[];
+  params?: KvPair[];
+  appearance?: KvPair[];
+  languages?: KvPair[];
   skills?: string[];
+  education?: string;
+  showreel?: Showreel | null;
+  photos?: ProfilePhoto[];
+  schedule?: Schedule | null;
+  credits?: Credit[];
+  links?: ProfileLink[];
 };
 
 export type AppStatus = "sent" | "shortlist" | "invited" | "declined";
@@ -397,7 +407,7 @@ export function seedState(): WorkspaceState {
         createdAt: Date.parse("2026-05-28T12:30:00Z"),
       },
     ],
-    saved: ["casting:tihiy-yanvar-second", "casting:okno-hosts"],
+    saved: ["casting:tihiy-yanvar-second", "casting:okno-hosts", "project:tihiy-yanvar"],
     settings: { notifyEmail: true, notifyPush: false },
     profilePatches: {},
     pulses: [

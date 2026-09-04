@@ -2,22 +2,28 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { CatalogFilterBar, CatalogSearchField } from "@/components/CatalogFilterBar";
 import { FacesCatalog } from "@/components/FacesCatalog";
+import { UnifiedSearch } from "@/components/UnifiedSearch";
+import { IconCheck, IconFilm, IconPin, IconProject } from "@/components/icons";
 import { useDemoRole } from "@/components/useDemoRole";
 import { useWorkspace } from "@/components/useWorkspace";
+import {
+  ACTOR_PROFESSION_FILTERS,
+  CITY_FILTERS,
+  FORMAT_FILTERS,
+  PLATFORM_FILTERS,
+  matchesCity,
+  matchesPlatform,
+  projectFormats,
+  ruCount,
+  ruPlural,
+} from "@/lib/labels";
 import type { FaceCard } from "@/lib/people";
 import type { Casting, Project } from "@/lib/productions";
 import { withRole } from "@/lib/roles";
 
 type Tab = "all" | "projects" | "castings";
-
-function plural(n: number, one: string, few: string, many: string) {
-  const n10 = n % 10;
-  const n100 = n % 100;
-  if (n10 === 1 && n100 !== 11) return one;
-  if (n10 >= 2 && n10 <= 4 && (n100 < 12 || n100 > 14)) return few;
-  return many;
-}
 
 function matchesQuery(hay: string, query: string) {
   if (!query) return true;
@@ -36,31 +42,34 @@ export function SearchSwitch({
   people,
   initialProfession = "",
   mine = false,
+  agency = "",
 }: {
   people: FaceCard[];
   initialProfession?: string;
   mine?: boolean;
+  agency?: string;
 }) {
   const { role } = useDemoRole();
-  if (role === "actor") return <ProductionSearch />;
   const roster = people.filter(
-    (p) => p.agencyId === "akter1" && (p.profession === "actor" || p.profession === "actress"),
+    (p) => p.agencyId === (agency || "akter1") && (p.profession === "actor" || p.profession === "actress"),
   );
-  const list = role === "agent" && mine ? roster : people;
-  return (
-    <FacesCatalog
-      people={list}
-      initialProfession={initialProfession}
-      title={mine ? "Мои актёры" : "Поиск"}
-      lead={
-        mine
-          ? "Ростер агентства «Актёр 1»."
-          : role === "agent"
-            ? "Вся база. Ростер — в «Мои актёры»."
-            : "Все люди в «Кадре»: актёры, кастинг-директора и агенты."
-      }
-    />
-  );
+  if ((role === "agent" && mine) || agency) {
+    return (
+      <FacesCatalog
+        people={roster}
+        initialProfession={initialProfession}
+        professionFilters={ACTOR_PROFESSION_FILTERS}
+        title={mine ? "Мои актёры" : "Ростер"}
+        lead={mine ? "Ростер агентства «Актёр 1» — ваши актёры." : "Ростер агентства «Актёр 1»."}
+        placeholder="Имя или город…"
+        wide
+        dense
+      />
+    );
+  }
+  if (role === "actor") return <ProductionSearch />;
+  const actors = people.filter((p) => p.profession === "actor" || p.profession === "actress");
+  return <UnifiedSearch people={actors} />;
 }
 
 export function ProductionSearch() {
@@ -68,22 +77,52 @@ export function ProductionSearch() {
   const { projects, castings, getProject, castingsForProject, responseCount } = useWorkspace();
   const [q, setQ] = useState("");
   const [tab, setTab] = useState<Tab>("all");
+  const [format, setFormat] = useState("");
+  const [city, setCity] = useState("");
+  const [platform, setPlatform] = useState("");
+  const [urgentOnly, setUrgentOnly] = useState(false);
 
   const query = q.trim().toLowerCase();
 
   const matchedProjects = useMemo(
-    () => projects.filter((p) => matchesQuery(projectHay(p), query)),
-    [query, projects],
+    () =>
+      projects.filter((p) => {
+        if (format && !projectFormats(p.kind).includes(format)) return false;
+        if (!matchesCity(p.city, city)) return false;
+        if (!matchesPlatform(p.platform, platform)) return false;
+        if (urgentOnly && !castingsForProject(p.slug).some((c) => c.urgent)) return false;
+        return matchesQuery(projectHay(p), query);
+      }),
+    [query, projects, format, city, platform, urgentOnly, castingsForProject],
   );
   const matchedCastings = useMemo(
     () =>
-      castings.filter((c) => matchesQuery(castingHay(c, getProject(c.projectSlug)), query)),
-    [query, castings, getProject],
+      castings.filter((c) => {
+        const project = getProject(c.projectSlug);
+        if (format && project && !projectFormats(project.kind).includes(format)) return false;
+        if (!matchesCity(`${c.meta} ${project?.city ?? ""}`, city)) return false;
+        if (platform && !(matchesPlatform(project?.platform ?? "", platform) || matchesPlatform(c.meta, platform))) {
+          return false;
+        }
+        if (urgentOnly && !c.urgent) return false;
+        return matchesQuery(castingHay(c, project), query);
+      }),
+    [query, castings, getProject, format, city, platform, urgentOnly],
   );
 
   const visibleProjects = tab === "castings" ? [] : matchedProjects;
   const visibleCastings = tab === "projects" ? [] : matchedCastings;
   const empty = visibleProjects.length + visibleCastings.length === 0;
+  const total = visibleProjects.length + visibleCastings.length;
+
+  function reset() {
+    setQ("");
+    setTab("all");
+    setFormat("");
+    setCity("");
+    setPlatform("");
+    setUrgentOnly(false);
+  }
 
   return (
     <div className="page-scroll catalog-page" id="production-search">
@@ -92,13 +131,13 @@ export function ProductionSearch() {
       <div className="catalog-stats" aria-label="Сводка">
         <div className="catalog-stat">
           <strong>{matchedProjects.length}</strong>
-          <span>{plural(matchedProjects.length, "проект", "проекта", "проектов")}</span>
+          <span>{ruPlural(matchedProjects.length, "проект", "проекта", "проектов")}</span>
           <em>в производстве</em>
         </div>
         <div className="catalog-stat">
           <strong>{matchedCastings.length}</strong>
           <span>
-            {plural(
+            {ruPlural(
               matchedCastings.length,
               "открытый кастинг",
               "открытых кастинга",
@@ -109,22 +148,48 @@ export function ProductionSearch() {
         </div>
       </div>
 
-      <label className="catalog-search">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-          <circle cx="11" cy="11" r="7" />
-          <path d="m20 20-3.5-3.5" />
-        </svg>
-        <input
-          type="search"
-          aria-label="Поиск проектов и кастингов"
-          placeholder="Название, студия, платформа или роль…"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-        />
-        <span className="catalog-search__count">
-          {visibleProjects.length + visibleCastings.length}
-        </span>
-      </label>
+      <CatalogSearchField
+        value={q}
+        onChange={setQ}
+        placeholder="Название, студия, платформа или роль…"
+        ariaLabel="Поиск проектов и кастингов"
+      />
+      <CatalogFilterBar
+        filters={[
+          {
+            id: "format",
+            icon: <IconFilm />,
+            placeholder: "Формат",
+            value: format,
+            options: FORMAT_FILTERS,
+            onChange: setFormat,
+          },
+          {
+            id: "city",
+            icon: <IconPin />,
+            placeholder: "Город",
+            value: city,
+            options: CITY_FILTERS,
+            onChange: setCity,
+          },
+          {
+            id: "platform",
+            icon: <IconProject />,
+            placeholder: "Платформа",
+            value: platform,
+            options: PLATFORM_FILTERS,
+            onChange: setPlatform,
+          },
+        ]}
+        toggle={{
+          icon: <IconCheck />,
+          label: "Только срочные",
+          on: urgentOnly,
+          onToggle: () => setUrgentOnly((v) => !v),
+        }}
+        onReset={reset}
+        countLabel={ruCount(total, "результат", "результата", "результатов")}
+      />
 
       <div className="search-tabs">
         {(
@@ -148,7 +213,7 @@ export function ProductionSearch() {
       {empty ? (
         <p className="catalog-empty">
           По запросу ничего не найдено.{" "}
-          <button type="button" className="btn-ghost" onClick={() => { setQ(""); setTab("all"); }}>
+          <button type="button" className="btn-ghost" onClick={reset}>
             Сбросить
           </button>
         </p>

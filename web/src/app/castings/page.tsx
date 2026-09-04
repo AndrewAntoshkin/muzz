@@ -1,89 +1,57 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { CatalogFilterBar, CatalogSearchField } from "@/components/CatalogFilterBar";
+import { CastingTile } from "@/components/CatalogTiles";
+import { IconCheck, IconFaces, IconPin } from "@/components/icons";
 import { useDemoRole } from "@/components/useDemoRole";
 import { useWorkspace } from "@/components/useWorkspace";
-import { profileSlug, withRole, type RoleId } from "@/lib/roles";
-import type { Casting } from "@/lib/productions";
-
-function CastingTile({
-  c,
-  role,
-  responses,
-  projectTitle,
-  projectStudio,
-}: {
-  c: Casting;
-  role: RoleId;
-  responses: number;
-  projectTitle?: string;
-  projectStudio?: string;
-}) {
-  const href =
-    role === "casting"
-      ? withRole(`/castings/${c.slug}/responses`, role)
-      : role === "agent"
-        ? withRole(`/compose?type=propose&casting=${c.slug}`, role)
-        : withRole(`/castings/${c.slug}`, role);
-  const cardHref = withRole(`/castings/${c.slug}`, role);
-  const cta =
-    role === "casting" ? "Отклики" : role === "agent" ? "Предложить" : "Откликнуться";
-  const showResponses = role !== "actor";
-  const fee = c.facts.find(([k]) => k === "Гонорар")?.[1];
-
-  return (
-    <article className="casting-tile">
-      <Link href={cardHref} className="casting-tile__cover">
-        <img src={c.media} alt="" />
-        {c.urgent ? <span className="casting-tile__badge casting-tile__badge--urgent">Срочно</span> : null}
-      </Link>
-
-      <div className="casting-tile__body">
-        <div className="casting-tile__tags">
-          <span className="casting-tile__role">{c.roleLabel}</span>
-          {fee ? <span className="casting-tile__fee">{fee}</span> : null}
-        </div>
-
-        <h2 className="casting-tile__title">
-          <Link href={cardHref}>{c.title}</Link>
-        </h2>
-
-        <p className="casting-tile__project">{projectTitle ?? c.cdName}</p>
-        <p className="casting-tile__meta">
-          {projectStudio ? `${projectStudio} · ` : ""}
-          {c.meta}
-        </p>
-
-        <div className="casting-tile__deadline">
-          <span>Дедлайн</span>
-          <strong>{c.deadline}</strong>
-        </div>
-
-        <footer className="casting-tile__foot">
-          {showResponses ? (
-            <span className="casting-tile__responses">{responses} откликов</span>
-          ) : (
-            <span className="casting-tile__responses casting-tile__responses--empty" aria-hidden="true" />
-          )}
-          <Link href={href} className="btn-primary btn-sm">
-            {cta}
-          </Link>
-        </footer>
-      </div>
-    </article>
-  );
-}
+import {
+  CASTING_ROLE_FILTERS,
+  CITY_FILTERS,
+  castingRoleKind,
+  matchesCity,
+  ruCount,
+} from "@/lib/labels";
+import { profileSlug, withRole } from "@/lib/roles";
 
 export default function CastingsPage() {
   const { role, cfg } = useDemoRole();
   const { castings, castingsForCd, getProject, responseCount } = useWorkspace();
   const cdSlug = profileSlug(cfg);
+  const [q, setQ] = useState("");
+  const [roleKind, setRoleKind] = useState("");
+  const [city, setCity] = useState("");
+  const [urgentOnly, setUrgentOnly] = useState(false);
 
-  const list = useMemo(() => {
+  const source = useMemo(() => {
     if (role === "casting") return castingsForCd(cdSlug);
     return castings;
   }, [role, castings, castingsForCd, cdSlug]);
+
+  const list = useMemo(() => {
+    const query = q.trim().toLowerCase();
+    return source.filter((c) => {
+      const project = getProject(c.projectSlug);
+      if (roleKind && castingRoleKind(c.roleLabel) !== roleKind) return false;
+      if (!matchesCity(`${c.meta} ${project?.city ?? ""}`, city)) return false;
+      if (urgentOnly && !c.urgent) return false;
+      if (query) {
+        const hay =
+          `${c.title} ${c.roleLabel} ${c.text} ${c.meta} ${c.cdName} ${project?.title ?? ""} ${project?.studio ?? ""} ${project?.platform ?? ""}`.toLowerCase();
+        if (!hay.includes(query)) return false;
+      }
+      return true;
+    });
+  }, [source, q, roleKind, city, urgentOnly, getProject]);
+
+  function reset() {
+    setQ("");
+    setRoleKind("");
+    setCity("");
+    setUrgentOnly(false);
+  }
 
   return (
     <div className="app-main__body app-main__body--catalog">
@@ -95,7 +63,7 @@ export default function CastingsPage() {
                 ? "Ваши открытые роли — отклики и дедлайны"
                 : role === "agent"
                   ? "Роли, куда можно предложить актёров из ростера"
-                  : "Открытые роли в кино, сериалах и рекламе"}
+                  : "Все открытые роли в кино, сериалах и рекламе"}
             </p>
             {role === "casting" ? (
               <Link href={withRole("/compose?type=casting", role)} className="btn-primary btn-sm catalog-page__cta">
@@ -103,6 +71,41 @@ export default function CastingsPage() {
               </Link>
             ) : null}
           </header>
+
+          <CatalogSearchField
+            value={q}
+            onChange={setQ}
+            placeholder="Название, роль, студия или город…"
+            ariaLabel="Поиск по кастингам"
+          />
+          <CatalogFilterBar
+            filters={[
+              {
+                id: "role",
+                icon: <IconFaces />,
+                placeholder: "Роль",
+                value: roleKind,
+                options: CASTING_ROLE_FILTERS,
+                onChange: setRoleKind,
+              },
+              {
+                id: "city",
+                icon: <IconPin />,
+                placeholder: "Город",
+                value: city,
+                options: CITY_FILTERS,
+                onChange: setCity,
+              },
+            ]}
+            toggle={{
+              icon: <IconCheck />,
+              label: "Только срочные",
+              on: urgentOnly,
+              onToggle: () => setUrgentOnly((v) => !v),
+            }}
+            onReset={reset}
+            countLabel={ruCount(list.length, "кастинг", "кастинга", "кастингов")}
+          />
 
           <div className="catalog-results">
             {list.length ? (
@@ -123,13 +126,18 @@ export default function CastingsPage() {
               </div>
             ) : (
               <p className="catalog-empty">
-                {role === "casting" ? (
+                {role === "casting" && !q && !roleKind && !city && !urgentOnly ? (
                   <>
                     Пока нет опубликованных кастингов.{" "}
                     <Link href={withRole("/compose?type=casting", role)}>Создать первый →</Link>
                   </>
                 ) : (
-                  "Открытых кастингов пока нет."
+                  <>
+                    По запросу ничего не найдено.{" "}
+                    <button type="button" className="btn-ghost" onClick={reset}>
+                      Сбросить
+                    </button>
+                  </>
                 )}
               </p>
             )}

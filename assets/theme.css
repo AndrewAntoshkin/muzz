@@ -2035,11 +2035,11 @@ a.btn-ghost:visited {
   text-decoration: none;
 }
 
-/* —— сетка кастингов (2 колонки, не как проекты) —— */
+/* —— сетка кастингов: 3 в ряд —— */
 .casting-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
   min-width: 0;
 }
 
@@ -3249,12 +3249,14 @@ a.btn-ghost:visited {
   display: flex;
   align-items: center;
   gap: 10px;
-  height: 44px;
-  padding: 0 16px 0 14px;
+  flex: 0 0 52px;
+  min-height: 52px;
+  height: 52px;
+  padding: 0 18px 0 16px;
   margin-bottom: 12px;
   background: var(--ss-surface-subtle);
   border: 1.5px solid transparent;
-  border-radius: 22px;
+  border-radius: 26px;
   box-shadow: none;
   box-sizing: border-box;
 }
@@ -3265,7 +3267,10 @@ a.btn-ghost:visited {
 }
 
 .catalog-search svg {
+  display: block;
   flex-shrink: 0;
+  width: 18px;
+  height: 18px;
   color: var(--text-muted);
 }
 
@@ -3273,7 +3278,8 @@ a.btn-ghost:visited {
 .catalog-search input[type="search"] {
   flex: 1;
   min-width: 0;
-  height: auto;
+  height: 28px;
+  min-height: 28px;
   padding: 0;
   border: none;
   outline: none;
@@ -3281,7 +3287,8 @@ a.btn-ghost:visited {
   box-shadow: none;
   border-radius: 0;
   font: inherit;
-  font-size: 15px;
+  font-size: 16px;
+  line-height: 28px;
   -webkit-appearance: none;
   appearance: none;
 }
@@ -3557,12 +3564,24 @@ a.btn-ghost:visited {
 
 .responses-list { display: flex; flex-direction: column; gap: 8px; }
 .response-row {
-  display: grid; grid-template-columns: 44px 1fr auto auto; gap: 12px; align-items: center;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 12px; align-items: center;
   padding: 10px 12px; border: 1px solid var(--hairline); border-radius: 12px; background: var(--ss-surface-subtle);
+  min-width: 0;
+}
+.response-row:has(> img),
+.response-row:has(> .project-team-card__ava) {
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+}
+.response-row > div { min-width: 0; }
+.response-row .tag {
+  width: max-content;
+  max-width: 100%;
+  justify-self: end;
+  white-space: nowrap;
 }
 .response-row img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
-.response-row__name { font-weight: 600; font-size: 14px; }
-.response-row__meta { color: var(--text-muted); font-size: 12px; }
+.response-row__name { font-weight: 600; font-size: 14px; overflow-wrap: anywhere; }
+.response-row__meta { color: var(--text-muted); font-size: 12px; line-height: 1.4; overflow-wrap: anywhere; }
 .response-row__stat { font-size: 12px; color: var(--text-muted); }
 .response-row__stat strong { color: var(--text); }
 
@@ -3631,13 +3650,14 @@ a.btn-ghost:visited {
 .msg-list__title { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
 .msg-list__search {
   margin-top: 10px; display: flex; align-items: center; gap: 8px;
-  padding: 8px 12px; background: var(--block-muted); border-radius: 10px;
-  font-size: 13px;
+  min-height: 52px; padding: 10px 14px; background: var(--block-muted); border-radius: 14px;
+  font-size: 14px; box-sizing: border-box;
 }
 .msg-list__search input {
   flex: 1;
   min-width: 0;
-  height: auto;
+  height: 22px;
+  min-height: 22px;
   margin: 0;
   padding: 0;
   border: none;
@@ -3646,7 +3666,8 @@ a.btn-ghost:visited {
   box-shadow: none;
   outline: none;
   font: inherit;
-  line-height: 1.25;
+  font-size: 14px;
+  line-height: 22px;
   -webkit-appearance: none;
   appearance: none;
 }

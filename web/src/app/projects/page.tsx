@@ -1,28 +1,66 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { CatalogFilterBar, CatalogSearchField } from "@/components/CatalogFilterBar";
+import { ProjectTile } from "@/components/CatalogTiles";
+import { IconCheck, IconFilm, IconFolder, IconPin, IconProject } from "@/components/icons";
 import { useDemoRole } from "@/components/useDemoRole";
 import { useWorkspace } from "@/components/useWorkspace";
+import {
+  CITY_FILTERS,
+  FORMAT_FILTERS,
+  PLATFORM_FILTERS,
+  PROJECT_STATUS_FILTERS,
+  matchesCity,
+  matchesPlatform,
+  projectFormats,
+  ruCount,
+} from "@/lib/labels";
 import { profileSlug, withRole } from "@/lib/roles";
-
-function ruCount(n: number, one: string, few: string, many: string) {
-  const n10 = n % 10;
-  const n100 = n % 100;
-  if (n10 === 1 && n100 !== 11) return `${n} ${one}`;
-  if (n10 >= 2 && n10 <= 4 && (n100 < 12 || n100 > 14)) return `${n} ${few}`;
-  return `${n} ${many}`;
-}
 
 export default function ProjectsPage() {
   const { role, cfg } = useDemoRole();
-  const { projects, projectsForCd, castingsForProject, responseCount } = useWorkspace();
+  const { projects, projectsForCd, castingsForProject } = useWorkspace();
   const cdSlug = profileSlug(cfg);
+  const [q, setQ] = useState("");
+  const [format, setFormat] = useState("");
+  const [city, setCity] = useState("");
+  const [platform, setPlatform] = useState("");
+  const [status, setStatus] = useState("");
+  const [openOnly, setOpenOnly] = useState(false);
 
-  const list = useMemo(() => {
+  const source = useMemo(() => {
     if (role === "casting") return projectsForCd(cdSlug);
     return projects;
   }, [role, projects, projectsForCd, cdSlug]);
+
+  const list = useMemo(() => {
+    const query = q.trim().toLowerCase();
+    return source.filter((p) => {
+      const related = castingsForProject(p.slug);
+      if (format && !projectFormats(p.kind).includes(format)) return false;
+      if (!matchesCity(p.city, city)) return false;
+      if (!matchesPlatform(p.platform, platform)) return false;
+      if (status && p.status !== status) return false;
+      if (openOnly && !related.some((c) => c.deadline !== "закрыт")) return false;
+      if (query) {
+        const hay =
+          `${p.title} ${p.studio} ${p.platform} ${p.kind} ${p.status} ${p.city} ${p.logline} ${p.text} ${p.cdName ?? ""} ${p.client ?? ""}`.toLowerCase();
+        if (!hay.includes(query)) return false;
+      }
+      return true;
+    });
+  }, [source, q, format, city, platform, status, openOnly, castingsForProject]);
+
+  function reset() {
+    setQ("");
+    setFormat("");
+    setCity("");
+    setPlatform("");
+    setStatus("");
+    setOpenOnly(false);
+  }
 
   return (
     <div className="app-main__body app-main__body--catalog">
@@ -31,10 +69,10 @@ export default function ProjectsPage() {
           <header className="catalog-page__head catalog-page__head--row">
             <p className="catalog-page__lead catalog-page__lead--solo">
               {role === "casting"
-                ? "Ваши проекты и связанные кастинги"
+                ? "Ваши проекты — производство, кастинги и команда"
                 : role === "agent"
-                  ? "Проекты платформ — предложите актёров на открытые роли"
-                  : "Студии, платформы и связанные кастинги"}
+                  ? "Проекты платформ — роли, куда можно предложить ростер"
+                  : "Все проекты в производстве: кино, сериалы и площадки"}
             </p>
             {role === "casting" ? (
               <Link href={withRole("/compose?type=project", role)} className="btn-primary btn-sm catalog-page__cta">
@@ -43,47 +81,81 @@ export default function ProjectsPage() {
             ) : null}
           </header>
 
+          <CatalogSearchField
+            value={q}
+            onChange={setQ}
+            placeholder="Название, студия, платформа или город…"
+            ariaLabel="Поиск по проектам"
+          />
+          <CatalogFilterBar
+            filters={[
+              {
+                id: "format",
+                icon: <IconFilm />,
+                placeholder: "Формат",
+                value: format,
+                options: FORMAT_FILTERS,
+                onChange: setFormat,
+              },
+              {
+                id: "status",
+                icon: <IconFolder />,
+                placeholder: "Этап",
+                value: status,
+                options: PROJECT_STATUS_FILTERS,
+                onChange: setStatus,
+              },
+              {
+                id: "city",
+                icon: <IconPin />,
+                placeholder: "Город",
+                value: city,
+                options: CITY_FILTERS,
+                onChange: setCity,
+              },
+              {
+                id: "platform",
+                icon: <IconProject />,
+                placeholder: "Платформа",
+                value: platform,
+                options: PLATFORM_FILTERS,
+                onChange: setPlatform,
+              },
+            ]}
+            toggle={{
+              icon: <IconCheck />,
+              label: "Только с кастингом",
+              on: openOnly,
+              onToggle: () => setOpenOnly((v) => !v),
+            }}
+            onReset={reset}
+            countLabel={ruCount(list.length, "проект", "проекта", "проектов")}
+          />
+
           <div className="catalog-results">
-            <div className="projects-grid">
-              {list.map((p) => {
-                const related = castingsForProject(p.slug);
-                return (
-                  <article key={p.slug} className="feed-card feed-card--project">
-                    <div className="feed-card__top">
-                      <img src={p.studioAvatar} alt="" className="feed-card__avatar" width={40} height={40} />
-                      <div className="feed-card__who">
-                        <div className="feed-card__org">{p.studio}</div>
-                        <div className="feed-card__meta">
-                          {p.platform} · {p.kind}
-                        </div>
-                      </div>
-                      <span className="tag tag-blue">Проект</span>
-                    </div>
-                    <Link href={withRole(`/projects/${p.slug}`, role)} className="feed-card__hero media-16x9">
-                      <img src={p.cover} alt="" />
-                    </Link>
-                    <h3 className="feed-card__title">
-                      <Link href={withRole(`/projects/${p.slug}`, role)}>{p.title}</Link>
-                    </h3>
-                    <p className="feed-card__text">{p.logline}</p>
-                    <footer className="feed-card__foot">
-                      <span className="feed-card__responses">
-                        {p.status}
-                        {related.length
-                          ? ` · ${ruCount(related.length, "кастинг", "кастинга", "кастингов")}`
-                          : ""}
-                        {role === "casting" && related.length
-                          ? ` · ${related.reduce((n, c) => n + responseCount(c), 0)} откликов`
-                          : ""}
-                      </span>
-                      <Link href={withRole(`/projects/${p.slug}`, role)} className="btn-primary btn-sm">
-                        {role === "agent" ? "Предложить актёров" : "Открыть проект"}
-                      </Link>
-                    </footer>
-                  </article>
-                );
-              })}
-            </div>
+            {list.length ? (
+              <div className="casting-grid" role="list">
+                {list.map((p) => (
+                  <ProjectTile key={p.slug} p={p} role={role} related={castingsForProject(p.slug)} />
+                ))}
+              </div>
+            ) : (
+              <p className="catalog-empty">
+                {role === "casting" && !q && !format && !city && !platform && !status && !openOnly ? (
+                  <>
+                    Пока нет проектов.{" "}
+                    <Link href={withRole("/compose?type=project", role)}>Создать первый →</Link>
+                  </>
+                ) : (
+                  <>
+                    По запросу ничего не найдено.{" "}
+                    <button type="button" className="btn-ghost" onClick={reset}>
+                      Сбросить
+                    </button>
+                  </>
+                )}
+              </p>
+            )}
           </div>
         </div>
       </main>

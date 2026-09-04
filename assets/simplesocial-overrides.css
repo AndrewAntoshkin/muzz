@@ -60,15 +60,17 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  height: 36px;
+  height: 40px;
+  min-height: 40px;
   padding: 0 12px;
-  border-radius: 18px;
+  border-radius: 20px;
   background: hsla(0, 0%, 97%, 0.05);
   border: 1.5px solid transparent;
   color: hsla(0, 0%, 97%, 0.45);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   text-decoration: none;
+  box-sizing: border-box;
 }
 .sidebar-search:hover {
   background: hsla(0, 0%, 97%, 0.08);
@@ -83,7 +85,10 @@
 }
 
 .sidebar-brand__link {
+  display: inline-flex;
+  align-items: center;
   padding: 0 6px;
+  animation: ss-logo-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .sidebar-panel__scroll {
@@ -126,6 +131,54 @@
   font-weight: 600;
   letter-spacing: 0;
   color: hsla(0, 0%, 97%, 0.88);
+}
+
+.sidebar-block__empty {
+  margin: 4px 10px 0;
+  font-size: 12px;
+  color: hsla(0, 0%, 97%, 0.4);
+}
+
+.sidebar-inline-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  min-height: 40px;
+  margin: 4px 0 8px;
+  padding: 0 10px;
+  border-radius: 12px;
+  background: hsla(0, 0%, 97%, 0.05);
+  border: 1.5px solid transparent;
+  box-sizing: border-box;
+}
+.sidebar-inline-search:focus-within {
+  border-color: hsla(0, 0%, 97%, 0.22);
+  background: transparent;
+}
+.sidebar-inline-search svg {
+  flex-shrink: 0;
+  color: hsla(0, 0%, 97%, 0.4);
+}
+.sidebar-inline-search input {
+  flex: 1;
+  min-width: 0;
+  height: 22px;
+  min-height: 22px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: hsla(0, 0%, 97%, 0.76);
+  font: inherit;
+  font-size: 13px;
+  line-height: 22px;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.sidebar-inline-search input::placeholder {
+  color: hsla(0, 0%, 97%, 0.35);
 }
 
 .sidebar-item {
@@ -221,40 +274,40 @@
 .sidebar-demo {
   display: flex;
   flex-direction: column;
-  gap: 6px;
   margin-top: 8px;
   padding: 0 4px;
 }
-.sidebar-demo__title {
-  font-size: 12px;
-  font-weight: 500;
-  color: hsla(0, 0%, 97%, 0.32);
-  padding: 0 6px;
-}
 .sidebar-demo__select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   width: 100%;
   height: 40px;
-  padding: 0 36px 0 12px;
+  padding: 0 10px 0 12px;
   border: 1px solid hsla(0, 0%, 97%, 0.08);
   border-radius: 10px;
-  background: hsla(0, 0%, 97%, 0.05)
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23f7f7f7' stroke-opacity='0.45' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")
-    no-repeat right 12px center;
+  background: hsla(0, 0%, 97%, 0.05);
   color: hsla(0, 0%, 97%, 0.86);
   font: inherit;
   font-size: 13px;
+  text-align: left;
   appearance: none;
   cursor: pointer;
 }
+.sidebar-demo__select .filter-chip__caret {
+  flex-shrink: 0;
+  color: hsla(0, 0%, 97%, 0.45);
+}
+.sidebar-demo.is-open .filter-chip__caret {
+  transform: rotate(180deg);
+}
 .sidebar-demo__select:hover,
-.sidebar-demo__select:focus {
+.sidebar-demo__select:focus,
+.sidebar-demo.is-open .sidebar-demo__select {
   outline: none;
   border-color: hsla(0, 0%, 97%, 0.16);
   background-color: hsla(0, 0%, 97%, 0.08);
-}
-.sidebar-demo__select option {
-  color: #111;
-  background: #fff;
 }
 
 /* —— Center column: Layout_container —— */
@@ -398,13 +451,15 @@ body[data-page="projects"] .page-scroll.catalog-page {
   display: flex;
   align-items: center;
   gap: 10px;
-  height: 44px;
+  height: 52px;
+  min-height: 52px;
   padding: 0 18px;
-  border-radius: 22px;
+  border-radius: 26px;
   background: hsla(0, 0%, 97%, 0.05) !important;
   border: 1.5px solid transparent !important;
   color: hsla(0, 0%, 97%, 0.4);
   box-shadow: none !important;
+  box-sizing: border-box;
 }
 .ss-search:focus-within {
   border-color: hsla(0, 0%, 97%, 0.25) !important;
@@ -418,8 +473,8 @@ body[data-page="projects"] .page-scroll.catalog-page {
 .msg-list__search input[type="search"] {
   flex: 1;
   min-width: 0;
-  height: auto !important;
-  min-height: 0 !important;
+  height: 28px !important;
+  min-height: 28px !important;
   margin: 0 !important;
   padding: 0 !important;
   border: none !important;
@@ -427,9 +482,9 @@ body[data-page="projects"] .page-scroll.catalog-page {
   background: transparent !important;
   box-shadow: none !important;
   outline: none;
-  line-height: 1.25 !important;
+  line-height: 28px !important;
   font-family: Inter, var(--ss-font-body), sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   color: hsla(0, 0%, 97%, 0.76) !important;
   -webkit-appearance: none;
   appearance: none;
@@ -462,12 +517,32 @@ body[data-page="projects"] .page-scroll.catalog-page {
 }
 
 .catalog-search {
-  height: 44px;
-  padding: 0 16px 0 14px !important;
-  border-radius: 22px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px;
+  flex: 0 0 52px;
+  height: 52px !important;
+  min-height: 52px !important;
+  padding: 0 18px 0 16px !important;
+  border-radius: 26px !important;
   background: hsla(0, 0%, 97%, 0.05) !important;
   border: 1.5px solid transparent !important;
   box-shadow: none !important;
+  box-sizing: border-box;
+}
+.catalog-search svg {
+  display: block;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+}
+.catalog-search input,
+.catalog-search input[type="search"] {
+  display: block;
+  height: 28px !important;
+  min-height: 28px !important;
+  line-height: 28px !important;
+  font-size: 16px !important;
 }
 .catalog-search:focus-within {
   border-color: hsla(0, 0%, 97%, 0.25) !important;
@@ -661,8 +736,7 @@ body[data-page="home"] .app-main__body--with-rail .app-right-rail {
 .msg-day,
 .mini-cal__h,
 .set-table-head,
-.object-type,
-.sidebar-demo__title {
+.object-type {
   text-transform: none !important;
   letter-spacing: 0 !important;
   font-size: 12px !important;
@@ -1292,6 +1366,18 @@ button,
 @keyframes ss-rise {
   from { opacity: 0; }
   to   { opacity: 1; }
+}
+
+/* Logo — fade in from the left on first paint */
+@keyframes ss-logo-in {
+  from {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* Scrollbars — thin, on-surface */

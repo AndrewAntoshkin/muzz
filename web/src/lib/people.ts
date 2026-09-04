@@ -1,4 +1,4 @@
-import { and, asc, count, eq, or } from "drizzle-orm";
+import { and, asc, count, eq, inArray, or } from "drizzle-orm";
 import { db } from "@/db";
 import { agencies, agents, people, personLinks, personPhotos } from "@/db/schema";
 
@@ -73,6 +73,30 @@ export async function listRoster(agencyId = "akter1"): Promise<FaceCard[]> {
     ...r,
     city: r.city ?? "",
   }));
+}
+
+const FACE_FIELDS = {
+  slug: people.slug,
+  name: people.name,
+  role: people.role,
+  profession: people.profession,
+  city: people.city,
+  imageUrl: people.imageUrl,
+  verified: people.verified,
+  hint: people.hint,
+  initials: people.initials,
+  bg: people.bg,
+  agencyId: people.agencyId,
+} as const;
+
+export async function listPeopleBySlugs(slugs: string[]): Promise<FaceCard[]> {
+  if (!slugs.length) return [];
+  const rows = await db.select(FACE_FIELDS).from(people).where(inArray(people.slug, slugs));
+  const order = new Map(slugs.map((slug, i) => [slug, i]));
+  return rows
+    .slice()
+    .sort((a, b) => (order.get(a.slug) ?? 99) - (order.get(b.slug) ?? 99))
+    .map((r) => ({ ...r, city: r.city ?? "" }));
 }
 
 export async function getPerson(slug: string) {

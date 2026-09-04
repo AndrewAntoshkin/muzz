@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   IconBack,
+  IconCaret,
   IconCasting,
   IconFaces,
   IconFolder,
@@ -12,12 +13,14 @@ import {
   IconProject,
   IconMessages,
   IconResponses,
-  IconSettings,
 } from "./icons";
 import { ROLE_SWITCH, switchRoleHref, withRole, type RoleId } from "@/lib/roles";
 import { useAuth } from "./AuthProvider";
 import { useWorkspace } from "./useWorkspace";
 import { ProjectSettingsModal } from "./ProjectSettingsModal";
+import { InboxBell } from "./InboxBell";
+import { PlanBadge } from "./PlanBadge";
+import { DropdownMenu } from "./DropdownMenu";
 
 const NAV_ICONS: Record<string, ReactNode> = {
   home: <IconHome />,
@@ -27,6 +30,7 @@ const NAV_ICONS: Record<string, ReactNode> = {
   messages: <IconMessages />,
   roster: <IconFaces />,
   search: <IconFaces />,
+  faces: <IconFaces />,
 };
 
 function NavRow({
@@ -74,6 +78,58 @@ function NavRow({
   );
 }
 
+function RoleSelect({
+  role,
+  onChange,
+}: {
+  role: RoleId;
+  onChange: (next: RoleId) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const btn = useRef<HTMLButtonElement>(null);
+  const current = ROLE_SWITCH.find(([key]) => key === role)?.[1] ?? "Актёр";
+
+  return (
+    <div className={`sidebar-demo${open ? " is-open" : ""}`}>
+      <button
+        ref={btn}
+        type="button"
+        className="sidebar-demo__select"
+        aria-label="Роль демо"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span>{current}</span>
+        <IconCaret />
+      </button>
+      <DropdownMenu
+        open={open}
+        anchorRef={btn}
+        className="filter-chip__menu"
+        matchWidth
+        onClose={() => setOpen(false)}
+      >
+        {ROLE_SWITCH.map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            className={`filter-chip__opt${role === key ? " is-on" : ""}`}
+            role="option"
+            aria-selected={role === key}
+            onClick={() => {
+              setOpen(false);
+              if (key !== role) onChange(key);
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </DropdownMenu>
+    </div>
+  );
+}
+
 export function Shell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -83,12 +139,16 @@ export function Shell({ children }: { children: ReactNode }) {
   const [projectSettingsOpen, setProjectSettingsOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const mine = searchParams.get("mine") === "1";
+  const agency = searchParams.get("agency");
   const composeType = searchParams.get("type");
 
   const onHome = pathname === "/";
-  const onSearchPage = pathname === "/search" || pathname.startsWith("/faces");
+  const onFaces = pathname.startsWith("/faces");
+  const onSearchRoute = pathname === "/search";
+  const onSearchPage = onSearchRoute || onFaces;
   const onProjects = pathname.startsWith("/projects");
-  const onSearch = onSearchPage || (role === "actor" && onProjects);
+  const onGlobalSearch = onSearchRoute && !mine && !agency;
+  const onSearch = onGlobalSearch;
   const onCastingResponses = /^\/castings\/[^/]+\/responses\/?$/.test(pathname);
   const onCastings = pathname.startsWith("/castings");
   const onMessages = pathname.startsWith("/messages");
@@ -98,6 +158,7 @@ export function Shell({ children }: { children: ReactNode }) {
   const onSettings = pathname.startsWith("/settings");
   const onCompose = pathname.startsWith("/compose");
   const onProfile = pathname.startsWith("/people/");
+  const onAgency = pathname.startsWith("/agencies/");
   const castingDetail = /^\/castings\/[^/]+\/?$/.test(pathname);
   const projectDetail = /^\/projects\/[^/]+/.test(pathname);
   const projectSlug = projectDetail ? pathname.match(/^\/projects\/([^/]+)/)?.[1] : undefined;
@@ -108,6 +169,7 @@ export function Shell({ children }: { children: ReactNode }) {
   const backTo = backHref(pathname, role, {
     onHome,
     onProfile,
+    onAgency,
     castingDetail,
     projectDetail,
     onCastingResponses,
@@ -117,16 +179,22 @@ export function Shell({ children }: { children: ReactNode }) {
     fromAll,
     fromResponseId,
   });
-  const crumb = onProfile
-    ? "Профиль"
+  const crumb = onAgency
+    ? "Агентство"
+    : onProfile
+      ? "Профиль"
     : onSettings
       ? "Настройки"
       : onCompose
         ? composeTitle(composeType)
-        : onSearchPage
+        : onFaces
+          ? "База"
+          : onSearchRoute
           ? mine
             ? "Мои актёры"
-            : "Поиск"
+            : agency
+              ? "Ростер"
+              : "Поиск"
           : onProjects
             ? cfg.nav.find((n) => n.id === "projects")?.label || "Проекты"
             : onCastingResponses
@@ -159,7 +227,9 @@ export function Shell({ children }: { children: ReactNode }) {
                     ? "settings"
                     : onCompose
                       ? "compose"
-                      : onProfile
+                      : onAgency
+                        ? "agency"
+                        : onProfile
                         ? "profile"
                         : "page";
     document.body.setAttribute("data-page", page);
@@ -176,6 +246,7 @@ export function Shell({ children }: { children: ReactNode }) {
     onResponseDetail,
     onResponsesList,
     onProfile,
+    onAgency,
     onSettings,
     onCompose,
     crumb,
@@ -194,12 +265,12 @@ export function Shell({ children }: { children: ReactNode }) {
           ? "messages"
           : onSettings
             ? "settings"
-            : onProjects && role !== "actor"
+            : onProjects
               ? "projects"
               : onSearchPage && mine
                 ? "roster"
-                : onSearchPage
-                  ? "search"
+                : onFaces
+                  ? "faces"
                   : "";
 
   return (
@@ -214,7 +285,7 @@ export function Shell({ children }: { children: ReactNode }) {
       <aside className="sidebar-panel" id="app-sidebar">
         <div className="sidebar-head">
           <Link href={withRole("/", role)} className="sidebar-brand__link" aria-label="На главную" onClick={() => setNavOpen(false)}>
-            <img src="/assets/logo.svg" alt="cadr" width={58} height={20} />
+            <img src="/assets/logo.svg" alt="kadr" width={42} height={20} />
           </Link>
           <Link
             href={withRole("/search", role)}
@@ -239,7 +310,7 @@ export function Shell({ children }: { children: ReactNode }) {
                 label={item.label}
                 icon={NAV_ICONS[item.id]}
                 count={item.id === "messages" ? (unread ? String(unread) : undefined) : item.count}
-                active={activeNav === item.id || (item.id === "roster" && onSearchPage)}
+                active={activeNav === item.id}
                 live={item.live}
                 onNavigate={() => setNavOpen(false)}
               />
@@ -257,6 +328,7 @@ export function Shell({ children }: { children: ReactNode }) {
                   label={t.name}
                   icon={<IconFolder />}
                   live={t.live}
+                  active={onAgency && t.href.startsWith("/agencies")}
                   onNavigate={() => setNavOpen(false)}
                 />
               ))}
@@ -282,41 +354,14 @@ export function Shell({ children }: { children: ReactNode }) {
         </div>
 
         <div className="sidebar-foot">
-          <div className="sidebar-profile sidebar-profile--plain">
-            <span className="sidebar-profile__body">
-              <span className="sidebar-profile__name">{cfg.name}</span>
-              <span className="sidebar-profile__role">{cfg.label}</span>
-            </span>
-          </div>
-          <NavRow
-            href={withRole("/settings", role)}
-            id="settings"
-            label="Настройки"
-            icon={<IconSettings />}
-            live
-            active={onSettings}
-            onNavigate={() => setNavOpen(false)}
-          />
           {user?.isDemo ? (
-            <label className="sidebar-demo">
-              <span className="sidebar-demo__title">Войти как</span>
-              <select
-                className="sidebar-demo__select"
-                value={role}
-                aria-label="Роль демо"
-                onChange={(e) => {
-                  const next = e.target.value as RoleId;
-                  setNavOpen(false);
-                  router.push(switchRoleHref(pathname, searchParams, next));
-                }}
-              >
-                {ROLE_SWITCH.map(([key, label]) => (
-                  <option key={key} value={key}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <RoleSelect
+              role={role}
+              onChange={(next) => {
+                setNavOpen(false);
+                router.push(switchRoleHref(pathname, searchParams, next));
+              }}
+            />
           ) : (
             <button type="button" className="sidebar-item sidebar-item--quiet" onClick={() => void logout()}>
               <span className="sidebar-item__label">Выйти</span>
@@ -363,8 +408,9 @@ export function Shell({ children }: { children: ReactNode }) {
                 Настройки проекта
               </button>
             ) : null}
+            {role === "actor" ? <PlanBadge /> : null}
+            <InboxBell />
             <Link href={withRole(cfg.profile, role)} className="ss-head__me" aria-label="Профиль">
-              {role === "actor" ? <span className="ss-head__plan">Pro</span> : null}
               {cfg.avatar ? (
                 <img src={cfg.avatar} alt="" className="ss-head__ava" width={36} height={36} />
               ) : (
@@ -403,6 +449,7 @@ function backHref(
   flags: {
     onHome: boolean;
     onProfile: boolean;
+    onAgency: boolean;
     castingDetail: boolean;
     projectDetail: boolean;
     onCastingResponses: boolean;
@@ -432,21 +479,21 @@ function backHref(
 
   if (flags.onResponsesList) return withRole("/", role);
 
-  if (flags.onProfile) {
-    return role === "actor" ? withRole("/", role) : withRole("/search", role);
+  if (flags.onProfile || flags.onAgency) {
+    return role === "actor" ? withRole("/", role) : role === "casting" ? withRole("/faces", role) : withRole("/search", role);
   }
 
   if (flags.castingDetail) return withRole("/castings", role);
 
   if (flags.projectDetail) {
-    return role === "casting" ? withRole("/projects", role) : withRole("/", role);
+    return withRole("/projects", role);
   }
 
   if (pathname.startsWith("/settings") || pathname.startsWith("/compose") || pathname.startsWith("/messages")) {
     return withRole("/", role);
   }
 
-  if (pathname === "/castings" || pathname === "/projects" || pathname === "/search") {
+  if (pathname === "/castings" || pathname === "/projects" || pathname === "/search" || pathname.startsWith("/faces")) {
     return withRole("/", role);
   }
 

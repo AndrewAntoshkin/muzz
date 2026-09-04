@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import type { FaceCard } from "@/lib/people";
-import { assetSrc, initialsOf } from "@/lib/labels";
+import { assetSrc, initialsOf, personIsPro } from "@/lib/labels";
 import { withRole } from "@/lib/roles";
 import { useDemoRole } from "./useDemoRole";
-import { IconVerified } from "./icons";
 
 export function PersonCard({
   person,
@@ -20,6 +19,7 @@ export function PersonCard({
   const initials = person.initials || initialsOf(person.name);
   const cardClass = variant === "strip" ? "person-card person-card--strip" : "person-card";
   const meta = [person.role, person.city].filter(Boolean).join(" · ");
+  const pro = personIsPro(person);
 
   return (
     <div className="person-card-wrap">
@@ -38,16 +38,10 @@ export function PersonCard({
               {initials}
             </span>
           )}
+          {pro ? <span className="person-card__pro">PRO</span> : null}
         </span>
         <span className="person-card__body">
-          <span className="person-card__name">
-            {person.name}
-            {person.verified ? (
-              <span className="person-card__badge" title="Проверен">
-                <IconVerified size={14} />
-              </span>
-            ) : null}
-          </span>
+          <span className="person-card__name">{person.name}</span>
           {meta ? <span className="person-card__role">{meta}</span> : null}
         </span>
       </Link>

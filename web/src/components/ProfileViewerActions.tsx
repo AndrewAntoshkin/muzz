@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { profileSlug, withRole } from "@/lib/roles";
 import { useAuth } from "./AuthProvider";
+import { useWorkspace } from "./useWorkspace";
 
 export function HideIfOwn({
   personSlug,
@@ -18,13 +19,27 @@ export function HideIfOwn({
   return children;
 }
 
-function WriteButton({ personSlug, label, primary }: { personSlug: string; label: string; primary?: boolean }) {
+export function WriteButton({
+  personSlug,
+  label,
+  primary,
+  className,
+}: {
+  personSlug: string;
+  label: string;
+  primary?: boolean;
+  className?: string;
+}) {
   const { user, role } = useAuth();
+  const { threads } = useWorkspace();
   const router = useRouter();
 
   async function openChat() {
     if (!user || user.isDemo) {
-      router.push(withRole("/messages", role));
+      const href = `/people/${personSlug}`;
+      const thread = threads.find((t) => t.views[role]?.profileHref === href) ?? threads.find((t) => t.id.includes(personSlug));
+      const to = thread ? `/messages?thread=${encodeURIComponent(thread.id)}` : "/messages";
+      router.push(withRole(to, role));
       return;
     }
     const res = await fetch("/api/chat/open", {
@@ -42,7 +57,11 @@ function WriteButton({ personSlug, label, primary }: { personSlug: string; label
   }
 
   return (
-    <button type="button" className={primary ? "btn-primary" : "btn-secondary"} onClick={() => void openChat()}>
+    <button
+      type="button"
+      className={`${primary ? "btn-primary" : "btn-secondary"}${className ? ` ${className}` : ""}`}
+      onClick={() => void openChat()}
+    >
       {label}
     </button>
   );
@@ -144,8 +163,19 @@ export function ProfileViewerActions({
     return (
       <div className="detail-hero__actions">
         <WriteButton personSlug={personSlug} label="Написать агенту" primary />
-        <Link href={withRole("/search", role)} className="btn-secondary">
-          База актёров
+        <Link href={withRole("/agencies/akter1", role)} className="btn-secondary">
+          Ростер агентства
+        </Link>
+      </div>
+    );
+  }
+
+  if (isAgent) {
+    return (
+      <div className="detail-hero__actions">
+        <WriteButton personSlug={personSlug} label="Написать" primary />
+        <Link href={withRole("/agencies/akter1", role)} className="btn-secondary">
+          Агентство
         </Link>
       </div>
     );
@@ -154,9 +184,6 @@ export function ProfileViewerActions({
   return (
     <div className="detail-hero__actions">
       <WriteButton personSlug={personSlug} label="Написать" primary />
-      <Link href={withRole(`/people/${personSlug}`, role)} className="btn-secondary">
-        Профиль
-      </Link>
     </div>
   );
 }

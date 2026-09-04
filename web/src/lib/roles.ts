@@ -56,11 +56,12 @@ export const DEMO_ROLES: Record<RoleId, DemoRole> = {
     nav: [
       { id: "home", label: "Главная", href: "/", live: true },
       { id: "castings", label: "Кастинги", href: "/castings", live: true },
+      { id: "projects", label: "Проекты", href: "/projects", live: true },
       { id: "responses", label: "Мои отклики", href: "/responses", live: true },
       { id: "messages", label: "Сообщения", href: "/messages", count: "3", live: true },
     ],
     blockTitle: "Агентство",
-    block: [{ href: "/people/kevorkova", name: "«Актёр 1» · агент", live: true }],
+    block: [{ href: "/agencies/akter1", name: "«Актёр 1»", live: true }],
     recent: [
       { href: "/castings/tihiy-yanvar-second", label: "Вторая мужская · «Тихий январь»", live: true },
       { href: "/people/lebedeva", label: "Анна Лебедева", live: true },
@@ -112,15 +113,11 @@ export const DEMO_ROLES: Record<RoleId, DemoRole> = {
       { id: "projects", label: "Проекты", href: "/projects", live: true },
       { id: "castings", label: "Мои кастинги", href: "/castings", live: true },
       { id: "responses", label: "Отклики", href: "/responses", live: true },
-      { id: "search", label: "База", href: "/search", live: true },
+      { id: "faces", label: "База", href: "/faces", live: true },
       { id: "messages", label: "Сообщения", href: "/messages", count: "3", live: true },
     ],
-    blockTitle: "Проекты",
-    block: [
-      { href: "/projects/tihiy-yanvar", name: "«Тихий январь»", live: true },
-      { href: "/projects/okno", name: "«Окно»", live: true },
-      { href: "/projects/komnata-14", name: "«Комната 14»", live: true },
-    ],
+    blockTitle: "Агентства",
+    block: [{ href: "/agencies/akter1", name: "«Актёр 1»", live: true }],
     recent: [
       { href: "/castings/tihiy-yanvar-lead", label: "«Тихий январь»", live: true },
       { href: "/search", label: "Поиск по базе", live: true },
@@ -142,7 +139,7 @@ export const DEMO_ROLES: Record<RoleId, DemoRole> = {
       feedTitle: "Активные кастинги",
       feedLead: "Ваши роли и входящие отклики",
       peopleTitle: "База",
-      peopleLead: "Актёры и агенты — через поиск",
+      peopleLead: "Актёры и агенты — каталог с фильтрами",
     },
     now: [
       { kind: "Пробы", title: "Очные «Тихий январь»", meta: "10–14 июня · студия Sreda", urgent: true },
@@ -171,12 +168,13 @@ export const DEMO_ROLES: Record<RoleId, DemoRole> = {
     nav: [
       { id: "home", label: "Главная", href: "/", live: true },
       { id: "roster", label: "Мои актёры", href: "/search?mine=1", live: true },
+      { id: "projects", label: "Проекты", href: "/projects", live: true },
       { id: "castings", label: "Кастинги", href: "/castings", live: true },
       { id: "responses", label: "Предложения", href: "/responses", live: true },
       { id: "messages", label: "Сообщения", href: "/messages", count: "3", live: true },
     ],
     blockTitle: "Агентство",
-    block: [{ href: "/people/kevorkova", name: "агентство «Актёр 1»", live: true }],
+    block: [{ href: "/agencies/akter1", name: "агентство «Актёр 1»", live: true }],
     recent: [
       { href: "/castings/tihiy-yanvar-lead", label: "«Тихий январь»", live: true },
       { href: "/people/ustyugov-aleksandr", label: "Александр Устюгов", live: true },

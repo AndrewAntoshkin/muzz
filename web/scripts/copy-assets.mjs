@@ -34,5 +34,8 @@ if (existsSync(resolve(assets, "ads"))) {
 if (existsSync(resolve(assets, "figma"))) {
   cpSync(resolve(assets, "figma"), resolve(pub, "figma"), { recursive: true });
 }
+if (existsSync(resolve(assets, "logos"))) {
+  cpSync(resolve(assets, "logos"), resolve(pub, "logos"), { recursive: true });
+}
 
 console.log("copy-assets: tokens, theme, actors, figma → web/");

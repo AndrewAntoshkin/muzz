@@ -19,6 +19,7 @@ export function DropdownMenu({
   align = "left",
   className,
   role = "listbox",
+  matchWidth = false,
 }: {
   open: boolean;
   anchorRef: RefObject<HTMLElement | null>;
@@ -27,6 +28,7 @@ export function DropdownMenu({
   align?: "left" | "right";
   className: string;
   role?: "listbox" | "menu";
+  matchWidth?: boolean;
 }) {
   const [mounted, setMounted] = useState(false);
   const [pos, setPos] = useState<CSSProperties>({});
@@ -43,13 +45,29 @@ export function DropdownMenu({
       if (!el) return;
       const r = el.getBoundingClientRect();
       const gap = 6;
+      const menuH = menuRef.current?.offsetHeight || 160;
+      const spaceBelow = window.innerHeight - r.bottom - gap;
+      const spaceAbove = r.top - gap;
+      const placeTop = spaceBelow < menuH && spaceAbove > spaceBelow;
       const next: CSSProperties = {
         position: "fixed",
-        top: r.bottom + gap,
         zIndex: 400,
         display: "block",
       };
-      if (align === "right") {
+      if (placeTop) {
+        next.top = "auto";
+        next.bottom = window.innerHeight - r.top + gap;
+      } else {
+        next.top = r.bottom + gap;
+        next.bottom = "auto";
+      }
+      if (matchWidth) {
+        next.boxSizing = "border-box";
+        next.width = r.width;
+        next.minWidth = r.width;
+        next.left = r.left;
+        next.right = "auto";
+      } else if (align === "right") {
         next.right = Math.max(8, window.innerWidth - r.right);
         next.left = "auto";
       } else {
@@ -64,7 +82,7 @@ export function DropdownMenu({
       window.removeEventListener("resize", place);
       window.removeEventListener("scroll", place, true);
     };
-  }, [open, anchorRef, align]);
+  }, [open, anchorRef, align, matchWidth]);
 
   useEffect(() => {
     if (!open) return;

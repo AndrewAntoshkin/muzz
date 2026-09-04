@@ -42,60 +42,56 @@ export function ResponseDetailPage({
     `/people/${item.actorSlug}?from=response&app=${item.id}${fromAll ? "&via=all" : ""}`,
     role,
   );
+  const castingHref = casting ? withRole(`/castings/${casting.slug}`, role) : null;
+  const canOpenProfile = role !== "actor";
+  const showCdActions = role === "casting" && item.status !== "declined";
+
+  const person = (
+    <>
+      {item.actorAvatar ? (
+        <img src={item.actorAvatar} alt="" className="response-sheet__ava" />
+      ) : (
+        <span className="response-sheet__ava response-sheet__ava--empty" />
+      )}
+      <div className="response-detail__who">
+        <div className="response-detail__eyebrow">{KIND_LABEL[item.kind]}</div>
+        <div className="response-sheet__name">{item.actorName}</div>
+        <div className="response-sheet__when">{created}</div>
+        {item.actorMeta || item.match ? (
+          <div className="response-detail__chips">
+            {item.actorMeta ? <span>{item.actorMeta}</span> : null}
+            {item.match ? <span className="response-detail__match">{item.match} совпадение</span> : null}
+          </div>
+        ) : null}
+      </div>
+    </>
+  );
 
   return (
     <div className="app-main__body app-main__body--catalog">
       <main className="page-area">
         <div className="page-scroll detail-page response-detail">
           <div className="detail-grid">
-            <div>
-              <section className="detail-block">
-                <div className="response-sheet__hero">
-                  {item.actorAvatar ? (
-                    <img src={item.actorAvatar} alt="" className="response-sheet__ava" />
+            <div className="response-detail__main">
+              <section className="detail-block response-detail__offer">
+                <header className="response-detail__hero">
+                  {canOpenProfile ? (
+                    <Link href={profileHref} className="response-detail__person">
+                      {person}
+                    </Link>
                   ) : (
-                    <span className="response-sheet__ava response-sheet__ava--empty" />
+                    <div className="response-detail__person">{person}</div>
                   )}
-                  <div>
-                    <div className="response-detail__eyebrow">{KIND_LABEL[item.kind]}</div>
-                    <div className="response-sheet__name">{item.actorName}</div>
-                    <div className="response-sheet__when">{created}</div>
-                    {item.actorMeta ? <div className="response-sheet__when">{item.actorMeta}</div> : null}
-                    {item.match ? <div className="response-sheet__when">{item.match} совпадение</div> : null}
-                  </div>
                   <span className={`tag ${statusTag(item.status)}`}>{STATUS_LABEL[item.status]}</span>
-                </div>
+                </header>
 
-                {item.tape ? (
-                  <div className="response-detail__tape">
-                    <h2 className="detail-block__title" style={{ marginBottom: 12 }}>
-                      Самопроба
-                    </h2>
-                    <ResponseTape tape={item.tape} role={role} />
-                    <p className="response-detail__hint">Пока прикреплён showreel актёра — как самопроба для разбора.</p>
-                  </div>
-                ) : null}
-
-                <section className="response-sheet__note" style={{ marginTop: 18 }}>
+                <section className="response-detail__note">
                   <h3>Комментарий</h3>
                   <p>{item.note?.trim() ? item.note : "Без комментария"}</p>
                 </section>
 
-                <div className="response-sheet__links" style={{ marginTop: 18 }}>
-                  {role !== "actor" ? (
-                    <Link href={profileHref} className="btn-primary">
-                      Профиль актёра
-                    </Link>
-                  ) : null}
-                  {casting ? (
-                    <Link href={withRole(`/castings/${casting.slug}`, role)} className="btn-secondary">
-                      Открыть кастинг
-                    </Link>
-                  ) : null}
-                </div>
-
-                {role === "casting" && item.status !== "declined" ? (
-                  <div className="response-sheet__actions" style={{ marginTop: 12 }}>
+                {showCdActions ? (
+                  <div className="response-detail__footer">
                     {item.status !== "shortlist" ? (
                       <button type="button" className="btn-secondary" onClick={() => onStatus("shortlist")}>
                         В шорт-лист
@@ -113,8 +109,20 @@ export function ResponseDetailPage({
                 ) : null}
               </section>
 
+              {item.tape ? (
+                <section className="detail-block response-detail__tape">
+                  <div className="detail-block__head">
+                    <h2 className="detail-block__title">Самопроба</h2>
+                  </div>
+                  <ResponseTape tape={item.tape} role={role} />
+                  <p className="response-detail__hint">
+                    Пока прикреплён showreel актёра — как самопроба для разбора.
+                  </p>
+                </section>
+              ) : null}
+
               {casting ? (
-                <section className="detail-block">
+                <section className="detail-block response-detail__casting">
                   <div className="detail-block__head">
                     <h2 className="detail-block__title">Кастинг</h2>
                     {casting.scenesPdf ? (
@@ -123,14 +131,10 @@ export function ResponseDetailPage({
                       </a>
                     ) : null}
                   </div>
-                  <p style={{ fontSize: 15, lineHeight: 1.6, color: "var(--text)" }}>{casting.text}</p>
-                  {project?.logline ? (
-                    <p style={{ fontSize: 14, lineHeight: 1.6, color: "var(--text-muted)", marginTop: 12 }}>
-                      {project.logline}
-                    </p>
-                  ) : null}
+                  <p className="response-detail__lead">{casting.text}</p>
+                  {project?.logline ? <p className="response-detail__logline">{project.logline}</p> : null}
                   {casting.facts?.length ? (
-                    <dl className="feed-card__facts" style={{ marginTop: 14 }}>
+                    <dl className="feed-card__facts response-detail__facts">
                       {casting.facts.map(([k, v]) => (
                         <div className="feed-card__fact" key={k}>
                           <dt>{k}</dt>
@@ -143,10 +147,8 @@ export function ResponseDetailPage({
               ) : null}
 
               {casting?.scenes?.length ? (
-                <section className="detail-block">
-                  <div className="detail-block__head">
-                    <h2 className="detail-block__title">Сцены и файлы</h2>
-                  </div>
+                <section className="response-detail__files">
+                  <h2 className="detail-block__title">Сцены и файлы</h2>
                   <div className="scenes-list">
                     {casting.scenes.map((scene) => {
                       const body = (
@@ -182,7 +184,7 @@ export function ResponseDetailPage({
             <aside className="detail-side">
               <section className="detail-side__panel">
                 <div className="detail-side__title">Кратко</div>
-                <dl className="detail-kv">
+                <dl className="detail-kv detail-kv--stack">
                   {project ? (
                     <>
                       <dt>Проект</dt>
@@ -202,6 +204,11 @@ export function ResponseDetailPage({
                   <dt>Статус</dt>
                   <dd>{STATUS_LABEL[item.status]}</dd>
                 </dl>
+                {castingHref ? (
+                  <Link href={castingHref} className="response-detail__side-link">
+                    Открыть кастинг
+                  </Link>
+                ) : null}
               </section>
               {casting?.scenesPdf ? (
                 <section className="detail-side__panel">

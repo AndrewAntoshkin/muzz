@@ -55,11 +55,8 @@ export function AuthView() {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-card__brand">
-          <img src="/assets/logo.svg" alt="cadr" width={36} height={36} />
-          <div>
-            <div className="auth-card__title">Кадр</div>
-            <div className="auth-card__lead">Кастинги, анкеты и сообщения</div>
-          </div>
+          <img src="/assets/logo.svg" alt="kadr" width={92} height={44} />
+          <p className="auth-card__lead">Кастинги, анкеты и сообщения</p>
         </div>
 
         {creds ? (
