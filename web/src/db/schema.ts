@@ -1,5 +1,6 @@
-import { boolean, date, integer, jsonb, pgTable, text } from "drizzle-orm/pg-core";
+import { boolean, date, integer, jsonb, pgTable, primaryKey, text, timestamp } from "drizzle-orm/pg-core";
 import type { PersonCard } from "../lib/person-card";
+import type { RoleId } from "../lib/roles";
 
 export const agencies = pgTable("agencies", {
   id: text("id").primaryKey(),
@@ -50,4 +51,48 @@ export const personPhotos = pgTable("person_photos", {
     .references(() => people.slug, { onDelete: "cascade" }),
   url: text("url").notNull(),
   sort: integer("sort").notNull().default(0),
+});
+
+export const users = pgTable("users", {
+  id: text("id").primaryKey(),
+  login: text("login").notNull().unique(),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  role: text("role").$type<RoleId>().notNull(),
+  passwordHash: text("password_hash").notNull(),
+  isDemo: boolean("is_demo").notNull().default(false),
+  personSlug: text("person_slug").references(() => people.slug),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const chatThreads = pgTable("chat_threads", {
+  id: text("id").primaryKey(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const chatThreadMembers = pgTable(
+  "chat_thread_members",
+  {
+    threadId: text("thread_id")
+      .notNull()
+      .references(() => chatThreads.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    lastReadAt: timestamp("last_read_at", { withTimezone: true }),
+  },
+  (t) => [primaryKey({ columns: [t.threadId, t.userId] })],
+);
+
+export const chatMessages = pgTable("chat_messages", {
+  id: text("id").primaryKey(),
+  threadId: text("thread_id")
+    .notNull()
+    .references(() => chatThreads.id, { onDelete: "cascade" }),
+  senderId: text("sender_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  text: text("text").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

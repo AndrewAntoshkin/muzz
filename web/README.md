@@ -29,25 +29,23 @@ npm run db:enrich -- --limit 12 --offset 0
 npm run db:enrich -- --all
 ```
 
-## Vercel + Neon
+## Auth + сообщения
 
-Прод: проект **kadr** на Vercel, Root Directory = `web`, база **kadr-db** (Neon Marketplace).
+Первый заход → `/auth`: регистрация (имя, фамилия, роль) или вход. Пароль генерируется и показывается один раз.
 
-`DATABASE_URL` и остальные Neon-переменные уже подключены к Production / Preview / Development через интеграцию.
+Демо: кнопка «Войти как демо» или логин `demo` / `demo` — в сайдбаре переключатель ролей. Чаты демо остаются локальными.
 
-Локально подтянуть env:
+Реальные аккаунты пишут друг другу через Neon (`users` + `chat_*`). Написать можно только пользователю с аккаунтом (профиль ↔ `person_slug`).
 
-```bash
-cd web
-npx vercel env pull .env.local
-npm run db:migrate
-npm run db:seed
-npm run dev
-```
+Тестовые аккаунты после `npm run db:seed-auth`:
 
-`prebuild` копирует CSS-токены и фото из `../assets` (полный клон репозитория на Vercel это видит).
+| Логин | Пароль | Роль |
+|---|---|---|
+| `demo` | `demo` | демо + switch ролей |
+| `anna.lebedeva` | `demo` | кастинг-директор |
+| `anna.kevorkova` | `demo` | агент |
 
-Сообщения, кастинги, отклики и лента живут в `localStorage` браузера (demo workspace) — на Vercel работают без Postgres. Каталог `/faces` и анкеты `/people/*` читают Neon.
+Нужен `AUTH_SECRET` в env (см. `.env.example`). На Vercel добавьте его в Project → Environment Variables, затем `db:migrate` и `db:seed-auth` против Neon.
 
 ## Скрипты
 

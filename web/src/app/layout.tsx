@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Inter, Rubik } from "next/font/google";
-import { Shell } from "@/components/Shell";
-import { WorkspaceProvider } from "@/components/useWorkspace";
+import { AppFrame } from "@/components/AppFrame";
+import { AuthProvider } from "@/components/AuthProvider";
 import "./globals.css";
 
 const inter = Inter({
@@ -24,10 +24,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ru" className={`${inter.variable} ${rubik.variable}`}>
       <body className="app-body-root" data-profession="actor" data-page="home" data-layout="hub">
-        <Suspense>
-          <WorkspaceProvider>
-            <Shell>{children}</Shell>
-          </WorkspaceProvider>
+        <Suspense fallback={<div className="auth-boot">Загрузка…</div>}>
+          <AuthProvider>
+            <AppFrame>{children}</AppFrame>
+          </AuthProvider>
         </Suspense>
       </body>
     </html>

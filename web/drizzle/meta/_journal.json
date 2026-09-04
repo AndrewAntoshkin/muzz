@@ -15,6 +15,13 @@
       "when": 1757000001000,
       "tag": "0001_people_card",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1757000002000,
+      "tag": "0002_auth_chat",
+      "breakpoints": true
     }
   ]
 }

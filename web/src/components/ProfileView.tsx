@@ -13,8 +13,9 @@ import {
   type Showreel,
 } from "@/lib/person-card";
 import { castingsForCd, getProject, projectsForCd } from "@/lib/productions";
+import { AnketaTabs } from "./AnketaTabs";
 import { IconVerified } from "./icons";
-import { ProfileViewerActions } from "./ProfileViewerActions";
+import { HideIfOwn, ProfileViewerActions } from "./ProfileViewerActions";
 
 const WEEKDAYS = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"];
 const VIDEO_KINDS = new Set(["vimeo", "youtube", "video"]);
@@ -64,9 +65,9 @@ function KvValue({ value }: { value: string }) {
   return value;
 }
 
-function KvList({ rows }: { rows: KvPair[] }) {
+function KvList({ rows, stacked }: { rows: KvPair[]; stacked?: boolean }) {
   return (
-    <dl className="detail-kv">
+    <dl className={stacked ? "detail-kv detail-kv--stack" : "detail-kv"}>
       {rows.map((row) => (
         <span key={row.label} style={{ display: "contents" }}>
           <dt>{row.label}</dt>
@@ -155,16 +156,7 @@ function Anketa({ card }: { card: PersonCard }) {
       <div className="detail-block__head">
         <h2 className="detail-block__title">Анкета</h2>
       </div>
-      {cols.length ? (
-        <div className="kadr-anketa">
-          {cols.map((col) => (
-            <div key={col.title}>
-              <h3 className="kadr-anketa__title">{col.title}</h3>
-              <KvList rows={col.rows} />
-            </div>
-          ))}
-        </div>
-      ) : null}
+      {cols.length ? <AnketaTabs cols={cols} /> : null}
       {education.length ? (
         <div className={cols.length ? "kadr-education" : undefined}>
           <h3 className="kadr-anketa__title">Образование</h3>
@@ -530,15 +522,13 @@ function CastingLayout({ person, card }: { person: PersonProfile; card: PersonCa
           </section>
 
           {card.stats?.length ? (
-            <section className="detail-block">
-              <div className="studio-stats kadr-stats-wrap">
-                {card.stats.map((stat) => (
-                  <div className="studio-stat" key={stat.label}>
-                    <strong>{stat.value}</strong>
-                    <span>{stat.label}</span>
-                  </div>
-                ))}
-              </div>
+            <section className="kadr-stats-section" aria-label="Показатели">
+              {card.stats.map((stat) => (
+                <div className="studio-stat" key={stat.label}>
+                  <strong>{stat.value}</strong>
+                  <span>{stat.label}</span>
+                </div>
+              ))}
             </section>
           ) : null}
 
@@ -671,15 +661,13 @@ function AgentLayout({ person, card }: { person: PersonProfile; card: PersonCard
           </section>
 
           {card.stats?.length ? (
-            <section className="detail-block">
-              <div className="studio-stats kadr-stats-wrap">
-                {card.stats.map((stat) => (
-                  <div className="studio-stat" key={stat.label}>
-                    <strong>{stat.value}</strong>
-                    <span>{stat.label}</span>
-                  </div>
-                ))}
-              </div>
+            <section className="kadr-stats-section" aria-label="Показатели">
+              {card.stats.map((stat) => (
+                <div className="studio-stat" key={stat.label}>
+                  <strong>{stat.value}</strong>
+                  <span>{stat.label}</span>
+                </div>
+              ))}
             </section>
           ) : null}
 
@@ -724,12 +712,14 @@ function AgentLayout({ person, card }: { person: PersonProfile; card: PersonCard
           </section>
         </div>
         <aside className="detail-side">
-          <section className="detail-side__panel kadr-open-panel">
-            <div className="detail-side__title kadr-open-title">Открыта к запросам</div>
-            <button type="button" className="btn-primary btn-block">
-              Запросить актёра
-            </button>
-          </section>
+          <HideIfOwn personSlug={person.slug}>
+            <section className="detail-side__panel kadr-open-panel">
+              <div className="detail-side__title kadr-open-title">Открыта к запросам</div>
+              <button type="button" className="btn-primary btn-block">
+                Запросить актёра
+              </button>
+            </section>
+          </HideIfOwn>
         </aside>
       </div>
     </div>

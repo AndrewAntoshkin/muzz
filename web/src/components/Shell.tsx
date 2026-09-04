@@ -15,7 +15,7 @@ import {
   IconSettings,
 } from "./icons";
 import { ROLE_SWITCH, switchRoleHref, withRole, type RoleId } from "@/lib/roles";
-import { useDemoRole } from "./useDemoRole";
+import { useAuth } from "./AuthProvider";
 import { useWorkspace } from "./useWorkspace";
 import { DropdownMenu } from "./DropdownMenu";
 import { ProjectSettingsModal } from "./ProjectSettingsModal";
@@ -75,7 +75,7 @@ function NavRow({
 export function Shell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { role, cfg } = useDemoRole();
+  const { role, cfg, user, logout } = useAuth();
   const { unread, notice, ready } = useWorkspace();
   const [publishOpen, setPublishOpen] = useState(false);
   const [projectSettingsOpen, setProjectSettingsOpen] = useState(false);
@@ -233,7 +233,17 @@ export function Shell({ children }: { children: ReactNode }) {
             data-nav="profile"
           >
             <span className="sidebar-profile__avatar">
-              <img src={cfg.avatar} alt="" width={44} height={44} />
+              {cfg.avatar ? (
+                <img src={cfg.avatar} alt="" width={44} height={44} />
+              ) : (
+                <span className="msg-ava msg-ava--initials" style={{ width: 44, height: 44 }}>
+                  {(cfg.name || "?")
+                    .split(/\s+/)
+                    .slice(0, 2)
+                    .map((p) => p[0]?.toUpperCase() ?? "")
+                    .join("")}
+                </span>
+              )}
             </span>
             <span className="sidebar-profile__body">
               <span className="sidebar-profile__name">{cfg.name}</span>
@@ -241,20 +251,31 @@ export function Shell({ children }: { children: ReactNode }) {
             </span>
           </Link>
           <NavRow href={withRole("/settings", role)} id="settings" label="Настройки" icon={<IconSettings />} live active={onSettings} />
-          <details className="sidebar-demo" open>
-            <summary className="sidebar-demo__title">Войти как</summary>
-            <div className="search-filter__chips">
-              {ROLE_SWITCH.map(([key, label]) => (
-                <Link
-                  key={key}
-                  href={switchRoleHref(pathname, searchParams, key)}
-                  className={key === role ? "search-chip is-on" : "search-chip"}
-                >
-                  {label}
-                </Link>
-              ))}
-            </div>
-          </details>
+          {user?.isDemo ? (
+            <details className="sidebar-demo" open>
+              <summary className="sidebar-demo__title">Войти как</summary>
+              <div className="search-filter__chips">
+                {ROLE_SWITCH.map(([key, label]) => (
+                  <Link
+                    key={key}
+                    href={switchRoleHref(pathname, searchParams, key)}
+                    className={key === role ? "search-chip is-on" : "search-chip"}
+                  >
+                    {label}
+                  </Link>
+                ))}
+              </div>
+            </details>
+          ) : (
+            <button type="button" className="sidebar-item sidebar-item--quiet" onClick={() => void logout()}>
+              <span className="sidebar-item__label">Выйти</span>
+            </button>
+          )}
+          {user?.isDemo ? (
+            <button type="button" className="sidebar-item sidebar-item--quiet" onClick={() => void logout()}>
+              <span className="sidebar-item__label">Выйти из демо</span>
+            </button>
+          ) : null}
         </div>
       </aside>
 
