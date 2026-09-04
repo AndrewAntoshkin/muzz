@@ -987,8 +987,7 @@ body[data-page="home"] .app-main__body--with-rail .app-right-rail {
   font-style: normal;
   color: hsla(0, 0%, 97%, 0.4);
 }
-.search-chip.is-on,
-.sidebar-demo .search-chip.is-on {
+.search-chip.is-on {
   background: hsla(0, 0%, 97%, 0.1) !important;
   color: hsla(0, 0%, 97%, 0.76) !important;
 }
