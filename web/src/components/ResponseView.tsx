@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
 import { withRole } from "@/lib/roles";
 import { useWorkspace } from "@/components/useWorkspace";
 import { ResponseDetailPage } from "@/components/ResponseDetailPage";
@@ -24,15 +23,6 @@ function ResponseViewInner({ id }: { id: string }) {
   const casting = item ? getCasting(item.castingSlug) : null;
   const project = casting ? getProject(casting.projectSlug) : null;
 
-  const backHref =
-    fromAll || !casting
-      ? withRole("/responses", role)
-      : withRole(`/castings/${casting.slug}/responses`, role);
-  const backLabel =
-    fromAll || !casting
-      ? "← Все отклики"
-      : `← Отклики · ${casting.title}`;
-
   if (!ready) {
     return (
       <div className="app-main__body app-main__body--catalog">
@@ -49,10 +39,10 @@ function ResponseViewInner({ id }: { id: string }) {
     return (
       <div className="app-main__body app-main__body--catalog">
         <main className="page-area">
-          <div className="page-scroll catalog-page" id="responses-catalog">
+          <div className="page-scroll catalog-page">
             <p className="catalog-page__lead catalog-page__lead--solo">Отклик не найден</p>
-            <Link href={withRole("/responses", role)} className="catalog-page__back">
-              ← Все отклики
+            <Link href={withRole("/responses", role)} className="btn-secondary btn-sm">
+              Все отклики
             </Link>
           </div>
         </main>
@@ -67,8 +57,7 @@ function ResponseViewInner({ id }: { id: string }) {
       casting={casting}
       project={project}
       onStatus={(status) => setAppStatus(item.id, status)}
-      backHref={backHref}
-      backLabel={backLabel}
+      fromAll={fromAll}
     />
   );
 }

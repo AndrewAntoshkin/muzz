@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { decodeSlug } from "@/lib/workspace";
-import { withRole } from "@/lib/roles";
 import { useWorkspace } from "@/components/useWorkspace";
 import { ResponseCards } from "@/components/ResponsesBoard";
 
@@ -46,28 +45,18 @@ export function CastingResponsesView({ slug }: { slug: string }) {
   return (
     <div className="app-main__body app-main__body--catalog">
       <main className="page-area">
-        <div className="page-scroll catalog-page" id="casting-responses">
-          <header className="catalog-page__head catalog-page__head--stack">
-            <Link href={withRole(`/castings/${casting.slug}`, role)} className="catalog-page__back">
-              ← {casting.title}
-            </Link>
-            <h1 className="catalog-page__title">
-              Отклики · {casting.title}
-              {project ? ` — ${project.title}` : ""}
-            </h1>
-            <p className="catalog-page__lead">
-              {rows.length} {rows.length === 1 ? "отклик" : "откликов"} · самопробы и предложения агентов
+        <div className="page-scroll catalog-page">
+          <header className="catalog-page__head catalog-page__head--row">
+            <p className="catalog-page__lead catalog-page__lead--solo">
+              {casting.title}
+              {project ? ` · ${project.title}` : ""} · {rows.length}{" "}
+              {rows.length === 1 ? "отклик" : "откликов"}
             </p>
-            <div className="catalog-page__actions">
-              <Link href={withRole("/responses", role)} className="btn-secondary btn-sm">
-                Все отклики
-              </Link>
-              {casting.scenesPdf ? (
-                <a href={casting.scenesPdf} className="btn-secondary btn-sm" download>
-                  Сцены (.pdf)
-                </a>
-              ) : null}
-            </div>
+            {casting.scenesPdf ? (
+              <a href={casting.scenesPdf} className="btn-secondary btn-sm catalog-page__cta" download>
+                Сцены (.pdf)
+              </a>
+            ) : null}
           </header>
 
           {rows.length ? (
@@ -82,9 +71,7 @@ export function CastingResponsesView({ slug }: { slug: string }) {
               }}
             />
           ) : (
-            <section className="detail-block responses-block">
-              <p className="catalog-empty">Пока нет откликов на этот кастинг.</p>
-            </section>
+            <p className="catalog-empty">Пока нет откликов на этот кастинг.</p>
           )}
         </div>
       </main>

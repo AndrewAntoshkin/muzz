@@ -301,11 +301,15 @@ body[data-layout="hub"] .app-main {
   background: transparent !important;
 }
 
-/* Reading column caps at 1080 for inner blocks; page headers stay full width. */
+/* Reading column: catalogs fill their 800 wrapper; details use 1080. */
 .page-scroll > * {
   width: 100%;
   max-width: 1080px;
   margin-inline: auto;
+}
+.page-scroll.catalog-page > * {
+  max-width: none;
+  margin-inline: 0;
 }
 .page-scroll > .hub-column {
   max-width: 800px;
@@ -803,10 +807,11 @@ body[data-page="home"] .app-main__body--with-rail .app-right-rail {
 .review-card,
 .scene-row,
 .response-row,
+.response-card,
+.casting-tile,
 .msg-card-inline,
 .project-team-card,
-.studio-stat,
-.timeline-item {
+.studio-stat {
   background: hsla(0, 0%, 97%, 0.02) !important;
   border: none !important;
   border-radius: 20px !important;
@@ -819,7 +824,8 @@ body[data-page="home"] .app-main__body--with-rail .app-right-rail {
 .platform-card:hover,
 .community-card:hover,
 .event-card:hover,
-.search-result-card:hover {
+.search-result-card:hover,
+.response-card:hover {
   background: hsla(0, 0%, 97%, 0.05) !important;
 }
 
@@ -848,6 +854,7 @@ body[data-page="home"] .app-main__body--with-rail .app-right-rail {
 .review-card,
 .scene-row,
 .response-row,
+.response-card,
 .msg-card-inline,
 .project-team-card,
 .studio-stat {

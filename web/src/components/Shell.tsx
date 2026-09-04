@@ -111,7 +111,8 @@ export function Shell({ children }: { children: ReactNode }) {
   const projectSlug = projectDetail ? pathname.match(/^\/projects\/([^/]+)/)?.[1] : undefined;
   const responseId = onResponseDetail ? pathname.match(/^\/responses\/([^/]+)/)?.[1] : undefined;
   const responseApp = responseId ? applications.find((a) => a.id === responseId) : undefined;
-  const fromAll = searchParams.get("from") === "all";
+  const fromAll = searchParams.get("from") === "all" || searchParams.get("via") === "all";
+  const fromResponseId = searchParams.get("from") === "response" ? searchParams.get("app") : null;
   const backTo = backHref(pathname, role, {
     onHome,
     onProfile,
@@ -122,6 +123,7 @@ export function Shell({ children }: { children: ReactNode }) {
     onResponsesList,
     responseCastingSlug: responseApp?.castingSlug,
     fromAll,
+    fromResponseId,
   });
   const crumb = onProfile
     ? "Профиль"
@@ -142,7 +144,7 @@ export function Shell({ children }: { children: ReactNode }) {
                 : onMessages
                   ? "Сообщения"
                   : onResponseDetail
-                    ? "Отклик"
+                    ? responseApp?.actorName || "Отклик"
                     : onResponses
                       ? cfg.nav.find((n) => n.id === "responses")?.label || "Мои отклики"
                       : "Главная";
@@ -189,12 +191,13 @@ export function Shell({ children }: { children: ReactNode }) {
     cfg.name,
   ]);
 
+  const inCastingTree = onCastings || (onResponseDetail && !fromAll);
   const activeNav = onHome
     ? "home"
-    : onCastingResponses || onResponses
-      ? "responses"
-      : onCastings
-        ? "castings"
+    : inCastingTree
+      ? "castings"
+      : onResponses
+        ? "responses"
         : onMessages
           ? "messages"
           : onSettings
@@ -494,34 +497,44 @@ function backHref(
     onResponsesList: boolean;
     responseCastingSlug?: string;
     fromAll?: boolean;
+    fromResponseId?: string | null;
   },
 ) {
   if (flags.onHome) return null;
 
-  // Отклик → список откликов кастинга (или все, если открыт оттуда)
+  if (flags.onProfile && flags.fromResponseId) {
+    const q = flags.fromAll ? `?from=all` : "";
+    return withRole(`/responses/${flags.fromResponseId}${q}`, role);
+  }
+
   if (flags.onResponseDetail) {
     if (flags.fromAll || !flags.responseCastingSlug) return withRole("/responses", role);
     return withRole(`/castings/${flags.responseCastingSlug}/responses`, role);
   }
 
-  // Отклики кастинга → сам кастинг
   if (flags.onCastingResponses) {
     const slug = pathname.match(/^\/castings\/([^/]+)/)?.[1];
     return slug ? withRole(`/castings/${slug}`, role) : withRole("/castings", role);
   }
 
-  // Все отклики → главная
   if (flags.onResponsesList) return withRole("/", role);
 
   if (flags.onProfile) {
     return role === "actor" ? withRole("/", role) : withRole("/search", role);
   }
 
-  // Кастинг → список кастингов
   if (flags.castingDetail) return withRole("/castings", role);
 
   if (flags.projectDetail) {
     return role === "casting" ? withRole("/projects", role) : withRole("/", role);
+  }
+
+  if (pathname.startsWith("/settings") || pathname.startsWith("/compose") || pathname.startsWith("/messages")) {
+    return withRole("/", role);
+  }
+
+  if (pathname === "/castings" || pathname === "/projects" || pathname === "/search") {
+    return withRole("/", role);
   }
 
   return withRole("/", role);

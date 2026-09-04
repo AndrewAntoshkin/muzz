@@ -23,19 +23,22 @@ function ResponsesInner() {
   const openId = params.get("app") || "";
 
   useEffect(() => {
-    if (!ready || !openId) return;
-    router.replace(withRole(`/responses/${openId}`, role));
-  }, [ready, openId, role, router]);
+    if (!ready) return;
+    if (openId) {
+      router.replace(
+        withRole(filterSlug ? `/responses/${openId}` : `/responses/${openId}?from=all`, role),
+      );
+      return;
+    }
+    if (filterSlug) {
+      router.replace(withRole(`/castings/${filterSlug}/responses`, role));
+    }
+  }, [ready, openId, filterSlug, role, router]);
 
   const rows = useMemo(() => {
-    const list =
-      role === "casting"
-        ? applications.filter((a) => !filterSlug || a.castingSlug === filterSlug)
-        : myApplications.filter((a) => !filterSlug || a.castingSlug === filterSlug);
+    const list = role === "casting" ? applications : myApplications;
     return [...list].sort((a, b) => b.createdAt - a.createdAt);
-  }, [role, applications, myApplications, filterSlug]);
-
-  const casting = filterSlug ? getCasting(filterSlug) : null;
+  }, [role, applications, myApplications]);
 
   const pageLead =
     role === "casting"
@@ -44,12 +47,12 @@ function ResponsesInner() {
         ? "Статус ваших предложений актёров на роли"
         : "Статус ваших откликов и приглашений";
 
-  if (openId) {
+  if (openId || filterSlug) {
     return (
       <div className="app-main__body app-main__body--catalog">
         <main className="page-area">
           <div className="page-scroll catalog-page">
-            <p className="catalog-page__lead catalog-page__lead--solo">Открываю отклик…</p>
+            <p className="catalog-page__lead catalog-page__lead--solo">Открываю…</p>
           </div>
         </main>
       </div>
@@ -59,23 +62,10 @@ function ResponsesInner() {
   return (
     <div className="app-main__body app-main__body--catalog">
       <main className="page-area">
-        <div className="page-scroll catalog-page" id="responses-catalog">
-          <header className="catalog-page__head catalog-page__head--stack">
-            <h1 className="catalog-page__title">
-              {role === "casting" ? "Все отклики" : role === "agent" ? "Предложения" : "Мои отклики"}
-            </h1>
-            <p className="catalog-page__lead">{pageLead}</p>
+        <div className="page-scroll catalog-page">
+          <header className="catalog-page__head">
+            <p className="catalog-page__lead catalog-page__lead--solo">{pageLead}</p>
           </header>
-
-          {casting ? (
-            <p className="responses-filter-note">
-              Фильтр: <strong>{casting.title}</strong>
-              {" · "}
-              <Link href={withRole(`/castings/${casting.slug}/responses`, role)}>страница кастинга</Link>
-              {" · "}
-              <Link href={withRole("/responses", role)}>сбросить</Link>
-            </p>
-          ) : null}
 
           {rows.length ? (
             <ResponseCards
@@ -89,23 +79,21 @@ function ResponsesInner() {
               }}
             />
           ) : (
-            <section className="detail-block responses-block">
-              <p className="catalog-empty">
-                {role === "casting" ? (
-                  <>
-                    Пока нет откликов. <Link href={withRole("/castings", role)}>Открыть кастинги →</Link>
-                  </>
-                ) : role === "agent" ? (
-                  <>
-                    Пока нет предложений. <Link href={withRole("/castings", role)}>Найти кастинг →</Link>
-                  </>
-                ) : (
-                  <>
-                    Пока нет откликов. <Link href={withRole("/castings", role)}>Смотреть кастинги →</Link>
-                  </>
-                )}
-              </p>
-            </section>
+            <p className="catalog-empty">
+              {role === "casting" ? (
+                <>
+                  Пока нет откликов. <Link href={withRole("/castings", role)}>Открыть кастинги →</Link>
+                </>
+              ) : role === "agent" ? (
+                <>
+                  Пока нет предложений. <Link href={withRole("/castings", role)}>Найти кастинг →</Link>
+                </>
+              ) : (
+                <>
+                  Пока нет откликов. <Link href={withRole("/castings", role)}>Смотреть кастинги →</Link>
+                </>
+              )}
+            </p>
           )}
         </div>
       </main>

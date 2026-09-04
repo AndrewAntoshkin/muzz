@@ -23,16 +23,14 @@ export function ResponseDetailPage({
   casting,
   project,
   onStatus,
-  backHref,
-  backLabel = "← К откликам",
+  fromAll = false,
 }: {
   item: Application;
   role: RoleId;
   casting: Casting | null;
   project: Project | null;
   onStatus: (status: AppStatus) => void;
-  backHref: string;
-  backLabel?: string;
+  fromAll?: boolean;
 }) {
   const created = new Date(item.createdAt).toLocaleString("ru-RU", {
     day: "numeric",
@@ -40,26 +38,17 @@ export function ResponseDetailPage({
     hour: "2-digit",
     minute: "2-digit",
   });
+  const profileHref = withRole(
+    `/people/${item.actorSlug}?from=response&app=${item.id}${fromAll ? "&via=all" : ""}`,
+    role,
+  );
 
   return (
     <div className="app-main__body app-main__body--catalog">
       <main className="page-area">
-        <div className="page-scroll detail-page response-detail" id="response-detail">
+        <div className="page-scroll detail-page response-detail">
           <div className="detail-grid">
             <div>
-              <header className="catalog-page__head catalog-page__head--stack" style={{ marginBottom: 18 }}>
-                <Link href={backHref} className="catalog-page__back">
-                  {backLabel}
-                </Link>
-                <p className="response-detail__eyebrow">{KIND_LABEL[item.kind]}</p>
-                <h1 className="catalog-page__title">
-                  {role === "actor" ? casting?.title || "Отклик" : item.actorName}
-                </h1>
-                <p className="catalog-page__lead">
-                  {[casting?.title, project?.title].filter(Boolean).join(" · ")}
-                </p>
-              </header>
-
               <section className="detail-block">
                 <div className="response-sheet__hero">
                   {item.actorAvatar ? (
@@ -68,6 +57,7 @@ export function ResponseDetailPage({
                     <span className="response-sheet__ava response-sheet__ava--empty" />
                   )}
                   <div>
+                    <div className="response-detail__eyebrow">{KIND_LABEL[item.kind]}</div>
                     <div className="response-sheet__name">{item.actorName}</div>
                     <div className="response-sheet__when">{created}</div>
                     {item.actorMeta ? <div className="response-sheet__when">{item.actorMeta}</div> : null}
@@ -91,18 +81,9 @@ export function ResponseDetailPage({
                   <p>{item.note?.trim() ? item.note : "Без комментария"}</p>
                 </section>
 
-                <dl className="detail-kv response-sheet__kv" style={{ marginTop: 18 }}>
-                  <dt>Тип</dt>
-                  <dd>{KIND_LABEL[item.kind]}</dd>
-                  <dt>Источник</dt>
-                  <dd>{item.source === "agent" ? "Предложение агента" : "Отклик актёра"}</dd>
-                  <dt>Статус</dt>
-                  <dd>{STATUS_LABEL[item.status]}</dd>
-                </dl>
-
                 <div className="response-sheet__links" style={{ marginTop: 18 }}>
                   {role !== "actor" ? (
-                    <Link href={withRole(`/people/${item.actorSlug}`, role)} className="btn-primary">
+                    <Link href={profileHref} className="btn-primary">
                       Профиль актёра
                     </Link>
                   ) : null}
@@ -218,6 +199,8 @@ export function ResponseDetailPage({
                       <dd>{casting.cdName}</dd>
                     </>
                   ) : null}
+                  <dt>Статус</dt>
+                  <dd>{STATUS_LABEL[item.status]}</dd>
                 </dl>
               </section>
               {casting?.scenesPdf ? (
