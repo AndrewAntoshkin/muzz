@@ -2,3 +2,22 @@
 .claude/
 .playwright-mcp/
 *.log
+
+# local tooling output: screenshots, audits, scratch servers
+.shots/
+.audit/
+.devserver.py
+
+# python
+__pycache__/
+*.pyc
+
+# vercel CLI link metadata (project/org ids, build output)
+.vercel/
+web/.vercel/
+
+# secrets and local data
+.env
+.env.*
+!.env.example
+**/.data/
