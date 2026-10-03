@@ -6,8 +6,10 @@
 <title>Новые лица · Кадр</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/simplesocial-tokens.css" />
 <link rel="stylesheet" href="assets/theme.css" />
+<link rel="stylesheet" href="assets/simplesocial-overrides.css" />
 </head>
 <body class="app-body-root" data-page="faces" data-page-title="Новые лица" data-header="page"
   data-profession="actor"
@@ -31,62 +33,64 @@
             <div>
               <a href="index.html" class="catalog-page__back">← Главная</a>
               <h1 class="catalog-page__title">Новые лица</h1>
-              <p class="catalog-page__lead">Недавно подтвердили профиль в «Кадре» — актёры, режиссёры и команда</p>
+              <p class="catalog-page__lead">Актёры агентства «Актёр 1» и команда, недавно подтвердившая профиль в «Кадре»</p>
             </div>
           </header>
 
           <label class="catalog-search">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
             <input type="search" data-faces-search placeholder="Имя, профессия или город…" />
-            <span class="catalog-search__count" data-faces-count>24 человека</span>
           </label>
 
-          <div class="search-layout catalog-layout" data-faces-filters>
-            <aside class="catalog-filters">
-              <section class="search-filter">
-                <div class="search-filter__title">Профессия</div>
-                <div class="search-filter__chips">
-                  <button type="button" class="search-chip is-on" data-filter-profession="">Все</button>
-                  <button type="button" class="search-chip" data-filter-profession="actor">Актёр</button>
-                  <button type="button" class="search-chip" data-filter-profession="actress">Актриса</button>
-                  <button type="button" class="search-chip" data-filter-profession="director">Режиссёр</button>
-                  <button type="button" class="search-chip" data-filter-profession="producer">Продюсер</button>
-                  <button type="button" class="search-chip" data-filter-profession="dop">Оператор-пост.</button>
-                  <button type="button" class="search-chip" data-filter-profession="casting">Кастинг</button>
-                  <button type="button" class="search-chip" data-filter-profession="screenwriter">Сценарист</button>
-                  <button type="button" class="search-chip" data-filter-profession="editor">Монтаж</button>
-                  <button type="button" class="search-chip" data-filter-profession="sound">Звук</button>
-                  <button type="button" class="search-chip" data-filter-profession="gaffer">Гафер</button>
-                  <button type="button" class="search-chip" data-filter-profession="costume">Костюм</button>
-                </div>
-              </section>
-
-              <section class="search-filter">
-                <div class="search-filter__title">Город</div>
-                <div class="search-filter__chips">
-                  <button type="button" class="search-chip is-on" data-filter-city="">Все</button>
-                  <button type="button" class="search-chip" data-filter-city="Москва">Москва</button>
-                  <button type="button" class="search-chip" data-filter-city="СПб">СПб</button>
-                  <button type="button" class="search-chip" data-filter-city="Казань">Казань</button>
-                  <button type="button" class="search-chip" data-filter-city="Мурманск">Мурманск</button>
-                  <button type="button" class="search-chip" data-filter-city="Сочи">Сочи</button>
-                </div>
-              </section>
-
-              <section class="search-filter">
-                <div class="search-filter__title">Дополнительно</div>
-                <label class="hub-filters__check catalog-filters__check">
-                  <input type="checkbox" data-filter-verified />
-                  <span>Только проверенные</span>
-                </label>
-              </section>
-
-              <button type="button" class="btn-secondary btn-block catalog-filters__reset" data-faces-reset>Сбросить фильтры</button>
-            </aside>
-
-            <div class="catalog-results">
-              <div id="faces-grid" class="faces-grid" aria-live="polite"></div>
+          <div class="catalog-toolbar" data-faces-filters>
+            <div class="filter-chip" data-filter-menu="profession">
+              <button type="button" class="filter-chip__btn" data-filter-trigger="profession" aria-haspopup="listbox" aria-expanded="false">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>
+                <span data-filter-label="profession">Профессия</span>
+                <svg class="filter-chip__caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+              <div class="filter-chip__menu" role="listbox">
+                <button type="button" class="filter-chip__opt is-on" data-filter-profession="" role="option">Все</button>
+                <button type="button" class="filter-chip__opt" data-filter-profession="actor" role="option">Актёр</button>
+                <button type="button" class="filter-chip__opt" data-filter-profession="actress" role="option">Актриса</button>
+                <button type="button" class="filter-chip__opt" data-filter-profession="director" role="option">Режиссёр</button>
+                <button type="button" class="filter-chip__opt" data-filter-profession="producer" role="option">Продюсер</button>
+                <button type="button" class="filter-chip__opt" data-filter-profession="dop" role="option">Оператор-пост.</button>
+                <button type="button" class="filter-chip__opt" data-filter-profession="casting" role="option">Кастинг</button>
+                <button type="button" class="filter-chip__opt" data-filter-profession="screenwriter" role="option">Сценарист</button>
+                <button type="button" class="filter-chip__opt" data-filter-profession="editor" role="option">Монтаж</button>
+                <button type="button" class="filter-chip__opt" data-filter-profession="sound" role="option">Звук</button>
+                <button type="button" class="filter-chip__opt" data-filter-profession="gaffer" role="option">Гафер</button>
+                <button type="button" class="filter-chip__opt" data-filter-profession="costume" role="option">Костюм</button>
+              </div>
             </div>
+
+            <div class="filter-chip" data-filter-menu="city">
+              <button type="button" class="filter-chip__btn" data-filter-trigger="city" aria-haspopup="listbox" aria-expanded="false">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 21s7-5.3 7-11a7 7 0 1 0-14 0c0 5.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.2"/></svg>
+                <span data-filter-label="city">Город</span>
+                <svg class="filter-chip__caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+              <div class="filter-chip__menu" role="listbox">
+                <button type="button" class="filter-chip__opt is-on" data-filter-city="" role="option">Все</button>
+                <button type="button" class="filter-chip__opt" data-filter-city="Москва" role="option">Москва</button>
+                <button type="button" class="filter-chip__opt" data-filter-city="СПб" role="option">СПб</button>
+                <button type="button" class="filter-chip__opt" data-filter-city="Казань" role="option">Казань</button>
+                <button type="button" class="filter-chip__opt" data-filter-city="Мурманск" role="option">Мурманск</button>
+                <button type="button" class="filter-chip__opt" data-filter-city="Сочи" role="option">Сочи</button>
+              </div>
+            </div>
+
+            <button type="button" class="filter-chip__btn" data-filter-verified>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+              Только проверенные
+            </button>
+            <button type="button" class="catalog-toolbar__reset" data-faces-reset>Сбросить</button>
+            <span class="catalog-search__count" data-faces-count>24 человека</span>
+          </div>
+
+          <div class="catalog-results">
+            <div id="faces-grid" class="faces-grid" aria-live="polite"></div>
           </div>
 
         </div>
@@ -95,7 +99,11 @@
   </div>
 </div>
 
+<script src="assets/roles.js"></script>
 <script src="assets/shell.js"></script>
+<script src="assets/rail.js" defer></script>
+<script src="assets/akter1-faces.js"></script>
+<script src="assets/db.js"></script>
 <script src="assets/faces.js" defer></script>
 </body>
 </html>

@@ -1,36 +1,37 @@
 /**
- * SimpleSocial tokens — solid surfaces, no glass
- * Reference: ui8-simple-social.vercel.app
+ * Кадр tokens — core palette + semantic light/dark
+ * Model: core → semantic (light|dark) → theme aliases
+ * Refs: frankcongson.com/blog/design-tokens-to-dark-mode
+ *       Dark sunk to #121212 canvas / #0e0e0e sidebar (not ChatGPT #212121)
  */
 
 :root {
-  --ss-canvas: #444444;
-  --ss-surface: #2e2e2e;
-  --ss-surface-solid: #2e2e2e;
-  --ss-surface-elevated: #333333;
-  --ss-surface-hover: #333333;
-  --ss-surface-subtle: hsla(0, 0%, 97%, 0.02);
-  --ss-surface-active: hsla(0, 0%, 97%, 0.1);
-  --ss-surface-input: hsla(0, 0%, 97%, 0.05);
-  --ss-surface-modal: #232222;
-  --ss-surface-panel: #282828;
+  /* ——— CORE (raw, never swap with theme) ——— */
+  --gray-0: #ffffff;
+  --gray-50: #f7f7f8;
+  --gray-100: #ececec;
+  --gray-200: #e5e5e5;
+  --gray-300: #d4d4d4;
+  --gray-400: #b4b4b4;
+  --gray-500: #8e8e8e;
+  --gray-600: #5f5f5f;
+  --gray-700: #3a3a3a;
+  --gray-750: #242424;
+  --gray-800: #1c1c1c;
+  --gray-850: #161616;
+  --gray-900: #121212;
+  --gray-950: #0e0e0e;
+  --gray-1000: #080808;
 
-  --ss-text-primary: hsla(0, 0%, 97%, 0.95);
-  --ss-text-secondary: hsla(0, 0%, 97%, 0.76);
-  --ss-text-muted: hsla(0, 0%, 97%, 0.4);
-  --ss-text-faint: hsla(0, 0%, 97%, 0.22);
-  --ss-text-on-accent: hsla(0, 0%, 97%, 0.7);
+  --brand-mint: #55f08b;
+  --brand-mint-strong: #0f8a42;
+  --brand-red: #bd3027;
+  --brand-red-bright: #ef4444;
+  --brand-blue: #5b9dff;
 
-  --ss-accent-like: #bd3027;
-  --ss-accent-like-soft: rgba(189, 48, 39, 0.9);
-  --ss-accent-repost: #55f08b;
-  --ss-accent-repost-soft: rgba(124, 255, 176, 0.7);
-  --ss-accent-badge: #bd3027;
-  --ss-accent-orange: rgba(255, 77, 0, 0.9);
-
-  --ss-border: hsla(0, 0%, 97%, 0.06);
-  --ss-border-strong: hsla(0, 0%, 97%, 0.1);
-  --ss-border-input: transparent;
+  --ss-on-image: #ffffff;
+  --ss-scrim: rgba(0, 0, 0, 0.55);
+  --ss-scrim-heavy: rgba(0, 0, 0, 0.72);
 
   --ss-radius-xs: 8px;
   --ss-radius-sm: 12px;
@@ -40,21 +41,25 @@
   --ss-radius-pill: 999px;
   --ss-radius-avatar: 50%;
 
-  --ss-font-display: 'Rubik', system-ui, sans-serif;
-  --ss-font-body: 'Inter', 'Rubik', system-ui, sans-serif;
-  --ss-font-size-xs: 10px;
-  --ss-font-size-sm: 12px;
-  --ss-font-size-base: 14px;
-  --ss-font-size-md: 16px;
-  --ss-font-size-lg: 18px;
+  --ss-font-display: var(--font-inter), Inter, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --ss-font-body: var(--font-inter), Inter, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --ss-font-size-xs: 12px;
+  --ss-font-size-sm: 14px;
+  --ss-font-size-base: 16px;
+  --ss-font-size-md: 18px;
+  --ss-font-size-lg: 20px;
+  --ss-font-weight-light: 300;
   --ss-font-weight-normal: 400;
+  --ss-font-weight-book: 450;
   --ss-font-weight-medium: 500;
-  --ss-font-weight-semibold: 600;
-  --ss-font-weight-bold: 700;
-  --ss-line-height-tight: 1.2;
+  --ss-font-weight-semibold: 500;
+  --ss-font-weight-bold: 500;
+  --ss-line-height-tight: 1.15;
   --ss-line-height-base: 1.4;
   --ss-line-height-relaxed: 1.5;
-  --ss-letter-spacing: 0.025em;
+  --ss-letter-spacing: 0;
+  --ss-letter-spacing-snug: -0.01em;
+  --ss-letter-spacing-tight: -0.03em;
 
   --ss-space-1: 4px;
   --ss-space-2: 8px;
@@ -70,10 +75,127 @@
   --ss-content-max: 660px;
   --ss-nav-item-height: 48px;
 
-  --ss-shadow-dropdown: 0 24px 32px -12px hsla(0, 0%, 7%, 0.1);
   --ss-transition-fast: 0.12s ease;
   --ss-transition-base: 0.2s ease;
+}
 
+/* ——— SEMANTIC: dark (product default) ——— */
+:root,
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  --ss-canvas: var(--gray-900);
+  --ss-surface: var(--gray-950);
+  --ss-surface-solid: var(--gray-950);
+  --ss-surface-elevated: var(--gray-800);
+  --ss-surface-hover: rgba(255, 255, 255, 0.06);
+  --ss-surface-subtle: rgba(255, 255, 255, 0.025);
+  --ss-surface-muted: rgba(255, 255, 255, 0.04);
+  --ss-surface-active: rgba(255, 255, 255, 0.09);
+  --ss-surface-input: rgba(255, 255, 255, 0.05);
+  --ss-surface-modal: var(--gray-800);
+  --ss-surface-panel: var(--gray-850);
+  --ss-dropdown: var(--gray-800);
+
+  --ss-text-primary: var(--gray-100);
+  --ss-text-secondary: var(--gray-400);
+  --ss-text-muted: var(--gray-500);
+  --ss-text-faint: rgba(255, 255, 255, 0.32);
+  --ss-text-on-accent: var(--gray-1000);
+  --ss-text-on-inverse: var(--gray-0);
+
+  --ss-accent-like: var(--brand-red);
+  --ss-accent-like-soft: rgba(189, 48, 39, 0.2);
+  --ss-accent-repost: var(--brand-mint);
+  --ss-accent-repost-soft: rgba(85, 240, 139, 0.12);
+  --ss-accent-badge: var(--brand-red);
+  --ss-accent-orange: rgba(255, 77, 0, 0.9);
+  --ss-accent-info: var(--brand-blue);
+
+  --ss-border: rgba(255, 255, 255, 0.07);
+  --ss-border-strong: rgba(255, 255, 255, 0.12);
+  --ss-border-focus: rgba(255, 255, 255, 0.24);
+  --ss-border-input: transparent;
+
+  --ss-shadow-dropdown: 0 24px 40px -12px rgba(0, 0, 0, 0.65);
+  --ss-selection: rgba(255, 255, 255, 0.14);
+
+  --btn-primary-bg: var(--gray-100);
+  --btn-primary-fg: var(--gray-1000);
+  --btn-primary-hover: var(--gray-0);
+  --btn-secondary-bg: rgba(255, 255, 255, 0.05);
+  --btn-secondary-fg: var(--gray-400);
+  --btn-secondary-hover: rgba(255, 255, 255, 0.09);
+
+  --tag-green-bg: transparent;
+  --tag-green-fg: var(--ss-accent-repost);
+  --tag-blue-bg: transparent;
+  --tag-blue-fg: var(--ss-text-secondary);
+  --tag-orange-bg: transparent;
+  --tag-orange-fg: var(--brand-red-bright);
+  --tag-gray-bg: transparent;
+  --tag-gray-fg: var(--ss-text-muted);
+  --tag-red-bg: rgba(189, 48, 39, 0.2);
+  --tag-red-fg: var(--brand-red-bright);
+}
+
+/* ——— SEMANTIC: light ——— */
+html[data-theme="light"] {
+  color-scheme: light;
+
+  --ss-canvas: var(--gray-0);
+  --ss-surface: var(--gray-50);
+  --ss-surface-solid: var(--gray-50);
+  --ss-surface-elevated: var(--gray-0);
+  --ss-surface-hover: rgba(0, 0, 0, 0.05);
+  --ss-surface-subtle: rgba(0, 0, 0, 0.025);
+  --ss-surface-muted: rgba(0, 0, 0, 0.04);
+  --ss-surface-active: rgba(0, 0, 0, 0.08);
+  --ss-surface-input: rgba(0, 0, 0, 0.045);
+  --ss-surface-modal: var(--gray-0);
+  --ss-surface-panel: var(--gray-50);
+  --ss-dropdown: var(--gray-0);
+
+  --ss-text-primary: #2d2d2d;
+  --ss-text-secondary: #5f5f5f;
+  --ss-text-muted: #8a8a8a;
+  --ss-text-faint: rgba(0, 0, 0, 0.38);
+  --ss-text-on-accent: var(--gray-0);
+  --ss-text-on-inverse: var(--gray-0);
+
+  --ss-accent-like: var(--brand-red);
+  --ss-accent-like-soft: rgba(189, 48, 39, 0.12);
+  --ss-accent-repost: var(--brand-mint-strong);
+  --ss-accent-repost-soft: rgba(15, 138, 66, 0.12);
+  --ss-accent-badge: var(--brand-red);
+  --ss-accent-orange: #e04a00;
+  --ss-accent-info: #2f6fdb;
+
+  --ss-border: rgba(0, 0, 0, 0.08);
+  --ss-border-strong: rgba(0, 0, 0, 0.12);
+  --ss-border-focus: rgba(0, 0, 0, 0.28);
+  --ss-border-input: transparent;
+
+  --ss-shadow-dropdown: 0 24px 32px -12px rgba(0, 0, 0, 0.18);
+  --ss-selection: rgba(15, 138, 66, 0.18);
+
+  --btn-primary-bg: #2d2d2d;
+  --btn-primary-fg: var(--gray-0);
+  --btn-primary-hover: var(--gray-950);
+  --btn-secondary-bg: rgba(0, 0, 0, 0.05);
+  --btn-secondary-fg: #5f5f5f;
+  --btn-secondary-hover: rgba(0, 0, 0, 0.08);
+
+  --tag-green-fg: var(--ss-accent-repost);
+  --tag-blue-fg: var(--ss-text-secondary);
+  --tag-orange-fg: var(--ss-accent-like);
+  --tag-gray-fg: var(--ss-text-muted);
+  --tag-red-bg: rgba(189, 48, 39, 0.12);
+  --tag-red-fg: var(--brand-red);
+}
+
+/* ——— THEME aliases (what components bind to) ——— */
+:root {
   --shell: var(--ss-surface);
   --sidebar: var(--ss-surface);
   --sidebar-border: var(--ss-border);
@@ -91,12 +213,4 @@
   --radius: var(--ss-radius-sm);
   --radius-lg: var(--ss-radius-lg);
   --radius-panel: var(--ss-radius-lg);
-  --tag-green-bg: rgba(85, 240, 139, 0.12);
-  --tag-green-fg: var(--ss-accent-repost);
-  --tag-blue-bg: hsla(0, 0%, 97%, 0.08);
-  --tag-blue-fg: var(--ss-text-secondary);
-  --tag-orange-bg: rgba(189, 48, 39, 0.15);
-  --tag-orange-fg: var(--ss-accent-like);
-  --tag-gray-bg: hsla(0, 0%, 97%, 0.08);
-  --tag-gray-fg: var(--ss-text-muted);
 }

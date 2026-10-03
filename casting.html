@@ -6,9 +6,11 @@
 <title>«Тихий январь» — кастинг главной роли · Кадр</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="assets/simplesocial-tokens.css" />
 <link rel="stylesheet" href="assets/theme.css" />
+<link rel="stylesheet" href="assets/simplesocial-overrides.css" />
 </head>
 <body class="app-body-root" data-page="casting" data-page-title="Кастинг · «Тихий январь»"
   data-profession="actor"
@@ -196,7 +198,7 @@
                 <a href="profile-casting.html" class="response-row" style="grid-template-columns:36px 1fr; padding:6px 0; border:none;">
                   <img src="assets/figma/avatar-02.png" alt="" style="width:36px;height:36px;" />
                   <div>
-                    <div class="response-row__name">Анна Лебедева</div>
+                    <div class="response-row__name">Анна Кеворкова</div>
                     <div class="response-row__meta">Кастинг-директор</div>
                   </div>
                 </a>
@@ -233,22 +235,19 @@
                 </div>
               </section>
 
-              <section class="detail-side__panel">
-                <div class="detail-side__title">Документы</div>
-                <dl class="detail-kv">
-                  <dt>Договор-образец</dt><dd><a href="#" class="link-accent">PDF</a></dd>
-                  <dt>NDA</dt><dd><a href="#" class="link-accent">PDF</a></dd>
-                  <dt>Release-форма</dt><dd><a href="#" class="link-accent">DOCX</a></dd>
-                  <dt>График смен</dt><dd><a href="#" class="link-accent">PDF</a></dd>
-                </dl>
-              </section>
-
-              <section class="detail-side__panel" style="background:#ecf6f0; border-color:#d6ebde;">
-                <div class="detail-side__title" style="color:#2f6342;">Sreda Production · отвечает</div>
-                <p style="font-size:13px; color:#2f6342; line-height:1.5; margin:0 0 8px;">
-                  Медиана ответа на отклик — <strong>1 день 6 часов</strong>. Конверсия в очные пробы — <strong>14%</strong>. По данным «Кадр».
-                </p>
-                <a href="studio.html" class="link-accent" style="font-weight:600; font-size:13px;">Профиль продакшна →</a>
+              <section class="detail-side__panel casting-detail__pulse">
+                <div class="casting-detail__pulse-body">
+                  <div class="detail-side__title">Sreda Production · отвечает</div>
+                  <p style="font-size:13px; color:var(--text-muted); line-height:1.5; margin:0 0 8px;">
+                    Медиана ответа на отклик — <strong>1 день 6 часов</strong>. Конверсия в очные пробы — <strong>14%</strong>. По данным «Кадр».
+                  </p>
+                  <a href="studio.html" class="link-accent" style="font-weight:600; font-size:13px;">Профиль продакшна →</a>
+                </div>
+                <span class="casting-detail__pulse-icon" aria-hidden>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
+                  </svg>
+                </span>
               </section>
             </aside>
           </div>
@@ -259,6 +258,8 @@
   </div>
 </div>
 
+<script src="assets/roles.js"></script>
 <script src="assets/shell.js"></script>
+<script src="assets/rail.js" defer></script>
 </body>
 </html>

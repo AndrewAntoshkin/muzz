@@ -6,17 +6,19 @@
 <title>Александр Взметнев · кадр</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
   tailwind.config = {
     theme: {
       extend: {
-        fontFamily: { sans: ['Onest', 'ui-sans-serif', 'system-ui'] },
+        fontFamily: { sans: ['Rubik', 'Inter', 'ui-sans-serif', 'system-ui'] },
         colors: {
-          ink: { 900: '#2C2C2B', 700: '#4A4A49', 500: '#8E8E8E', 400: '#B0B0B0', 300: '#D4D4D4' },
-          canvas: '#E8E8E8',
-          surface: { DEFAULT: '#FCFCFC', muted: '#F3F3F3' },
+          ink: { 900: 'hsla(0,0%,97%,0.95)', 700: 'hsla(0,0%,97%,0.76)', 500: 'hsla(0,0%,97%,0.4)', 400: 'hsla(0,0%,97%,0.4)', 300: 'hsla(0,0%,97%,0.25)' },
+          canvas: '#444444',
+          surface: { DEFAULT: '#2e2e2e', muted: '#282828' },
+          hairline: 'hsla(0,0%,97%,0.08)',
+          line: 'hsla(0,0%,97%,0.08)',
         },
         borderRadius: { post: '12px', media: '10px' },
         letterSpacing: { tightish: '-0.01em', tighter2: '-0.02em' },
@@ -24,7 +26,9 @@
     }
   }
 </script>
+<link rel="stylesheet" href="assets/simplesocial-tokens.css" />
 <link rel="stylesheet" href="assets/theme.css" />
+<link rel="stylesheet" href="assets/simplesocial-overrides.css" />
 <style>
   .photo-1 { background: #3D4F6B; }
   .photo-2 { background: #5C4A45; }
@@ -59,26 +63,16 @@
 
     <!-- HERO -->
     <section class="post overflow-hidden">
-      <div class="aspect-[5/1] cover relative overflow-hidden">
-        <img src="assets/actors/vzmetnev-cover.jpg" alt="" class="absolute inset-0 w-full h-full object-cover" loading="lazy" />
-        <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-        <div class="absolute inset-0 grain opacity-30"></div>
-        <div class="absolute top-4 right-4 flex flex-wrap gap-2 justify-end">
-          <a href="https://www.kinopoisk.ru/name/4531331/" target="_blank" rel="noopener noreferrer" class="h-9 px-3 rounded-full text-[13px] font-medium text-white bg-black/30 backdrop-blur hover:bg-black/40 inline-flex items-center gap-1.5 shrink-0 whitespace-nowrap">Кинопоиск</a>
-          <a href="https://kinolift.com/ru/16017" target="_blank" rel="noopener noreferrer" class="h-9 px-3 rounded-full text-[13px] font-medium text-white bg-black/30 backdrop-blur hover:bg-black/40 inline-flex items-center gap-1.5 shrink-0 whitespace-nowrap">Kinolift</a>
-        </div>
-      </div>
-
-      <div class="px-4 sm:px-6 pb-6 relative">
-        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between -mt-12 sm:-mt-16 mb-4 gap-4">
-          <img src="assets/actors/vzmetnev-kinopoisk.jpg" alt="Александр Взметнев" class="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover ring-white-4 shrink-0" width="128" height="128" />
+      <div class="px-4 sm:px-6 pt-6 pb-6 relative">
+        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-4 gap-4">
+          <img src="assets/actors/vzmetnev-kinopoisk.jpg" alt="Александр Взметнев" class="rounded-full object-cover ring-4 ring-[#2e2e2e] shrink-0" width="120" height="120" style="width:120px;height:120px;" />
           <div class="flex flex-wrap items-center gap-2">
             <button type="button" class="btn-primary shrink-0 whitespace-nowrap">Пригласить на кастинг</button>
             <a href="#contacts" class="btn-secondary">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
               Контакты
             </a>
-            <button class="h-10 w-10 grid place-items-center rounded-full text-ink-500 bg-surface-muted hover:bg-line">
+            <button class="h-10 w-10 grid place-items-center rounded-full text-ink-500 bg-surface-muted hover:bg-white/5">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>
             </button>
           </div>
@@ -130,25 +124,14 @@
           <span class="text-[13px] px-3 py-1.5 rounded-full bg-surface-muted text-ink-700 font-medium shrink-0 whitespace-nowrap">18.08.1993</span>
         </div>
 
-        <!-- Менеджер — сразу под шапкой профиля -->
+        <!-- Представительство -->
         <div class="callout mt-6 flex-col sm:flex-row sm:items-center gap-4">
           <div class="flex items-center gap-3 min-w-0 flex-1">
-            <div class="w-12 h-12 rounded-full bg-white link-accent text-[12px] font-bold grid place-items-center shrink-0 shadow-sm">ЛМ</div>
             <div class="min-w-0">
-              <div class="object-type" style="margin-bottom:4px">Менеджер</div>
-              <div class="text-[16px] font-bold text-ink-900">Лариса Морозова</div>
-              <div class="text-[13px] text-ink-500">MS Talents · кастинги и съёмки</div>
+              <div class="object-type" style="margin-bottom:4px">Представительство</div>
+              <div class="text-[16px] font-bold text-ink-900">Без агента</div>
+              <div class="text-[13px] text-ink-500">Пишите напрямую</div>
             </div>
-          </div>
-          <div class="flex flex-wrap items-center gap-2 shrink-0">
-            <a href="mailto:lmorozova@mstalents.ru" class="btn-primary">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-              Написать менеджеру
-            </a>
-            <a href="tel:+74951234567" class="btn-secondary">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-              +7 (495) 123-45-67
-            </a>
           </div>
         </div>
       </div>
@@ -166,8 +149,8 @@
           </header>
 
           <div class="grid sm:grid-cols-2 gap-3">
-            <a href="https://kinolift.com/ru/16017" target="_blank" rel="noopener noreferrer" class="contact-link group flex items-center gap-3 p-3.5 rounded-2xl bg-surface-muted hover:bg-white border border-transparent hover:border-line transition-colors">
-              <span class="w-10 h-10 rounded-xl bg-white grid place-items-center link-accent shrink-0 shadow-sm">
+            <a href="https://kinolift.com/ru/16017" target="_blank" rel="noopener noreferrer" class="contact-link group flex items-center gap-3 p-3.5 rounded-2xl bg-surface-muted hover:bg-white/5 border border-transparent hover:border-line transition-colors">
+              <span class="w-10 h-10 rounded-xl bg-[#2e2e2e] grid place-items-center link-accent shrink-0 shadow-sm">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
               </span>
               <span class="min-w-0 flex-1">
@@ -177,7 +160,7 @@
               <svg class="shrink-0 text-ink-300 group-hover:link-accent" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
             </a>
 
-            <a href="https://www.kinopoisk.ru/name/4531331/" target="_blank" rel="noopener noreferrer" class="contact-link group flex items-center gap-3 p-3.5 rounded-2xl bg-surface-muted hover:bg-white border border-transparent hover:border-line transition-colors">
+            <a href="https://www.kinopoisk.ru/name/4531331/" target="_blank" rel="noopener noreferrer" class="contact-link group flex items-center gap-3 p-3.5 rounded-2xl bg-surface-muted hover:bg-white/5 border border-transparent hover:border-line transition-colors">
               <span class="w-10 h-10 rounded-xl bg-[#FF5500] text-white text-[10px] font-bold grid place-items-center shrink-0">КП</span>
               <span class="min-w-0 flex-1">
                 <span class="block text-[14px] font-semibold text-ink-900 group-hover:link-accent">Кинопоиск</span>
@@ -186,7 +169,7 @@
               <svg class="shrink-0 text-ink-300 group-hover:link-accent" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
             </a>
 
-            <a href="https://t.me/alexander_vzmetnev" target="_blank" rel="noopener noreferrer" class="contact-link group flex items-center gap-3 p-3.5 rounded-2xl bg-surface-muted hover:bg-white border border-transparent hover:border-line transition-colors">
+            <a href="https://t.me/alexander_vzmetnev" target="_blank" rel="noopener noreferrer" class="contact-link group flex items-center gap-3 p-3.5 rounded-2xl bg-surface-muted hover:bg-white/5 border border-transparent hover:border-line transition-colors">
               <span class="w-10 h-10 rounded-xl bg-[#229ED9] text-white grid place-items-center shrink-0">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
               </span>
@@ -197,8 +180,8 @@
               <svg class="shrink-0 text-ink-300 group-hover:link-accent" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
             </a>
 
-            <a href="tel:+79161234567" class="contact-link group flex items-center gap-3 p-3.5 rounded-2xl bg-surface-muted hover:bg-white border border-transparent hover:border-line transition-colors">
-              <span class="w-10 h-10 rounded-xl bg-white grid place-items-center text-ink-700 shrink-0 shadow-sm">
+            <a href="tel:+79161234567" class="contact-link group flex items-center gap-3 p-3.5 rounded-2xl bg-surface-muted hover:bg-white/5 border border-transparent hover:border-line transition-colors">
+              <span class="w-10 h-10 rounded-xl bg-[#2e2e2e] grid place-items-center text-ink-700 shrink-0 shadow-sm">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
               </span>
               <span class="min-w-0 flex-1">
@@ -207,8 +190,8 @@
               </span>
             </a>
 
-            <a href="mailto:casting@vzmetnev.ru" class="contact-link group flex items-center gap-3 p-3.5 rounded-2xl bg-surface-muted hover:bg-white border border-transparent hover:border-line transition-colors sm:col-span-2">
-              <span class="w-10 h-10 rounded-xl bg-white grid place-items-center text-ink-700 shrink-0 shadow-sm">
+            <a href="mailto:casting@vzmetnev.ru" class="contact-link group flex items-center gap-3 p-3.5 rounded-2xl bg-surface-muted hover:bg-white/5 border border-transparent hover:border-line transition-colors sm:col-span-2">
+              <span class="w-10 h-10 rounded-xl bg-[#2e2e2e] grid place-items-center text-ink-700 shrink-0 shadow-sm">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
               </span>
               <span class="min-w-0 flex-1">
@@ -230,8 +213,8 @@
             <div class="absolute top-4 left-4 text-[11px] uppercase tracking-[0.1em] text-white/60 font-semibold">Showreel · сериалы и кино</div>
             <div class="absolute top-4 right-4 text-[12px] px-2 py-1 rounded-md bg-black/40 text-white font-medium">1:52</div>
             <div class="absolute inset-0 grid place-items-center">
-              <div class="w-16 h-16 rounded-full bg-white grid place-items-center shadow-lg group-hover:scale-105 transition-transform">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="#14151A"><path d="M8 5v14l11-7z"/></svg>
+              <div class="w-16 h-16 rounded-full bg-black/50 grid place-items-center shadow-lg group-hover:scale-105 transition-transform">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="hsla(0,0%,97%,0.95)"><path d="M8 5v14l11-7z"/></svg>
               </div>
             </div>
             <div class="absolute bottom-4 left-4 right-4 text-white">
@@ -413,7 +396,6 @@
           <h2 class="text-[17px] font-bold text-ink-900 mb-4">Условия работы и налог</h2>
           <div class="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-[14px]">
             <div class="flex justify-between"><span class="text-ink-500">Налоговый статус</span><span class="font-semibold">ИП · УСН 6%</span></div>
-            <div class="flex justify-between"><span class="text-ink-500">Альтернатива</span><span class="font-semibold">агентский договор (MS Talents)</span></div>
             <div class="flex justify-between"><span class="text-ink-500">Ставка эпизод (платформа)</span><span class="font-semibold">от 220 ₽ тыс / смена</span></div>
             <div class="flex justify-between"><span class="text-ink-500">Главная роль · сериал</span><span class="font-semibold">от 380 ₽ тыс / серия</span></div>
             <div class="flex justify-between"><span class="text-ink-500">Главная роль · полный метр</span><span class="font-semibold">от 2.4 ₽ млн за проект</span></div>
@@ -423,7 +405,7 @@
             <div class="flex justify-between"><span class="text-ink-500">Тариф «холд»</span><span class="font-semibold">50% от смены</span></div>
             <div class="flex justify-between"><span class="text-ink-500">Эксклюзив на жанр</span><span class="font-semibold">обсуждаемо</span></div>
           </div>
-          <p class="mt-4 text-[12px] text-ink-400">Все договоры — через MS Talents или напрямую ИП. Расчёт безналом, по реквизитам, с НДС и без — обсуждаемо.</p>
+          <p class="mt-4 text-[12px] text-ink-400">Договоры напрямую. Расчёт безналом, по реквизитам.</p>
         </section>
 
         <!-- EDUCATION & PLATFORMS -->
@@ -468,7 +450,7 @@
                 <div class="text-[15px] font-bold text-ink-900 truncate">Александр Взметнев</div>
                 <div class="text-[13px] text-ink-500 truncate">Актёр · 2 дня назад</div>
               </div>
-              <button type="button" class="ml-auto text-ink-400 hover:text-ink-900 w-8 h-8 grid place-items-center rounded-xl hover:bg-white/80 shrink-0">
+              <button type="button" class="ml-auto text-ink-400 hover:text-ink-900 w-8 h-8 grid place-items-center rounded-xl hover:bg-white/5 shrink-0">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
               </button>
             </header>
@@ -481,9 +463,9 @@
               <div class="absolute bottom-3 left-3 text-white/90 text-[12px] font-medium">«Август» · бэкстейдж</div>
             </div>
             <footer class="mt-4 flex items-center gap-1 text-ink-500 text-sm">
-              <button type="button" class="h-8 px-2 rounded-xl hover:bg-white/80 flex items-center gap-1.5 shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 156</button>
-              <button type="button" class="h-8 px-2 rounded-xl hover:bg-white/80 flex items-center gap-1.5 shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 28</button>
-              <button type="button" class="h-8 px-2 rounded-xl hover:bg-white/80 flex items-center gap-1.5 shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> 9</button>
+              <button type="button" class="h-8 px-2 rounded-xl hover:bg-white/5 flex items-center gap-1.5 shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 156</button>
+              <button type="button" class="h-8 px-2 rounded-xl hover:bg-white/5 flex items-center gap-1.5 shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 28</button>
+              <button type="button" class="h-8 px-2 rounded-xl hover:bg-white/5 flex items-center gap-1.5 shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> 9</button>
             </footer>
           </article>
 
@@ -499,9 +481,9 @@
               Вышла «Любовь Советского Союза» — играю Андрея Панкратова. Благодарен режиссёру и продюсерам за доверие. Открыт к новым драматическим ролям в полном метре — самопробы в личные сообщения.
             </div>
             <footer class="mt-4 flex items-center gap-1 text-ink-500 text-sm">
-              <button type="button" class="h-8 px-2 rounded-xl hover:bg-white/80 flex items-center gap-1.5 shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 94</button>
-              <button type="button" class="h-8 px-2 rounded-xl hover:bg-white/80 flex items-center gap-1.5 shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 17</button>
-              <button type="button" class="h-8 px-2 rounded-xl hover:bg-white/80 flex items-center gap-1.5 shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> 5</button>
+              <button type="button" class="h-8 px-2 rounded-xl hover:bg-white/5 flex items-center gap-1.5 shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 94</button>
+              <button type="button" class="h-8 px-2 rounded-xl hover:bg-white/5 flex items-center gap-1.5 shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 17</button>
+              <button type="button" class="h-8 px-2 rounded-xl hover:bg-white/5 flex items-center gap-1.5 shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> 5</button>
             </footer>
           </article>
         </section>
@@ -516,7 +498,7 @@
             </div>
             <div style="display:flex; gap:8px; align-items:flex-start;">
               <span style="color:var(--tag-green-fg); font-size:18px;">✓</span>
-              <div><strong>Агентство</strong><div style="color:var(--text-muted);">MS Talents подтвердили представительство</div></div>
+              <div><strong>Агентство</strong><div style="color:var(--text-muted);">Без агента — связь напрямую</div></div>
             </div>
             <div style="display:flex; gap:8px; align-items:flex-start;">
               <span style="color:var(--tag-green-fg); font-size:18px;">✓</span>
@@ -554,8 +536,8 @@
                 <span class="mini-cal__d">23</span><span class="mini-cal__d">24</span><span class="mini-cal__d">25</span><span class="mini-cal__d">26</span><span class="mini-cal__d">27</span><span class="mini-cal__d">28</span><span class="mini-cal__d">29</span>
               </div>
               <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; font-size:11px; color:var(--text-muted);">
-                <span style="display:inline-flex; align-items:center; gap:4px;"><span style="width:8px; height:8px; background:#e9f0f9; border-radius:2px;"></span> смена</span>
-                <span style="display:inline-flex; align-items:center; gap:4px;"><span style="width:8px; height:8px; background:#fce8d8; border-radius:2px;"></span> hold</span>
+                <span style="display:inline-flex; align-items:center; gap:4px;"><span style="width:8px; height:8px; background:hsla(0,0%,97%,0.1); border-radius:2px;"></span> смена</span>
+                <span style="display:inline-flex; align-items:center; gap:4px;"><span style="width:8px; height:8px; background:rgba(189,48,39,0.15); border-radius:2px;"></span> hold</span>
                 <span style="display:inline-flex; align-items:center; gap:4px;"><span style="width:8px; height:8px; outline:2px solid var(--tag-green-fg); border-radius:2px;"></span> сегодня</span>
               </div>
             </div>
@@ -576,51 +558,6 @@
           </div>
         </section>
 
-        <!-- REVIEWS -->
-        <section class="post p-4 sm:p-6" id="reviews">
-          <header class="flex items-center justify-between mb-4">
-            <h2 class="text-[17px] font-bold text-ink-900">Отзывы команд <span class="text-ink-400 font-medium">· 9</span></h2>
-            <a href="#" class="text-[13px] link-accent font-semibold hover:opacity-80">Все →</a>
-          </header>
-          <div class="review-card">
-            <div class="review-card__head">
-              <img src="assets/figma/avatar-01.png" alt="" />
-              <div>
-                <div class="review-card__who">Ксения Воронина</div>
-                <div class="review-card__role">Продюсер · Trace Films</div>
-              </div>
-              <div class="review-card__project">«Антипод» · Кинопоиск · 2024</div>
-            </div>
-            <div class="review-card__text">
-              На площадке — внимательный, без капризов. Знает текст до съёмки, не «разогревается» 10 минут. После «Маяка» позвали на «После шторма» (Okko) — без проб.
-            </div>
-          </div>
-          <div class="review-card">
-            <div class="review-card__head">
-              <img src="assets/figma/avatar-02.png" alt="" />
-              <div>
-                <div class="review-card__who">Анна Лебедева</div>
-                <div class="review-card__role">Кастинг-директор</div>
-              </div>
-              <div class="review-card__project">«Стая» · Okko · 2024</div>
-            </div>
-            <div class="review-card__text">
-              Самопробы всегда в срок и по стандарту Okko (слейт, крупный + ¾ + общий). Это очень редко. На очный приходит с готовыми вариантами, не ждёт указаний.
-            </div>
-          </div>
-          <div class="review-card">
-            <div class="review-card__head">
-              <span class="project-team-card__ava" style="background:#4A3D5C; width:36px; height:36px; font-size:12px;">АБ</span>
-              <div>
-                <div class="review-card__who">Анна Белова</div>
-                <div class="review-card__role">Режиссёр</div>
-              </div>
-              <div class="review-card__project">«Колыбель» · «Окно в Европу» · 2022</div>
-            </div>
-            <div class="review-card__text">
-              На сцене в поезде сделал то, что я не могла объяснить словами. Доверяю — буду работать с ним и дальше. Берёт его на «После шторма» главную мужскую.
-            </div>
-          </div>
         </section>
 
       </div>
@@ -632,14 +569,12 @@
         <section class="post p-4" id="contacts-sidebar">
           <div class="object-type mb-3">Связаться</div>
           <div class="flex items-center gap-3 mb-4">
-            <div class="w-11 h-11 rounded-full bg-surface-muted link-accent text-[11px] font-bold grid place-items-center shrink-0">ЛМ</div>
             <div class="min-w-0">
-              <div class="text-[15px] font-bold text-ink-900 leading-tight">Лариса Морозова</div>
-              <div class="text-[12px] text-ink-500">MS Talents · менеджер</div>
+              <div class="text-[15px] font-bold text-ink-900 leading-tight">Без агента</div>
+              <div class="text-[12px] text-ink-500">Пишите напрямую</div>
             </div>
           </div>
-          <a href="mailto:lmorozova@mstalents.ru" class="btn-primary btn-block mb-2">Написать менеджеру</a>
-          <a href="tel:+74951234567" class="btn-secondary btn-block mb-4">+7 (495) 123-45-67</a>
+          <a href="mailto:casting@vzmetnev.ru" class="btn-primary btn-block mb-4">Написать</a>
 
           <div class="space-y-1.5 text-[13px] border-t border-line pt-3">
             <a href="https://kinolift.com/ru/16017" target="_blank" rel="noopener" class="flex items-center justify-between gap-2 py-2 px-2 -mx-2 rounded-xl hover:bg-surface-muted text-ink-700 hover:link-accent font-medium">
@@ -683,7 +618,7 @@
         <div class="text-[11px] uppercase tracking-wide text-ink-400 px-1 pt-2">Партнёры</div>
         <section class="post p-4">
           <div class="flex items-center gap-3 mb-3">
-            <div class="w-10 h-10 rounded-xl bg-ink-900 text-white text-xs font-bold grid place-items-center">RG</div>
+            <div class="w-10 h-10 rounded-xl bg-[#1a1a1a] text-ink-900 text-xs font-bold grid place-items-center">RG</div>
             <div>
               <div class="text-[14px] font-semibold">RentalGear</div>
               <div class="text-[12px] text-ink-500">Аренда кинотехники</div>
@@ -705,6 +640,8 @@
   </div>
 </div>
 
+<script src="assets/roles.js"></script>
 <script src="assets/shell.js"></script>
+<script src="assets/rail.js" defer></script>
 </body>
 </html>

@@ -6,8 +6,10 @@
 <title>Кадр — главная</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/simplesocial-tokens.css" />
 <link rel="stylesheet" href="assets/theme.css" />
+<link rel="stylesheet" href="assets/simplesocial-overrides.css" />
 </head>
 <body class="app-body-root" data-page="home" data-page-title="Главная" data-layout="hub" data-header="page"
   data-profession="actor"
@@ -33,18 +35,6 @@
               <div>
                 <h1 class="hub-welcome__title">Здравствуйте, Александр</h1>
                 <p class="hub-welcome__lead">У вас 3 новые задачи и 2 непрочитанных сообщения.</p>
-              </div>
-              <div class="hub-welcome__tasks">
-                <a href="casting.html" class="hub-task hub-task--urgent">
-                  <span class="hub-task__label">До дедлайна</span>
-                  <strong>Самопроба «Тихий январь»</strong>
-                  <span class="hub-task__meta">осталось 12 дней · Sreda · Кинопоиск</span>
-                </a>
-                <a href="messages.html" class="hub-task">
-                  <span class="hub-task__label">Сообщение</span>
-                  <strong>Анна Лебедева</strong>
-                  <span class="hub-task__meta">«Жду самопробу до 6 июня…» · 2 ч назад</span>
-                </a>
               </div>
             </section>
 
@@ -107,7 +97,7 @@
                   <span class="platform-card__hot">5 ищут команду</span>
                 </a>
                 <a href="projects.html?platform=start" class="platform-card">
-                  <span class="platform-card__logo" style="background:#fff; color:#2C2C2B; border:1px solid #ccc;">ST</span>
+                  <span class="platform-card__logo" style="background:hsla(0,0%,97%,0.08); color:hsla(0,0%,97%,0.76); border:1px solid hsla(0,0%,97%,0.1);">ST</span>
                   <span class="platform-card__name">START</span>
                   <span class="platform-card__count">7 проектов</span>
                   <span class="platform-card__hot">2 ищут команду</span>
@@ -152,7 +142,7 @@
                   <h2 class="hub-block__title">Новые лица</h2>
                   <p class="hub-block__lead">Недавно подтвердили профиль в «Кадре»</p>
                 </div>
-                <a href="faces.html" class="hub-block__link">Все 24 →</a>
+                <a href="faces.html" class="hub-block__link">Все →</a>
               </header>
               <div id="faces-strip-preview" class="faces-strip" aria-live="polite"></div>
             </section>
@@ -266,9 +256,12 @@
   </div>
 </div>
 
+<script src="assets/roles.js"></script>
 <script src="assets/shell.js"></script>
 <script src="assets/rail.js" defer></script>
 <script src="assets/feed.js" defer></script>
+<script src="assets/akter1-faces.js"></script>
+<script src="assets/db.js"></script>
 <script src="assets/faces.js" defer></script>
 </body>
 </html>
