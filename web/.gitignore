@@ -40,8 +40,8 @@ yarn-error.log*
 /src/styles/simplesocial-tokens.css
 /src/styles/simplesocial-overrides.css
 
-# vercel
-.vercel
+.data/
+
 
 # typescript
 *.tsbuildinfo

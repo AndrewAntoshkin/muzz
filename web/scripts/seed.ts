@@ -1,3 +1,7 @@
+/**
+ * Upsert demo crew + «Актёр 1» roster.
+ * Does not delete the rest of the catalog (Kinolift, agency scrapes).
+ */
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -6,8 +10,11 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import {
   DEMO_BIOS,
+  GNEUSHEVA_CARD,
+  GNEUSHEVA_LINKS,
   KEVORKOVA_CARD,
-  LEBEDEVA_CARD,
+  KEVORKOVA_LINKS,
+  SOYKINA_CARD,
   VZMETNEV_CARD,
   VZMETNEV_LINKS,
   VZMETNEV_PHOTOS,
@@ -73,31 +80,52 @@ const CREW: CrewRow[] = [
     card: VZMETNEV_CARD,
   },
   {
-    slug: "lebedeva",
-    name: "Анна Лебедева",
+    slug: "kevorkova",
+    name: "Анна Кеворкова",
     role: "Кастинг-директор",
     profession: "casting",
     city: "Москва",
-    img: "assets/figma/avatar-02.png",
+    img: "assets/people/kevorkova.jpg",
     verified: true,
-    hint: "«Тихий январь» · Sreda",
-    bio: DEMO_BIOS.lebedeva,
-    card: LEBEDEVA_CARD,
+    hint: "«Союз Спасения» · «Майор Гром»",
+    bio: DEMO_BIOS.kevorkova,
+    birthDate: "1981-12-07",
+    sourceUrl: "https://www.kino-teatr.ru/kino/casting/ros/467639/works/",
+    card: KEVORKOVA_CARD,
   },
   {
-    slug: "kevorkova",
-    name: "Анна Кеворкова",
+    slug: "soykina",
+    name: "Ирина Сойкина",
     role: "Агент",
     profession: "agent",
     city: "Москва",
-    img: "assets/figma/avatar-01.png",
     verified: true,
     hint: "Агентство «Актёр 1»",
-    bio: DEMO_BIOS.kevorkova,
-    sourceUrl: "https://akter1.ru/",
+    bio: DEMO_BIOS.soykina,
+    sourceUrl: "https://akter1.ru/contacts.html",
     agencyId: "akter1",
-    agentId: "anna-kevorkova",
-    card: KEVORKOVA_CARD,
+    agentId: "irina-soykina",
+    initials: "ИС",
+    bg: "#3D6D99",
+    card: SOYKINA_CARD,
+  },
+  {
+    slug: "gneusheva",
+    name: "Наталья Гнеушева",
+    role: "Агент",
+    profession: "agent",
+    city: "Москва",
+    img: "assets/people/gneusheva.jpg",
+    verified: true,
+    hint: "Агентство Натальи Гнеушевой",
+    bio: DEMO_BIOS.gneusheva,
+    birthDate: "1977-03-26",
+    sourceUrl: "https://castingrus.ru/cv/",
+    agencyId: "castingrus",
+    agentId: "natalya-gneusheva",
+    initials: "НГ",
+    bg: "#6D3D5C",
+    card: GNEUSHEVA_CARD,
   },
 ];
 
@@ -136,24 +164,47 @@ async function main() {
 
   const faces = loadAkter1();
 
-  await db.delete(personPhotos);
-  await db.delete(personLinks);
-  await db.delete(people);
-  await db.delete(agents);
-  await db.delete(agencies);
+  await db
+    .insert(agencies)
+    .values({
+      id: "akter1",
+      name: "Актёр 1",
+      website: "https://akter1.ru",
+    })
+    .onConflictDoUpdate({
+      target: agencies.id,
+      set: { name: "Актёр 1", website: "https://akter1.ru" },
+    });
 
-  await db.insert(agencies).values({
-    id: "akter1",
-    name: "Актёр 1",
-    website: "https://akter1.ru",
-  });
+  await db
+    .insert(agencies)
+    .values({
+      id: "castingrus",
+      name: "Натальи Гнеушевой",
+      website: "https://castingrus.ru",
+    })
+    .onConflictDoUpdate({
+      target: agencies.id,
+      set: { name: "Натальи Гнеушевой", website: "https://castingrus.ru" },
+    });
 
-  await db.insert(agents).values({
-    id: "anna-kevorkova",
-    name: "Анна Кеворкова",
-    email: "anna@akter1.ru",
-    agencyId: "akter1",
-  });
+  await db
+    .insert(agents)
+    .values([
+      {
+        id: "irina-soykina",
+        name: "Ирина Сойкина",
+        email: "irina@akter1.ru",
+        agencyId: "akter1",
+      },
+      {
+        id: "natalya-gneusheva",
+        name: "Наталья Гнеушева",
+        email: "aktkast@mail.ru",
+        agencyId: "castingrus",
+      },
+    ])
+    .onConflictDoNothing();
 
   const crewRows = CREW.map((p) => ({
     slug: p.slug,
@@ -190,7 +241,7 @@ async function main() {
       sourceUrl: `https://akter1.ru/${path}/item/${card.slug}.html`,
       birthDate: null,
       agencyId: "akter1",
-      agentId: "anna-kevorkova",
+      agentId: "irina-soykina",
       hint: card.hint || "Агентство «Актёр 1»",
       initials: initialsOf(card.name),
       bg: null,
@@ -198,7 +249,8 @@ async function main() {
     };
   });
 
-  await db.insert(people).values([...crewRows, ...akterRows]);
+  await db.insert(people).values(crewRows).onConflictDoNothing();
+  await db.insert(people).values(akterRows).onConflictDoNothing();
 
   await db.insert(personPhotos).values(
     VZMETNEV_PHOTOS.map((url, i) => ({
@@ -207,7 +259,7 @@ async function main() {
       url,
       sort: i,
     })),
-  );
+  ).onConflictDoNothing();
   await db.insert(personLinks).values(
     VZMETNEV_LINKS.map((l) => ({
       id: `vzmetnev-${l.kind}`,
@@ -215,7 +267,23 @@ async function main() {
       kind: l.kind,
       url: l.url,
     })),
-  );
+  ).onConflictDoNothing();
+  await db.insert(personLinks).values(
+    KEVORKOVA_LINKS.map((l) => ({
+      id: `kevorkova-${l.kind}`,
+      personSlug: "kevorkova",
+      kind: l.kind,
+      url: l.url,
+    })),
+  ).onConflictDoNothing();
+  await db.insert(personLinks).values(
+    GNEUSHEVA_LINKS.map((l) => ({
+      id: `gneusheva-${l.kind}`,
+      personSlug: "gneusheva",
+      kind: l.kind,
+      url: l.url,
+    })),
+  ).onConflictDoNothing();
 
   console.log(`seed: ${crewRows.length} crew + ${akterRows.length} akter1 = ${crewRows.length + akterRows.length}`);
   await client.end({ timeout: 5 });

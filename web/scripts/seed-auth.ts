@@ -1,9 +1,11 @@
 /**
- * Демо-аккаунт владельца + аккаунты персон для чатов между ролями.
+ * Админ + тестовые аккаунты по видам пользователей.
  *
- *   andrew / CadrShow26  — isDemo, переключение актёр / CD / агент
- *   anna.lebedeva / demo — отдельный CD (серверные чаты)
- *   anna.kevorkova / demo — отдельный агент
+ *   andrew / CadrShow26  — access=admin, переключение актёр / CD / агент
+ *   demo                 — алиас админа
+ *   anna.kevorkova / demo — пользователь · кастинг-директор
+ *   natalya.gneusheva / demo — пользователь · агент
+ *   irina.soykina / demo — пользователь · агент
  */
 import { config } from "dotenv";
 import { eq } from "drizzle-orm";
@@ -32,6 +34,7 @@ async function main() {
       firstName: "Андрей",
       lastName: "Антошкин",
       role: "actor" as const,
+      access: "admin" as const,
       isDemo: true,
       personSlug: "vzmetnev",
       passwordHash: andrewHash,
@@ -43,28 +46,42 @@ async function main() {
       firstName: "Андрей",
       lastName: "Антошкин",
       role: "actor" as const,
+      access: "admin" as const,
       isDemo: true,
       personSlug: "vzmetnev",
       passwordHash: andrewHash,
-    },
-    {
-      id: "usr_lebedeva",
-      login: "anna.lebedeva",
-      firstName: "Анна",
-      lastName: "Лебедева",
-      role: "casting" as const,
-      isDemo: false,
-      personSlug: "lebedeva",
-      passwordHash: demoHash,
     },
     {
       id: "usr_kevorkova",
       login: "anna.kevorkova",
       firstName: "Анна",
       lastName: "Кеворкова",
-      role: "agent" as const,
+      role: "casting" as const,
+      access: "user" as const,
       isDemo: false,
       personSlug: "kevorkova",
+      passwordHash: demoHash,
+    },
+    {
+      id: "usr_gneusheva",
+      login: "natalya.gneusheva",
+      firstName: "Наталья",
+      lastName: "Гнеушева",
+      role: "agent" as const,
+      access: "user" as const,
+      isDemo: false,
+      personSlug: "gneusheva",
+      passwordHash: demoHash,
+    },
+    {
+      id: "usr_soykina",
+      login: "irina.soykina",
+      firstName: "Ирина",
+      lastName: "Сойкина",
+      role: "agent" as const,
+      access: "user" as const,
+      isDemo: false,
+      personSlug: "soykina",
       passwordHash: demoHash,
     },
   ];
@@ -79,6 +96,7 @@ async function main() {
           firstName: row.firstName,
           lastName: row.lastName,
           role: row.role,
+          access: row.access,
           isDemo: row.isDemo,
           personSlug: row.personSlug,
           passwordHash: row.passwordHash,
@@ -92,7 +110,7 @@ async function main() {
   }
 
   await client.end({ timeout: 5 });
-  console.log(`owner demo: ${DEMO_LOGIN} / ${DEMO_PASSWORD}`);
+  console.log(`admin: ${DEMO_LOGIN} / ${DEMO_PASSWORD}`);
 }
 
 main().catch((err) => {

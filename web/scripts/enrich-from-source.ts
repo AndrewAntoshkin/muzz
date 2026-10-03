@@ -9,7 +9,7 @@ import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { agencies, people, personPhotos } from "../src/db/schema";
-import type { Credit, PersonCard } from "../src/lib/person-card";
+import { isRealCredit, type Credit, type PersonCard } from "../src/lib/person-card";
 
 config({ path: ".env.local" });
 config({ path: ".env" });
@@ -269,6 +269,8 @@ function visibleText(html: string) {
     html
       .replace(/<script[\s\S]*?<\/script>/gi, " ")
       .replace(/<style[\s\S]*?<\/style>/gi, " ")
+      .replace(/<link\b[^>]*>/gi, " ")
+      .replace(/<!--[\s\S]*?-->/g, " ")
       .replace(/<br\s*\/?>/gi, "\n")
       .replace(/<\/(?:p|div|li|tr|h\d|td|th)>/gi, "\n")
       .replace(/<[^>]+>/g, " "),
@@ -343,7 +345,9 @@ function extractCredits(html: string): Credit[] {
       if (seen.has(key)) continue;
       seen.add(key);
       const wrapped = /^[«"]/.test(title) ? title : `«${title}»`;
-      credits.push({ year: m[1], title: wrapped });
+      const row = { year: m[1], title: wrapped };
+      if (!isRealCredit(row)) continue;
+      credits.push(row);
       if (credits.length >= 40) return credits;
     }
   }

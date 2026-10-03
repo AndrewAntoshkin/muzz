@@ -37,5 +37,14 @@ if (existsSync(resolve(assets, "figma"))) {
 if (existsSync(resolve(assets, "logos"))) {
   cpSync(resolve(assets, "logos"), resolve(pub, "logos"), { recursive: true });
 }
+if (existsSync(resolve(assets, "people"))) {
+  cpSync(resolve(assets, "people"), resolve(pub, "people"), { recursive: true });
+}
+if (existsSync(resolve(assets, "projects"))) {
+  cpSync(resolve(assets, "projects"), resolve(pub, "projects"), { recursive: true });
+}
+if (existsSync(resolve(assets, "board"))) {
+  cpSync(resolve(assets, "board"), resolve(pub, "board"), { recursive: true });
+}
 
-console.log("copy-assets: tokens, theme, actors, figma → web/");
+console.log("copy-assets: tokens, theme, actors, figma, projects → web/");

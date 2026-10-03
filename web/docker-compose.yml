@@ -15,5 +15,18 @@ services:
       timeout: 5s
       retries: 10
 
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: kadr
+      MINIO_ROOT_PASSWORD: kadrfiles1
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - kadr_minio:/data
+
 volumes:
   kadr_pg:
+  kadr_minio:

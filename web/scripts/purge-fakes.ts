@@ -1,6 +1,6 @@
 /**
  * Drop invented crew from the live DB without reseeding akter1.
- * Fill demo cards for Взметнев / Лебедева / Кеворкова.
+ * Fill demo cards for Взметнев / Кеворкова.
  *
  *   npm run db:purge-fakes
  */
@@ -12,7 +12,7 @@ import { eq } from "drizzle-orm";
 import {
   DEMO_BIOS,
   KEVORKOVA_CARD,
-  LEBEDEVA_CARD,
+  KEVORKOVA_LINKS,
   VZMETNEV_CARD,
   VZMETNEV_LINKS,
   VZMETNEV_PHOTOS,
@@ -21,7 +21,7 @@ import {
 config({ path: ".env.local" });
 config({ path: ".env" });
 
-const KEEP = ["vzmetnev", "lebedeva", "kevorkova"];
+const KEEP = ["vzmetnev", "kevorkova", "soykina", "gneusheva"];
 
 async function main() {
   const url = process.env.DATABASE_URL;
@@ -32,7 +32,7 @@ async function main() {
 
   const deleted = await client<{ slug: string; name: string }[]>`
     DELETE FROM people
-    WHERE slug NOT IN ('vzmetnev', 'lebedeva', 'kevorkova')
+    WHERE slug NOT IN ('vzmetnev', 'kevorkova', 'soykina', 'gneusheva')
       AND (source_url IS NULL OR source_url NOT ILIKE '%akter1.ru%')
     RETURNING slug, name
   `;
@@ -49,8 +49,10 @@ async function main() {
       sourceUrl: "https://www.kinopoisk.ru/name/4531331/",
       card: VZMETNEV_CARD,
       bio: DEMO_BIOS.vzmetnev,
-      hint: "«Любовь СССР» · «Август» · Кинопоиск",
+      hint: "«Любовь СССР» · Кинопоиск",
       verified: true,
+      agencyId: null,
+      agentId: null,
     })
     .where(eq(people.slug, "vzmetnev"));
 
@@ -76,25 +78,33 @@ async function main() {
   await db
     .update(people)
     .set({
-      card: LEBEDEVA_CARD,
-      bio: DEMO_BIOS.lebedeva,
-      hint: "«Тихий январь» · Sreda · СКД",
-      verified: true,
-      city: "Москва",
-    })
-    .where(eq(people.slug, "lebedeva"));
-  await db
-    .update(people)
-    .set({
+      name: "Анна Кеворкова",
+      role: "Кастинг-директор",
+      profession: "casting",
       card: KEVORKOVA_CARD,
-      agencyId: "akter1",
       bio: DEMO_BIOS.kevorkova,
-      hint: "Агентство «Актёр 1» · 78 в ростере",
+      hint: "«Союз Спасения» · «Майор Гром»",
       verified: true,
       city: "Москва",
-      sourceUrl: "https://akter1.ru/",
+      imageUrl: "/assets/people/kevorkova.jpg",
+      birthDate: "1981-12-07",
+      sourceUrl: "https://www.kino-teatr.ru/kino/casting/ros/467639/works/",
+      agencyId: null,
+      agentId: null,
     })
     .where(eq(people.slug, "kevorkova"));
+
+  await db.delete(personLinks).where(eq(personLinks.personSlug, "kevorkova"));
+  await db.insert(personLinks).values(
+    KEVORKOVA_LINKS.map((l) => ({
+      id: `kevorkova-${l.kind}`,
+      personSlug: "kevorkova",
+      kind: l.kind,
+      url: l.url,
+    })),
+  );
+
+  await client`DELETE FROM people WHERE slug = 'lebedeva'`;
 
   console.log(`demo cards: ${KEEP.join(", ")}`);
   await client.end({ timeout: 5 });

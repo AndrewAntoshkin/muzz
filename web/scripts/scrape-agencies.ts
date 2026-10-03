@@ -9,7 +9,7 @@ import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { agencies, agents, people, personLinks, personPhotos } from "../src/db/schema";
-import type { Credit, PersonCard } from "../src/lib/person-card";
+import { isRealCredit, type Credit, type PersonCard } from "../src/lib/person-card";
 
 config({ path: ".env.local" });
 config({ path: ".env" });
@@ -287,6 +287,10 @@ function parseThomas(html: string): Scraped {
       title: title.startsWith("«") ? title : `«${title.replace(/^[«"]|[»"]$/g, "")}»`,
       meta: fm[3] ? stripTags(fm[3]) : undefined,
     });
+    if (!isRealCredit(credits[credits.length - 1])) {
+      credits.pop();
+      continue;
+    }
     if (credits.length >= 40) break;
   }
 
