@@ -37,15 +37,17 @@ export type Showreel = {
 };
 
 export type ScheduleEvent = {
-  when: string;
+  start?: string;
+  end?: string;
+  openFrom?: boolean;
+  when?: string;
   title: string;
   meta: string;
 };
 
 export type Schedule = {
-  busy: number[];
-  hold: number[];
-  today: number;
+  busy: string[];
+  hold: string[];
   events: ScheduleEvent[];
 };
 
@@ -71,7 +73,43 @@ export type PersonCard = {
 
 export function asCard(raw: unknown): PersonCard {
   if (!raw || typeof raw !== "object") return {};
-  return raw as PersonCard;
+  const card = raw as PersonCard;
+  if (!card.credits?.length) return card;
+  const credits = cleanCredits(card.credits);
+  return { ...card, credits: credits.length ? credits : undefined };
+}
+
+/** Drop CSS / unicode-range / URL debris that scrapers treated as films. */
+export function isRealCredit(row: Credit): boolean {
+  const title = (row.title || "").replace(/[«»„“"]/g, "").trim();
+  if (title.length < 2 || title.length > 120) return false;
+  const year = Number(String(row.year || "").replace(/[^\d]/g, ""));
+  if (row.year && (!Number.isFinite(year) || year < 1920 || year > 2032)) return false;
+  const blob = `${row.year || ""} ${title} ${row.meta || ""} ${row.credit || ""}`;
+  if (
+    /href\s*=|https?:\/\/|www\.|\.css\b|\.js\b|unicode-range|@font-face|wp-content|elementor|stylesheet|woff2?|src:\s*url|U\+[0-9A-Fa-f]{2,6}/i.test(
+      blob,
+    )
+  ) {
+    return false;
+  }
+  if (!/[A-Za-zА-Яа-яЁё]/.test(title)) return false;
+  if (/^(css|href|url|var|rgb|rgba|html|body|none)\b/i.test(title)) return false;
+  return true;
+}
+
+export function cleanCredits(rows: Credit[] | null | undefined): Credit[] {
+  if (!rows?.length) return [];
+  const seen = new Set<string>();
+  const out: Credit[] = [];
+  for (const row of rows) {
+    if (!isRealCredit(row)) continue;
+    const key = `${row.year || ""}|${row.title.replace(/[«»]/g, "").toLowerCase()}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(row);
+  }
+  return out;
 }
 
 export function kvValue(rows: KvPair[] | undefined, label: string) {

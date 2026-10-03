@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { isAdmin } from "@/lib/access";
 import { SESSION_COOKIE, readSessionToken } from "@/lib/session";
 
 const PUBLIC = ["/auth", "/api/auth/login", "/api/auth/register", "/api/auth/demo"];
@@ -16,7 +17,10 @@ export async function middleware(req: NextRequest) {
     pathname.endsWith(".jpeg") ||
     pathname.endsWith(".webp") ||
     pathname.endsWith(".css") ||
-    pathname.endsWith(".js")
+    pathname.endsWith(".js") ||
+    pathname.endsWith(".webmanifest") ||
+    pathname === "/manifest.webmanifest" ||
+    pathname === "/sw.js"
   ) {
     return NextResponse.next();
   }
@@ -36,6 +40,17 @@ export async function middleware(req: NextRequest) {
   }
 
   if (session && pathname === "/auth") {
+    const url = req.nextUrl.clone();
+    url.pathname = "/";
+    url.search = "";
+    return NextResponse.redirect(url);
+  }
+
+  const needsAdmin = pathname === "/admin" || pathname.startsWith("/admin/") || pathname.startsWith("/api/admin");
+  if (session && needsAdmin && !isAdmin(session)) {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
     const url = req.nextUrl.clone();
     url.pathname = "/";
     url.search = "";

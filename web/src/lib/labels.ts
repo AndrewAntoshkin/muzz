@@ -1,3 +1,5 @@
+import { personIsMedia, personPlan, type PlanId } from "./plans";
+
 export const PROFESSION_LABELS: Record<string, string> = {
   actor: "Актёр",
   actress: "Актриса",
@@ -66,6 +68,22 @@ export const PLATFORM_FILTERS = [
   { value: "фестиваль", label: "Фестиваль" },
 ] as const;
 
+const PLATFORM_LOGOS: { match: string; src: string; invert?: boolean }[] = [
+  { match: "кинопоиск", src: "/assets/logos/kinopoisk.svg" },
+  { match: "okko", src: "/assets/logos/okko.svg", invert: true },
+  { match: "kion", src: "/assets/logos/kion.webp" },
+  { match: "start", src: "/assets/logos/start.svg" },
+  { match: "wink", src: "/assets/logos/wink.svg" },
+  { match: "premier", src: "/assets/logos/premier.svg" },
+  { match: "ivi", src: "/assets/logos/ivi.svg" },
+];
+
+export function platformLogo(platform: string) {
+  const key = platform.trim().toLowerCase();
+  if (!key) return null;
+  return PLATFORM_LOGOS.find((item) => key.includes(item.match)) ?? null;
+}
+
 export const CASTING_ROLE_FILTERS = [
   { value: "", label: "Все" },
   { value: "lead", label: "Главная" },
@@ -95,18 +113,27 @@ export function ruCount(n: number, one: string, few: string, many: string) {
   return `${n} ${ruPlural(n, one, few, many)}`;
 }
 
-const PRO_ALWAYS = new Set(["vzmetnev", "shilovskaya-aglaya"]);
-
 export function personIsPro(person: { slug: string; profession?: string | null }) {
-  const prof = person.profession;
-  if (prof && prof !== "actor" && prof !== "actress") return false;
-  if (PRO_ALWAYS.has(person.slug)) return true;
-  let h = 2166136261;
-  for (let i = 0; i < person.slug.length; i++) {
-    h ^= person.slug.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return (h >>> 0) % 20 === 0;
+  return personPlan(person.slug, person.profession) !== "standard";
+}
+
+const PLAN_SORT_RANK: Record<PlanId, number> = {
+  standard: 0,
+  pro: 1,
+  premium: 2,
+};
+
+/** Media first, then premium → pro → standard, then name. */
+export function compareFacesByPlan(
+  a: { slug: string; name: string; profession?: string | null },
+  b: { slug: string; name: string; profession?: string | null },
+) {
+  const media = Number(personIsMedia(b.slug)) - Number(personIsMedia(a.slug));
+  if (media) return media;
+  const plan =
+    PLAN_SORT_RANK[personPlan(b.slug, b.profession)] - PLAN_SORT_RANK[personPlan(a.slug, a.profession)];
+  if (plan) return plan;
+  return a.name.localeCompare(b.name, "ru");
 }
 
 export function projectFormats(kind: string) {
@@ -137,6 +164,16 @@ export function castingRoleKind(roleLabel: string) {
   if (r.includes("втор")) return "second";
   if (r.includes("главн")) return "lead";
   return "episode";
+}
+
+/** Title without repeating the role chip, e.g. "Вторая мужская · 30–40" → "30–40". */
+export function castingCardTitle(title: string, roleLabel: string) {
+  const t = title.trim();
+  const role = roleLabel.trim();
+  if (!role || !t || t === role) return t;
+  const escaped = role.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const rest = t.replace(new RegExp(`^${escaped}\\s*[·•—–\\-]\\s*`), "").trim();
+  return rest || t;
 }
 
 export function initialsOf(name: string) {
@@ -180,12 +217,37 @@ export function assetSrc(path: string | null | undefined) {
 }
 
 export const LINK_LABELS: Record<string, string> = {
+  email: "Почта",
+  phone: "Телефон",
   kinopoisk: "Кинопоиск",
   vimeo: "Vimeo",
   youtube: "YouTube",
   "kino-teatr": "Кино-театр",
   kinolift: "Kinolift",
+  kinoteatr: "Кино-Театр.Ру",
   telegram: "Telegram",
   instagram: "Instagram",
   site: "Сайт",
 };
+
+export const CONTACT_KINDS = ["email", "phone"] as const;
+
+export function contactHref(kind: string, value: string) {
+  const v = value.trim();
+  if (!v) return null;
+  if (kind === "email") return `mailto:${v}`;
+  if (kind === "phone") return `tel:${v.replace(/[^\d+]/g, "")}`;
+  return v;
+}
+
+export function upsertLink(
+  links: { id: string; kind: string; url: string }[],
+  kind: string,
+  url: string,
+) {
+  const rest = links.filter((l) => l.kind !== kind);
+  const trimmed = url.trim();
+  if (!trimmed) return rest;
+  const existing = links.find((l) => l.kind === kind);
+  return [...rest, { id: existing?.id ?? `link-${kind}`, kind, url: trimmed }];
+}

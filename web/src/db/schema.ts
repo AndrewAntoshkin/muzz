@@ -1,4 +1,6 @@
 import { boolean, date, integer, jsonb, pgTable, primaryKey, text, timestamp } from "drizzle-orm/pg-core";
+import type { AccessId } from "../lib/access";
+import type { FileKind } from "../lib/file-kinds";
 import type { PersonCard } from "../lib/person-card";
 import type { RoleId } from "../lib/roles";
 
@@ -58,10 +60,27 @@ export const users = pgTable("users", {
   login: text("login").notNull().unique(),
   firstName: text("first_name").notNull(),
   lastName: text("last_name").notNull(),
+  /** Product persona: actor | casting | agent. Privilege lives in `access`. */
   role: text("role").$type<RoleId>().notNull(),
+  access: text("access").$type<AccessId>().notNull().default("user"),
   passwordHash: text("password_hash").notNull(),
   isDemo: boolean("is_demo").notNull().default(false),
   personSlug: text("person_slug").references(() => people.slug),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const files = pgTable("files", {
+  id: text("id").primaryKey(),
+  ownerUserId: text("owner_user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  kind: text("kind").$type<FileKind>().notNull(),
+  filename: text("filename").notNull(),
+  mime: text("mime").notNull(),
+  bytes: integer("bytes").notNull(),
+  url: text("url").notNull(),
+  storageKey: text("storage_key").notNull(),
+  status: text("status").notNull().default("ready"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -93,6 +112,7 @@ export const chatMessages = pgTable("chat_messages", {
   senderId: text("sender_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
-  text: text("text").notNull(),
+  text: text("text").notNull().default(""),
+  fileId: text("file_id").references(() => files.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

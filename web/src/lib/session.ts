@@ -1,4 +1,5 @@
 import { SignJWT, jwtVerify } from "jose";
+import { parseAccess, type AccessId } from "./access";
 import type { RoleId } from "./roles";
 
 export const SESSION_COOKIE = "kadr_session";
@@ -10,6 +11,7 @@ export type SessionUser = {
   lastName: string;
   name: string;
   role: RoleId;
+  access: AccessId;
   isDemo: boolean;
   personSlug: string | null;
 };
@@ -27,6 +29,7 @@ export async function createSessionToken(user: SessionUser) {
     lastName: user.lastName,
     name: user.name,
     role: user.role,
+    access: user.access,
     isDemo: user.isDemo,
     personSlug: user.personSlug,
   })
@@ -49,6 +52,7 @@ export async function readSessionToken(token: string | undefined | null): Promis
       lastName: String(payload.lastName ?? ""),
       name: String(payload.name ?? ""),
       role,
+      access: parseAccess(payload.access),
       isDemo: Boolean(payload.isDemo),
       personSlug: typeof payload.personSlug === "string" ? payload.personSlug : null,
     };
@@ -63,6 +67,7 @@ export function toSessionUser(row: {
   firstName: string;
   lastName: string;
   role: RoleId;
+  access?: AccessId | string | null;
   isDemo: boolean;
   personSlug: string | null;
 }): SessionUser {
@@ -73,6 +78,7 @@ export function toSessionUser(row: {
     lastName: row.lastName,
     name: `${row.firstName} ${row.lastName}`.trim(),
     role: row.role,
+    access: parseAccess(row.access),
     isDemo: row.isDemo,
     personSlug: row.personSlug,
   };

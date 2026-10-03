@@ -1,3 +1,5 @@
+import { assistantDigest } from "@/lib/assistant";
+import type { PlanId } from "@/lib/plans";
 import type { RoleId } from "@/lib/roles";
 import {
   KIND_LABEL,
@@ -10,7 +12,7 @@ import {
   type WorkspaceState,
 } from "@/lib/workspace";
 
-export type InboxKind = "message" | "casting" | "project";
+export type InboxKind = "message" | "casting" | "project" | "assistant";
 
 export type InboxEvent = {
   id: string;
@@ -41,7 +43,12 @@ export function relTime(ts: number) {
   return `${days} д`;
 }
 
-export function collectInbox(state: WorkspaceState, role: RoleId, meSlug: string): InboxEvent[] {
+export function collectInbox(
+  state: WorkspaceState,
+  role: RoleId,
+  meSlug: string,
+  plan: PlanId,
+): InboxEvent[] {
   const events: InboxEvent[] = [];
 
   for (const thread of threadsFor(state, role)) {
@@ -143,5 +150,7 @@ export function collectInbox(state: WorkspaceState, role: RoleId, meSlug: string
   }
 
   events.sort((a, b) => b.createdAt - a.createdAt);
-  return events.slice(0, 24);
+  const digest = assistantDigest(state, role, meSlug, plan);
+  const rest = events.slice(0, digest ? 23 : 24);
+  return digest ? [digest, ...rest] : rest;
 }

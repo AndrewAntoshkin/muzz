@@ -1,6 +1,7 @@
-import { and, asc, count, eq, inArray, or } from "drizzle-orm";
+import { and, asc, count, eq, ilike, inArray, or, type SQL } from "drizzle-orm";
 import { db } from "@/db";
 import { agencies, agents, people, personLinks, personPhotos } from "@/db/schema";
+import { applyDemoFace, applyDemoPerson, overlayFaces, syntheticIndustry, syntheticGneusheva, syntheticSoykina } from "./demo-overlay";
 
 export type FaceCard = {
   slug: string;
@@ -21,58 +22,12 @@ export async function countPeople() {
   return row?.n ?? 0;
 }
 
-export async function listFaces(): Promise<FaceCard[]> {
-  const rows = await db
-    .select({
-      slug: people.slug,
-      name: people.name,
-      role: people.role,
-      profession: people.profession,
-      city: people.city,
-      imageUrl: people.imageUrl,
-      verified: people.verified,
-      hint: people.hint,
-      initials: people.initials,
-      bg: people.bg,
-      agencyId: people.agencyId,
-    })
+export async function countActors() {
+  const [row] = await db
+    .select({ n: count() })
     .from(people)
-    .orderBy(asc(people.name));
-
-  return rows.map((r) => ({
-    ...r,
-    city: r.city ?? "",
-  }));
-}
-
-export async function listRoster(agencyId = "akter1"): Promise<FaceCard[]> {
-  const rows = await db
-    .select({
-      slug: people.slug,
-      name: people.name,
-      role: people.role,
-      profession: people.profession,
-      city: people.city,
-      imageUrl: people.imageUrl,
-      verified: people.verified,
-      hint: people.hint,
-      initials: people.initials,
-      bg: people.bg,
-      agencyId: people.agencyId,
-    })
-    .from(people)
-    .where(
-      and(
-        eq(people.agencyId, agencyId),
-        or(eq(people.profession, "actor"), eq(people.profession, "actress")),
-      ),
-    )
-    .orderBy(asc(people.name));
-
-  return rows.map((r) => ({
-    ...r,
-    city: r.city ?? "",
-  }));
+    .where(or(eq(people.profession, "actor"), eq(people.profession, "actress")));
+  return row?.n ?? 0;
 }
 
 const FACE_FIELDS = {
@@ -89,17 +44,93 @@ const FACE_FIELDS = {
   agencyId: people.agencyId,
 } as const;
 
+export type FaceSearch = {
+  q?: string;
+  profession?: string;
+  city?: string;
+  professions?: string[];
+  agencyId?: string;
+  limit?: number;
+  offset?: number;
+};
+
+function likeNeedle(q: string) {
+  return `%${q.replace(/[%_\\]/g, "")}%`;
+}
+
+function faceWhere(opts: FaceSearch): SQL | undefined {
+  const parts: SQL[] = [];
+  if (opts.profession) parts.push(eq(people.profession, opts.profession));
+  else if (opts.professions?.length) parts.push(inArray(people.profession, opts.professions));
+  if (opts.city) parts.push(eq(people.city, opts.city));
+  if (opts.agencyId) parts.push(eq(people.agencyId, opts.agencyId));
+  const q = opts.q?.trim();
+  if (q) {
+    const needle = likeNeedle(q);
+    const match = or(ilike(people.name, needle), ilike(people.role, needle), ilike(people.city, needle), ilike(people.hint, needle));
+    if (match) parts.push(match);
+  }
+  if (!parts.length) return undefined;
+  return parts.length === 1 ? parts[0] : and(...parts);
+}
+
+export async function searchFaces(opts: FaceSearch = {}): Promise<{ items: FaceCard[]; total: number }> {
+  const limit = Math.min(Math.max(opts.limit ?? 96, 1), 200);
+  const offset = Math.max(opts.offset ?? 0, 0);
+  const where = faceWhere(opts);
+  const [totalRow, rows] = await Promise.all([
+    db.select({ n: count() }).from(people).where(where),
+    db.select(FACE_FIELDS).from(people).where(where).orderBy(asc(people.name)).limit(limit).offset(offset),
+  ]);
+  const items = rows
+    .map((r) => applyDemoFace({ ...r, city: r.city ?? "" }))
+    .filter((row): row is FaceCard => row !== null);
+  return { items, total: Number(totalRow[0]?.n ?? 0) };
+}
+
+export async function listFaces(): Promise<FaceCard[]> {
+  const rows = await db.select(FACE_FIELDS).from(people).orderBy(asc(people.name)).limit(400);
+  return overlayFaces(rows.map((r) => ({ ...r, city: r.city ?? "" })));
+}
+
+export async function listRoster(agencyId = "akter1"): Promise<FaceCard[]> {
+  const rows = await db
+    .select(FACE_FIELDS)
+    .from(people)
+    .where(
+      and(
+        eq(people.agencyId, agencyId),
+        or(eq(people.profession, "actor"), eq(people.profession, "actress")),
+      ),
+    )
+    .orderBy(asc(people.name));
+
+  return overlayFaces(rows.map((r) => ({ ...r, city: r.city ?? "" }))).filter(
+    (r) => r.agencyId === agencyId && (r.profession === "actor" || r.profession === "actress"),
+  );
+}
+
 export async function listPeopleBySlugs(slugs: string[]): Promise<FaceCard[]> {
   if (!slugs.length) return [];
   const rows = await db.select(FACE_FIELDS).from(people).where(inArray(people.slug, slugs));
   const order = new Map(slugs.map((slug, i) => [slug, i]));
-  return rows
-    .slice()
-    .sort((a, b) => (order.get(a.slug) ?? 99) - (order.get(b.slug) ?? 99))
-    .map((r) => ({ ...r, city: r.city ?? "" }));
+  return overlayFaces(
+    rows
+      .slice()
+      .sort((a, b) => (order.get(a.slug) ?? 99) - (order.get(b.slug) ?? 99))
+      .map((r) => ({ ...r, city: r.city ?? "" })),
+  );
 }
 
 export async function getPerson(slug: string) {
+  const resolved = slug === "lebedeva" ? "kevorkova" : slug;
+  const existing = await fetchPersonRow(resolved);
+  if (existing) return applyDemoPerson(existing);
+  const synthetic = syntheticIndustry(resolved) ?? (resolved === "gneusheva" ? syntheticGneusheva() : resolved === "soykina" ? syntheticSoykina() : null);
+  return synthetic;
+}
+
+async function fetchPersonRow(slug: string) {
   const [row] = await db
     .select({
       slug: people.slug,

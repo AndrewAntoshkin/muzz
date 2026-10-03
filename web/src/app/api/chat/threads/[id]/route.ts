@@ -10,8 +10,8 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   }
   try {
     const { id } = await ctx.params;
-    const body = (await req.json()) as { text?: string };
-    const message = await sendChatMessage(me, id, body.text || "");
+    const body = (await req.json()) as { text?: string; fileId?: string };
+    const message = await sendChatMessage(me, id, body.text || "", body.fileId);
     return NextResponse.json({ message });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Ошибка";

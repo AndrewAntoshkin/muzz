@@ -1,13 +1,15 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { db, schema } from "@/db";
+import { parseAccess, type AccessId } from "@/lib/access";
 import { displayName, initialsOf, newId, professionForRole, roleLabel, translitLogin } from "@/lib/identity";
 import { DEMO_LOGIN, DEMO_PASSWORD, hashPassword, toSessionUser, type SessionUser } from "@/lib/auth";
 import type { ApiMessage, ApiPeer, ApiThread } from "@/lib/chat-types";
+import { getOwnedFile, toStoredFile } from "@/lib/files";
 import type { RoleId } from "@/lib/roles";
 
 export type { ApiMessage, ApiPeer, ApiThread };
 
-const { users, people, chatThreads, chatThreadMembers, chatMessages } = schema;
+const { users, people, chatThreads, chatThreadMembers, chatMessages, files } = schema;
 
 async function userByLogin(login: string) {
   const rows = await db.select().from(users).where(eq(users.login, login)).limit(1);
@@ -82,6 +84,7 @@ export async function registerUser(input: {
     firstName,
     lastName,
     role: input.role,
+    access: "user",
     passwordHash,
     isDemo: false,
     personSlug,
@@ -94,6 +97,7 @@ export async function registerUser(input: {
       firstName,
       lastName,
       role: input.role,
+      access: "user",
       isDemo: false,
       personSlug,
     }),
@@ -104,6 +108,59 @@ export async function registerUser(input: {
 
 export async function findUserByLogin(login: string) {
   return userByLogin(login.trim().toLowerCase());
+}
+
+export async function findUserById(id: string) {
+  return userById(id);
+}
+
+export type AdminUserRow = {
+  id: string;
+  login: string;
+  firstName: string;
+  lastName: string;
+  role: RoleId;
+  access: AccessId;
+  isDemo: boolean;
+  personSlug: string | null;
+  createdAt: Date;
+};
+
+export async function listUsersForAdmin(): Promise<AdminUserRow[]> {
+  const rows = await db
+    .select({
+      id: users.id,
+      login: users.login,
+      firstName: users.firstName,
+      lastName: users.lastName,
+      role: users.role,
+      access: users.access,
+      isDemo: users.isDemo,
+      personSlug: users.personSlug,
+      createdAt: users.createdAt,
+    })
+    .from(users)
+    .orderBy(desc(users.createdAt));
+  return rows.map((row) => ({
+    ...row,
+    access: parseAccess(row.access),
+  }));
+}
+
+export async function updateUserAsAdmin(
+  id: string,
+  patch: { access?: AccessId; role?: RoleId },
+) {
+  const existing = await userById(id);
+  if (!existing) return null;
+  await db
+    .update(users)
+    .set({
+      ...(patch.access ? { access: patch.access } : {}),
+      ...(patch.role ? { role: patch.role } : {}),
+    })
+    .where(eq(users.id, id));
+  return userById(id);
 }
 
 export async function ensureDemoUser() {
@@ -117,6 +174,7 @@ export async function ensureDemoUser() {
     firstName: "Андрей",
     lastName: "Антошкин",
     role: "actor",
+    access: "admin",
     passwordHash,
     isDemo: true,
     personSlug: "vzmetnev",
@@ -186,19 +244,28 @@ export async function listThreadsForUser(me: SessionUser): Promise<ApiThread[]> 
       .orderBy(chatMessages.createdAt);
     const lastRead = mine?.lastReadAt?.getTime() ?? 0;
     const unread = msgs.some((m) => m.senderId !== me.id && m.createdAt.getTime() > lastRead);
+    const fileIds = msgs.map((m) => m.fileId).filter((id): id is string => Boolean(id));
+    const fileRows = fileIds.length
+      ? await db.select().from(files).where(inArray(files.id, fileIds))
+      : [];
+    const fileMap = new Map(fileRows.map((row) => [row.id, row]));
     out.push({
       id: thread.id,
       peer,
       unread,
       updatedAt: thread.updatedAt.getTime(),
-      messages: msgs.map((m) => ({
-        id: m.id,
-        senderId: m.senderId,
-        text: m.text,
-        createdAt: m.createdAt.getTime(),
-        time: formatTime(m.createdAt),
-        mine: m.senderId === me.id,
-      })),
+      messages: msgs.map((m) => {
+        const attached = m.fileId ? fileMap.get(m.fileId) : null;
+        return {
+          id: m.id,
+          senderId: m.senderId,
+          text: m.text,
+          createdAt: m.createdAt.getTime(),
+          time: formatTime(m.createdAt),
+          mine: m.senderId === me.id,
+          file: attached && attached.status === "ready" ? toStoredFile(attached) : null,
+        };
+      }),
     });
   }
   return out;
@@ -236,9 +303,41 @@ export async function openThreadWithPerson(me: SessionUser, personSlug: string) 
   return threadId;
 }
 
-export async function sendChatMessage(me: SessionUser, threadId: string, text: string) {
+export async function openFileOutbox(me: SessionUser) {
+  const mine = await db
+    .select({ threadId: chatThreadMembers.threadId })
+    .from(chatThreadMembers)
+    .where(eq(chatThreadMembers.userId, me.id));
+  for (const row of mine) {
+    const members = await db.select().from(chatThreadMembers).where(eq(chatThreadMembers.threadId, row.threadId));
+    if (members.length === 1) return row.threadId;
+  }
+  const threadId = newId("thr");
+  await db.insert(chatThreads).values({ id: threadId });
+  await db.insert(chatThreadMembers).values({ threadId, userId: me.id, lastReadAt: new Date() });
+  return threadId;
+}
+
+export async function sendChatFile(me: SessionUser, personSlug: string, text: string, fileId: string) {
+  let threadId: string;
+  try {
+    threadId = personSlug ? await openThreadWithPerson(me, personSlug) : await openFileOutbox(me);
+  } catch {
+    threadId = await openFileOutbox(me);
+  }
+  const message = await sendChatMessage(me, threadId, text, fileId);
+  return { threadId, message };
+}
+
+export async function sendChatMessage(me: SessionUser, threadId: string, text: string, fileId?: string) {
   const body = text.trim();
-  if (!body) throw new Error("Пустое сообщение");
+  let file = null as ReturnType<typeof toStoredFile> | null;
+  if (fileId) {
+    const row = await getOwnedFile(fileId, me.id);
+    if (!row || row.status !== "ready") throw new Error("Файл ещё не загружен");
+    file = toStoredFile(row);
+  }
+  if (!body && !file) throw new Error("Пустое сообщение");
   const members = await db
     .select()
     .from(chatThreadMembers)
@@ -253,6 +352,7 @@ export async function sendChatMessage(me: SessionUser, threadId: string, text: s
     threadId,
     senderId: me.id,
     text: body,
+    fileId: file?.id ?? null,
     createdAt,
   });
   await db.update(chatThreads).set({ updatedAt: createdAt }).where(eq(chatThreads.id, threadId));
@@ -268,6 +368,7 @@ export async function sendChatMessage(me: SessionUser, threadId: string, text: s
     createdAt: createdAt.getTime(),
     time: formatTime(createdAt),
     mine: true,
+    file,
   } satisfies ApiMessage;
 }
 

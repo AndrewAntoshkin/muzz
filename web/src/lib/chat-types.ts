@@ -18,6 +18,14 @@ export type ApiMessage = {
   createdAt: number;
   time: string;
   mine: boolean;
+  file?: {
+    id: string;
+    url: string;
+    filename: string;
+    mime: string;
+    bytes: number;
+    kind: string;
+  } | null;
 };
 
 export type ApiThread = {

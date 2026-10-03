@@ -1,25 +1,48 @@
-import type { PersonCard } from "./person-card";
+import { addDays, isoRange, toISODate } from "./calendar";
+import type { PersonCard, Schedule } from "./person-card";
 
-/** Биографии трёх демо-персон (актёр / CD / агент). */
+export function demoActorSchedule(now = new Date()): Schedule {
+  const tape = addDays(now, 6);
+  const holdStart = addDays(now, 10);
+  const holdEnd = addDays(holdStart, 4);
+  const open = new Date(holdEnd.getFullYear(), holdEnd.getMonth() + 1, 1);
+  return {
+    busy: [toISODate(tape)],
+    hold: isoRange(holdStart, 5),
+    events: [
+      { start: toISODate(tape), title: "Самопроба «Тихий январь»", meta: "Дедлайн · Sreda" },
+      {
+        start: toISODate(holdStart),
+        end: toISODate(holdEnd),
+        title: "Очные «Тихий январь»",
+        meta: "Hold · павильон, Москва",
+      },
+      {
+        start: toISODate(open),
+        openFrom: true,
+        title: "Открыт для съёмок",
+        meta: "Экспедиции до 3 недель",
+      },
+    ],
+  };
+}
+
+/** Короткие факты. Без «нейрослопа» и выдуманных цифр. */
 export const DEMO_BIOS = {
   vzmetnev:
-    "Актёр театра и кино, Москва. В кадре с 2013 года: сериалы платформ и полный метр. Сильные стороны — драма, криминал, военное кино, характерные и вторые планы с текстом. Уверенно работает на натуре и в павильоне, готов к экспедициям. Представительство — MS Talents / агентство «Актёр 1».",
-  lebedeva:
-    "Кастинг-директор полного метра и сериала. 12 лет в профессии, член Союза кастинг-директоров России с 2018. Ведёт проекты для Кинопоиск Студии, Sreda, Trace, KION, Yellow Black White. Специализация — драма, period, криминальный сериал и дебютные главные. База ~4 280 актёров с разметкой по типажу, опыту и занятости.",
+    "Актёр театра и кино, Москва. В кадре с 2013 года: сериалы платформ и полный метр. Драма, криминал, военное кино, характерные и вторые планы с текстом.",
   kevorkova:
-    "Агент актерского агентства «Актёр 1». Ведёт ростер для кино и сериалов, закрывает запросы кастинг-директоров платформ и независимых студий. Работает с занятостью, договорами и самопробами; отвечает в рабочее время в течение нескольких часов.",
+    "Кастинг-директор. Более 20 лет в киноиндустрии, 87 работ. Вице-президент Гильдии кастинг-директоров России. Соучредитель агентства «Актёр 1». Мастер курса «Актёрский агент» во ВГИКе.",
+  soykina:
+    "Агент агентства «Актёр 1». Москва.",
+  gneusheva:
+    "Агент и кастинг-директор. Директор актёрского агентства. С 2007 года в кино и на ТВ. ЕГТИ, мастерская Н. В. Мильченко. Москва.",
 } as const;
 
 export const VZMETNEV_CARD: PersonCard = {
   height: "180 см",
   education: "ВГИК, актёрский факультет · мастерская; стажировка в МХТ им. Чехова",
   instagram: "@alexander_vzmetnev",
-  manager: {
-    name: "Анна Кеворкова",
-    org: "Агентство «Актёр 1» · MS Talents",
-    email: "anna@akter1.ru",
-    phone: "+7 (495) 120-44-18",
-  },
   params: [
     { label: "Рост", value: "180 см" },
     { label: "Вес", value: "76 кг" },
@@ -80,125 +103,89 @@ export const VZMETNEV_CARD: PersonCard = {
     caption: "«Мажор» · «Ивановы» · «Любовь СССР» · «Август»",
     href: "https://www.kinopoisk.ru/name/4531331/",
   },
-  schedule: {
-    busy: [6],
-    hold: [10, 11, 12, 13, 14],
-    today: 20,
-    events: [
-      { when: "6 июня", title: "Самопроба «Тихий январь»", meta: "Дедлайн · Sreda / Лебедева" },
-      { when: "10–14 июня", title: "Очные «Тихий январь»", meta: "Hold · павильон, Москва" },
-      { when: "с 1 июля", title: "Открыт для съёмок", meta: "Экспедиции до 3 недель" },
-    ],
-  },
+  schedule: demoActorSchedule(),
 };
 
-export const LEBEDEVA_CARD: PersonCard = {
-  heroMeta: ["12 лет в профессии", "СКД России · с 2018"],
-  education: "ВГИК · продюсерский; курсы кастинга Union of Casting Directors",
+/** Открытые данные: Кино-Театр.Ру, ВГИК, Гильдия КД, актер1.ru */
+export const KEVORKOVA_CARD: PersonCard = {
+  heroMeta: ["20+ лет в кино", "Гильдия кастинг-директоров"],
   stats: [
-    { value: "4 280", label: "актёров в базе" },
-    { value: "3", label: "активных кастинга" },
-    { value: "~6 ч", label: "медиана ответа" },
-    { value: "32", label: "проекта за 3 года" },
+    { value: "87", label: "работ в кино и сериале" },
+    { value: "20+", label: "лет в индустрии" },
   ],
-  chips: ["Полный метр", "Сериал", "Драма", "Period", "Криминал", "Дебютные роли", "Натура", "Павильон"],
-  castings: [
-    {
-      title: "Главная · «Тихий январь»",
-      meta: "Sreda · актриса 28–34 · до 6 июня",
-      count: "142",
-      tag: "Срочно",
-      href: "/castings/tihiy-yanvar-lead",
-    },
-    {
-      title: "Вторая мужская · «Тихий январь»",
-      meta: "Sreda · 30–40 · до 6 июня",
-      count: "64",
-      tag: "Срочно",
-      href: "/castings/tihiy-yanvar-second",
-    },
-    {
-      title: "Ведущие · «Окно»",
-      meta: "Студия Окно · док · KION · до 12 июня",
-      count: "23",
-      tag: "Открыто",
-      href: "/castings/okno-hosts",
-    },
-  ],
+  chips: ["Полный метр", "Сериал", "Кастинг"],
   credits: [
-    { year: "2025", title: "«Тихий январь»", meta: "Sreda · Кинопоиск · препродакшн", credit: "CD", kind: "Кино" },
-    { year: "2024", title: "«Антипод»", meta: "Trace · Кинопоиск · 42 роли · 218 проб", credit: "CD", kind: "Кино" },
-    { year: "2024", title: "«Стая»", meta: "Sreda · Okko · 38 ролей · 12 эп.", credit: "CD", kind: "Сериал" },
-    { year: "2024", title: "«Берег»", meta: "YBW · START · 26 ролей", credit: "CD", kind: "Сериал" },
-    { year: "2023", title: "«Колыбель»", meta: "Trace · «Окно в Европу»", credit: "CD", kind: "Кино" },
-    { year: "2023", title: "«Дайте Иванова 3»", meta: "KION · 22 роли", credit: "CD", kind: "Сериал" },
-    { year: "2022", title: "«Лес»", meta: "Кинопоиск Студия · 8 эп.", credit: "CD", kind: "Сериал" },
-    { year: "2021", title: "«Север»", meta: "полный метр · независимый", credit: "CD", kind: "Кино" },
-  ],
-  clients: [
-    { name: "Sreda Production", meta: "6 проектов" },
-    { name: "Trace Films", meta: "4 проекта" },
-    { name: "Кинопоиск Студия", meta: "5 проектов" },
-    { name: "Okko Studios", meta: "3 сериала" },
-    { name: "START / YBW", meta: "2 сериала" },
-    { name: "KION", meta: "3 сериала" },
+    { year: "2025", title: "«Семь дней Петра Семёныча»", credit: "CD", kind: "Кино" },
+    { year: "2025", title: "«Август»", meta: "участие", credit: "CD", kind: "Кино" },
+    { year: "2024", title: "«Любовь Советского Союза»", credit: "CD", kind: "Кино" },
+    { year: "2022", title: "«Союз спасения. Время гнева»", credit: "CD", kind: "Сериал" },
+    { year: "2021", title: "«Майор Гром: Чумной доктор»", credit: "CD", kind: "Кино" },
+    { year: "2019", title: "«Союз Спасения»", credit: "CD", kind: "Кино" },
+    { year: "2019", title: "«Мёртвое озеро»", credit: "CD", kind: "Сериал" },
+    { year: "2017", title: "«Ивановы-Ивановы»", credit: "CD", kind: "Сериал" },
+    { year: "2016", title: "«Викинг»", credit: "CD", kind: "Кино" },
+    { year: "2012", title: "«8 первых свиданий»", credit: "CD", kind: "Кино" },
   ],
   terms: [
-    { label: "Формат", value: "фриланс · проектная ставка" },
-    { label: "Почта", value: "anna@lebedeva.casting" },
-    { label: "Telegram", value: "@lebedeva_cd" },
-    { label: "Город", value: "Москва · выезды" },
-    { label: "Союз", value: "СКД России, с 2018" },
-    { label: "Ответ", value: "обычно в тот же день" },
+    { label: "Почта", value: "anna@akter1.ru" },
+    { label: "Телефон", value: "+7 (916) 670-30-59" },
+    { label: "Telegram", value: "@agencyN1" },
+    { label: "Город", value: "Москва" },
+    { label: "Сайт", value: "https://akter1.ru" },
   ],
 };
 
-export const KEVORKOVA_CARD: PersonCard = {
-  heroMeta: ["Агентство «Актёр 1»", "9 лет в агентстве"],
-  education: "РГГУ · менеджмент культуры; стажировки у кастинг-директоров платформ",
-  stats: [
-    { value: "78", label: "актёров в ростере" },
-    { value: "8", label: "кастингов в работе" },
-    { value: "5", label: "предложений открыто" },
-    { value: "~4 ч", label: "медиана ответа" },
-  ],
-  chips: ["Кино", "Сериал", "Платформы", "Договоры", "Самопробы", "Занятость", "Экспедиции"],
-  castings: [
-    {
-      title: "Подбор на «Тихий январь»",
-      meta: "Запрос Лебедевой · главная 28–34 + вторая мужская",
-      count: "3",
-      tag: "В работе",
-      href: "/castings/tihiy-yanvar-lead",
-    },
-    {
-      title: "Ростер на «Окно»",
-      meta: "Ведущие док-сериала · KION",
-      count: "2",
-      tag: "Открыто",
-      href: "/castings/okno-hosts",
-    },
-  ],
-  credits: [
-    { year: "2025", title: "«Август»", meta: "Okko · договор Взметнева", credit: "Агент", kind: "Кино" },
-    { year: "2024", title: "«Любовь Советского Союза»", meta: "Кинопоиск · сопровождение", credit: "Агент", kind: "Кино" },
-    { year: "2024", title: "Сериальные контракты ростера", meta: "Wink / Premier / KION", credit: "Агент", kind: "Сериал" },
-    { year: "2023", title: "Закрытие 14 запросов CD", meta: "Sreda · Trace · YBW", credit: "Агент", kind: "Кастинг" },
-  ],
-  clients: [
-    { name: "Александр Взметнев", meta: "актёр · договор «Август»" },
-    { name: "Александр Устюгов", meta: "актёр · ростер" },
-    { name: "Алексей Чадов", meta: "актёр · ростер" },
-    { name: "Ольга Лерман", meta: "актриса · ростер" },
-    { name: "Аглая Шиловская", meta: "актриса · ростер" },
-  ],
+export const SOYKINA_CARD: PersonCard = {
+  heroMeta: ["Агентство «Актёр 1»"],
+  chips: ["Кино", "Сериал", "Ростер"],
   terms: [
     { label: "Агентство", value: "«Актёр 1»" },
-    { label: "Почта", value: "anna@akter1.ru" },
-    { label: "Telegram", value: "@kevorkova_a1" },
-    { label: "Телефон", value: "+7 (495) 120-44-18" },
-    { label: "Сайт", value: "akter1.ru" },
-    { label: "Комиссия", value: "по договору агентства" },
+    { label: "Почта", value: "irina@akter1.ru" },
+    { label: "Телефон", value: "+7 (926) 513-15-19" },
+    { label: "Сайт", value: "https://akter1.ru" },
+    { label: "Город", value: "Москва" },
+  ],
+};
+
+/** Открытые данные: castingrus.ru/cv, 7дней, Posta-Magazine, Кинопоиск */
+export const GNEUSHEVA_CARD: PersonCard = {
+  heroMeta: ["С 2007 в кино", "ЕГТИ"],
+  education: "ЕГТИ, 1999 · мастерская Н. В. Мильченко",
+  stats: [
+    { value: "2007", label: "в профессии с" },
+    { value: "~18 лет", label: "агентству" },
+  ],
+  chips: ["Кино", "Сериал", "Эксклюзив", "Кастинг"],
+  clients: [
+    { name: "Виктория Толстоганова" },
+    { name: "Мария Горбань" },
+    { name: "Максим Лагашкин" },
+    { name: "Владимир Яглыч" },
+    { name: "Андрей Мерзликин" },
+    { name: "Елена Тронина" },
+  ],
+  credits: [
+    { year: "2024", title: "«Пять копеек»", credit: "CD", kind: "Сериал" },
+    { year: "2022", title: "«Провинциальный детектив»", credit: "CD", kind: "Сериал" },
+    { year: "2022", title: "«Мать и мачеха»", meta: "короткий метр", credit: "продюсер", kind: "Кино" },
+    { year: "2021", title: "«Клиника счастья»", meta: "МТС Медиа", credit: "CD", kind: "Сериал" },
+    { year: "2021", title: "«Возвращение Зои»", meta: "короткий метр", credit: "продюсер", kind: "Кино" },
+    { year: "2021", title: "«Русский крест»", credit: "CD", kind: "Кино" },
+    { year: "2020", title: "«Пласт»", credit: "CD", kind: "Кино" },
+    { year: "2019", title: "«Дылды»", meta: "пилот · СТС", credit: "CD", kind: "Сериал" },
+    { year: "2019", title: "«Преступление 2»", meta: "Россия-1", credit: "CD", kind: "Сериал" },
+    { year: "2018", title: "«Дикая лига»", meta: "Россия / США", credit: "CD", kind: "Кино" },
+    { year: "2018", title: "«Анатомия убийства»", meta: "ТВЦ", credit: "CD", kind: "Сериал" },
+    { year: "2017", title: "«Территория»", credit: "CD", kind: "Сериал" },
+  ],
+  terms: [
+    { label: "Агентство", value: "Натальи Гнеушевой" },
+    { label: "Почта", value: "aktkast@mail.ru" },
+    { label: "Телефон", value: "+7 (926) 902-18-82" },
+    { label: "Telegram", value: "@gneushevakino" },
+    { label: "Сайт", value: "https://castingrus.ru" },
+    { label: "Город", value: "Москва" },
+    { label: "Образование", value: "ЕГТИ, 1999" },
   ],
 };
 
@@ -207,4 +194,17 @@ export const VZMETNEV_PHOTOS = Array.from({ length: 8 }, (_, i) => `/assets/acto
 export const VZMETNEV_LINKS = [
   { kind: "kinopoisk", url: "https://www.kinopoisk.ru/name/4531331/" },
   { kind: "kinolift", url: "https://kinolift.com/ru/16017" },
+];
+
+export const KEVORKOVA_LINKS = [
+  { kind: "kinoteatr", url: "https://www.kino-teatr.ru/kino/casting/ros/467639/works/" },
+  { kind: "site", url: "https://akter1.ru/" },
+];
+
+export const GNEUSHEVA_LINKS = [
+  { kind: "site", url: "https://castingrus.ru/" },
+  { kind: "kinopoisk", url: "https://www.kinopoisk.ru/name/2341882/" },
+  { kind: "kinoteatr", url: "https://www.kino-teatr.ru/kino/acter/ros/256167/bio/" },
+  { kind: "telegram", url: "https://t.me/gneushevakino" },
+  { kind: "instagram", url: "https://www.instagram.com/natalya.gneusheva/" },
 ];
