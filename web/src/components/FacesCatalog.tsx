@@ -2,10 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { FaceCard } from "@/lib/people";
+import { fetchFaces } from "@/lib/people-query";
 import {
   ACTOR_PROFESSION_FILTERS,
   CITY_FILTERS,
   PROFESSION_FILTERS,
+  compareFacesByPlan,
   peopleCountLabel,
 } from "@/lib/labels";
 import { IconFaces, IconPin } from "./icons";
@@ -18,6 +20,8 @@ import { PersonCard } from "./PersonCard";
 
 export function FacesCatalog({
   people,
+  peopleTotal,
+  remote = false,
   title = "Поиск",
   lead = "Все люди в «Кадре»: актёры, кастинг-директора и агенты.",
   initialProfession = "",
@@ -27,6 +31,8 @@ export function FacesCatalog({
   dense = false,
 }: {
   people: FaceCard[];
+  peopleTotal?: number;
+  remote?: boolean;
   title?: string;
   lead?: string;
   initialProfession?: string;
@@ -39,9 +45,13 @@ export function FacesCatalog({
   const [profession, setProfession] = useState(initialProfession);
   const [city, setCity] = useState("");
   const [visible, setVisible] = useState(96);
+  const [remoteItems, setRemoteItems] = useState(people);
+  const [remoteTotal, setRemoteTotal] = useState(peopleTotal ?? people.length);
+  const [loadingMore, setLoadingMore] = useState(false);
   const filters = professionFilters ?? PROFESSION_FILTERS;
+  const kind = filters === ACTOR_PROFESSION_FILTERS ? "actors" : "all";
 
-  const items = useMemo(() => {
+  const localItems = useMemo(() => {
     const query = q.trim().toLowerCase();
     return people.filter((p) => {
       if (profession && p.profession !== profession) return false;
@@ -54,11 +64,36 @@ export function FacesCatalog({
     });
   }, [people, q, profession, city]);
 
-  useEffect(() => {
-    setVisible(96);
-  }, [q, profession, city]);
+  const items = remote ? remoteItems : localItems;
+  const ranked = useMemo(() => [...items].sort(compareFacesByPlan), [items]);
+  const total = remote ? remoteTotal : localItems.length;
+  const shown = remote ? ranked : ranked.slice(0, visible);
 
-  const shown = items.slice(0, visible);
+  useEffect(() => {
+    if (!remote) {
+      setVisible(96);
+      return;
+    }
+    const ac = new AbortController();
+    const timer = window.setTimeout(() => {
+      void fetchFaces({ q, profession, city, kind, limit: 96, offset: 0 })
+        .then((data) => {
+          if (ac.signal.aborted) return;
+          setRemoteItems(data.items);
+          setRemoteTotal(data.total);
+        })
+        .catch(() => {
+          if (!ac.signal.aborted) {
+            setRemoteItems([]);
+            setRemoteTotal(0);
+          }
+        });
+    }, 200);
+    return () => {
+      ac.abort();
+      window.clearTimeout(timer);
+    };
+  }, [q, profession, city, remote, kind]);
 
   function reset() {
     setQ("");
@@ -95,7 +130,7 @@ export function FacesCatalog({
           },
         ]}
         onReset={reset}
-        countLabel={peopleCountLabel(items.length)}
+        countLabel={peopleCountLabel(total)}
       />
 
       <div className="catalog-results">
@@ -110,7 +145,28 @@ export function FacesCatalog({
             <p className="faces-empty">Никого не найдено. Сбросьте фильтры или измените запрос.</p>
           )}
         </div>
-        {visible < items.length ? (
+        {remote && items.length < total ? (
+          <button
+            type="button"
+            className="btn-secondary"
+            style={{ margin: "20px auto", display: "block" }}
+            disabled={loadingMore}
+            onClick={() => {
+              setLoadingMore(true);
+              void fetchFaces({ q, profession, city, kind, limit: 96, offset: items.length })
+                .then((data) => {
+                  setRemoteItems((cur) => {
+                    const have = new Set(cur.map((p) => p.slug));
+                    return [...cur, ...data.items.filter((p) => !have.has(p.slug))];
+                  });
+                  setRemoteTotal(data.total);
+                })
+                .finally(() => setLoadingMore(false));
+            }}
+          >
+            {loadingMore ? "Загрузка…" : `Показать ещё (${total - items.length})`}
+          </button>
+        ) : !remote && visible < items.length ? (
           <button
             type="button"
             className="btn-secondary"

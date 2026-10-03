@@ -1,33 +1,83 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
+import { PLAN_META, openPlanModal, parsePlan, type PlanId } from "@/lib/plans";
 import { DropdownMenu } from "./DropdownMenu";
+import { useWorkspace } from "./useWorkspace";
 
 const RENEW_AT = new Date("2026-10-04T00:00:00");
 
 type PlanRow = { name: string; unit: string; left: string };
 
-const BLOCKS: { title: string; unit: string; total: string; rows: PlanRow[] }[] = [
-  {
-    title: "Коммуникации",
-    unit: "В месяц",
-    total: "Осталось",
-    rows: [
-      { name: "Отклики", unit: "безлимит", left: "∞" },
-      { name: "Сообщения агентам", unit: "20", left: "14" },
-      { name: "Письма CD", unit: "10", left: "8" },
-    ],
-  },
-  {
-    title: "Анкета",
-    unit: "Слотов",
-    total: "Свободно",
-    rows: [
-      { name: "Фото", unit: "40", left: "22" },
-      { name: "Шоурил", unit: "3", left: "2" },
-    ],
-  },
-];
+function coverage(plan: PlanId): { title: string; unit: string; total: string; rows: PlanRow[] }[] {
+  if (plan === "standard") {
+    return [
+      {
+        title: "Коммуникации",
+        unit: "В месяц",
+        total: "Осталось",
+        rows: [
+          { name: "Отклики", unit: "безлимит", left: "∞" },
+          { name: "Сообщения агентам", unit: "5", left: "5" },
+          { name: "Письма CD", unit: "0", left: "—" },
+        ],
+      },
+      {
+        title: "Анкета",
+        unit: "Слотов",
+        total: "Свободно",
+        rows: [
+          { name: "Фото", unit: "12", left: "8" },
+          { name: "Шоурил", unit: "1", left: "1" },
+        ],
+      },
+    ];
+  }
+  if (plan === "premium") {
+    return [
+      {
+        title: "Коммуникации",
+        unit: "В месяц",
+        total: "Осталось",
+        rows: [
+          { name: "Отклики", unit: "безлимит", left: "∞" },
+          { name: "Сообщения агентам", unit: "безлимит", left: "∞" },
+          { name: "Письма CD", unit: "безлимит", left: "∞" },
+        ],
+      },
+      {
+        title: "Анкета",
+        unit: "Слотов",
+        total: "Свободно",
+        rows: [
+          { name: "Фото", unit: "80", left: "62" },
+          { name: "Шоурил", unit: "10", left: "8" },
+        ],
+      },
+    ];
+  }
+  return [
+    {
+      title: "Коммуникации",
+      unit: "В месяц",
+      total: "Осталось",
+      rows: [
+        { name: "Отклики", unit: "безлимит", left: "∞" },
+        { name: "Сообщения агентам", unit: "20", left: "14" },
+        { name: "Письма CD", unit: "10", left: "8" },
+      ],
+    },
+    {
+      title: "Анкета",
+      unit: "Слотов",
+      total: "Свободно",
+      rows: [
+        { name: "Фото", unit: "40", left: "22" },
+        { name: "Шоурил", unit: "3", left: "2" },
+      ],
+    },
+  ];
+}
 
 function daysLeft(until: Date) {
   return Math.max(0, Math.ceil((until.getTime() - Date.now()) / 86_400_000));
@@ -42,6 +92,10 @@ function ruDays(n: number) {
 }
 
 export function PlanBadge() {
+  const { settings } = useWorkspace();
+  const plan = parsePlan(settings.plan);
+  const meta = PLAN_META[plan];
+  const blocks = coverage(plan);
   const [open, setOpen] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
   const close = useCallback(() => setOpen(false), []);
@@ -53,12 +107,12 @@ export function PlanBadge() {
         ref={btnRef}
         type="button"
         className={`ss-head__plan${open ? " is-open" : ""}`}
-        aria-label="Статус PRO"
+        aria-label={`Статус ${meta.badge}`}
         aria-expanded={open}
         aria-haspopup="dialog"
         onClick={() => setOpen((v) => !v)}
       >
-        PRO
+        {meta.badge}
       </button>
       <DropdownMenu
         open={open}
@@ -69,10 +123,10 @@ export function PlanBadge() {
         role="menu"
       >
         <div className="ss-head__plan-pop-head">
-          <strong>Что покрывает PRO</strong>
+          <strong>Что покрывает {meta.name}</strong>
           <span>до 4 октября · ещё {ruDays(left)}</span>
         </div>
-        {BLOCKS.map((block) => (
+        {blocks.map((block) => (
           <div key={block.title} className="ss-head__plan-block">
             <div className="ss-head__plan-cols">
               <span>{block.title}</span>
@@ -89,6 +143,18 @@ export function PlanBadge() {
           </div>
         ))}
         <p className="ss-head__plan-foot">Продлится автоматически 4 октября</p>
+        <div className="ss-head__plan-all">
+          <button
+            type="button"
+            className="btn-primary btn-block"
+            onClick={() => {
+              close();
+              openPlanModal();
+            }}
+          >
+            Все тарифы
+          </button>
+        </div>
       </DropdownMenu>
     </div>
   );

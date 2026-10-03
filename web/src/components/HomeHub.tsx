@@ -3,23 +3,39 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import type { FaceCard } from "@/lib/people";
+import { compareFacesByPlan } from "@/lib/labels";
 import { profileSlug, roleAgencyId, withRole } from "@/lib/roles";
-import { AVAILABILITY_LABEL } from "@/lib/workspace";
+import {
+  availabilityLabel,
+  personAvailability,
+} from "@/lib/workspace";
 import { useDemoRole } from "./useDemoRole";
 import { useWorkspace } from "./useWorkspace";
+import { assistantDigest } from "@/lib/assistant";
+import { listEvents } from "@/lib/events";
+import { canUseAssistant, openPlanModal, parsePlan } from "@/lib/plans";
+import { CoverBadge, statusKind } from "./CatalogTiles";
 import { PersonCard } from "./PersonCard";
 import { RightRail } from "./RightRail";
 
 const PLATFORMS = [
   { name: "Кинопоиск", count: "14 проектов", hot: "3 ищут команду", bg: "#FF5500", mark: "КП" },
   { name: "Okko", count: "9 проектов", hot: "5 ищут команду", bg: "#181818", mark: "OK" },
-  { name: "START", count: "7 проектов", hot: "2 ищут команду", bg: "hsla(0,0%,97%,0.08)", mark: "ST", border: true },
+  { name: "START", count: "7 проектов", hot: "2 ищут команду", bg: "var(--ss-surface-hover)", mark: "ST", border: true },
   { name: "KION", count: "6 проектов", hot: "4 ищут команду", bg: "#E50046", mark: "KI" },
   { name: "Wink", count: "4 проекта", hot: "1 ищет команду", bg: "#0080CB", mark: "W" },
   { name: "Premier", count: "2 проекта", hot: "—", bg: "#7B61FF", mark: "PR" },
 ];
 
-export function HomeHub({ faces }: { faces: FaceCard[] }) {
+export function HomeHub({
+  roster,
+  preview,
+  actorCount,
+}: {
+  roster: FaceCard[];
+  preview: FaceCard[];
+  actorCount: number;
+}) {
   const { role, cfg } = useDemoRole();
   const ws = useWorkspace();
   const {
@@ -37,19 +53,29 @@ export function HomeHub({ faces }: { faces: FaceCard[] }) {
     projectsForCd,
     toggleSaved,
     saved,
+    settings,
+    state,
   } = ws;
   const hub = cfg.hub;
   const cdSlug = profileSlug(cfg);
   const agencyId = roleAgencyId(role);
+  const plan = parsePlan(settings.plan);
+  const digest = useMemo(
+    () => assistantDigest(state, role, cdSlug, plan),
+    [state, role, cdSlug, plan],
+  );
 
   const people = useMemo(() => {
-    if (role === "agent") {
-      return faces.filter(
-        (p) => p.agencyId === agencyId && (p.profession === "actor" || p.profession === "actress"),
-      );
-    }
-    return faces;
-  }, [faces, role, agencyId]);
+    const talent = (p: FaceCard) => p.profession === "actor" || p.profession === "actress";
+    const list =
+      role === "agent"
+        ? roster.filter((p) => p.agencyId === agencyId && talent(p))
+        : role === "casting"
+          ? preview.filter(talent)
+          : preview.slice();
+    return [...list].sort(compareFacesByPlan);
+  }, [roster, preview, role, agencyId]);
+  const peopleTotal = role === "agent" ? people.length : actorCount;
 
   const feedCastings = useMemo(() => {
     if (role === "casting") return castingsForCd(cdSlug);
@@ -90,11 +116,19 @@ export function HomeHub({ faces }: { faces: FaceCard[] }) {
             [String(unread), "сообщения", "актёры и агенты"],
           ]
         : [
-            [String(people.length), "актёров в ростере", "Актёр 1"],
+            [String(peopleTotal), "актёров в ростере", "Актёр 1"],
             [String(castings.length), "кастингов к разбору", "сегодня"],
             [String(myApplications.length), "предложений отправлено", "ждут ответа"],
             [String(unread), "сообщения", "от кастинг-директоров"],
           ];
+
+  function rosterStatus(person: FaceCard) {
+    const kind = personAvailability(person.slug, pulses);
+    return {
+      kind,
+      label: availabilityLabel(kind, person.profession === "actress"),
+    };
+  }
 
   function castingPrimaryHref(slug: string) {
     if (role === "casting") return withRole(`/castings/${slug}/responses`, role);
@@ -112,6 +146,23 @@ export function HomeHub({ faces }: { faces: FaceCard[] }) {
                 <h1 className="hub-welcome__title">Здравствуйте, {cfg.firstName}</h1>
                 <p className="hub-welcome__lead">{hub.lead}</p>
               </div>
+              {digest ? (
+                <div className="hub-welcome__tasks">
+                  {canUseAssistant(plan) ? (
+                    <Link href={withRole(digest.href, role)} className="hub-task">
+                      <span className="hub-task__label">От ассистента</span>
+                      <strong>{digest.title}</strong>
+                      <span className="hub-task__meta">{digest.text}</span>
+                    </Link>
+                  ) : (
+                    <button type="button" className="hub-task" onClick={() => openPlanModal()}>
+                      <span className="hub-task__label">От ассистента</span>
+                      <strong>{digest.title}</strong>
+                      <span className="hub-task__meta">{digest.text}</span>
+                    </button>
+                  )}
+                </div>
+              ) : null}
             </section>
 
             <section className="hub-metrics">
@@ -127,6 +178,70 @@ export function HomeHub({ faces }: { faces: FaceCard[] }) {
             <section className="hub-block">
               <header className="hub-block__head">
                 <div>
+                  <h2 className="hub-block__title">ВГИК</h2>
+                  <p className="hub-block__lead">Фестиваль и набор Высших курсов</p>
+                </div>
+                <a href="https://vgik.info/" target="_blank" rel="noopener noreferrer" className="hub-block__link">
+                  vgik.info →
+                </a>
+              </header>
+              <div className="hub-events">
+                {listEvents().map((event) => (
+                  <Link key={event.slug} href={withRole(`/events/${event.slug}`, role)} className="hub-event">
+                    <div className="hub-event__media media-16x9">
+                      <img src={event.image} alt="" />
+                      <time className="hub-event__date" dateTime={event.iso}>
+                        {event.day}
+                        <span>{event.month}</span>
+                      </time>
+                    </div>
+                    <div className="hub-event__body">
+                      <span className="hub-event__tag">{event.tag}</span>
+                      <strong className="hub-event__title">{event.title}</strong>
+                      <span className="hub-event__meta">
+                        {event.when} · {event.city}
+                      </span>
+                      <span className="hub-event__text">{event.meta}</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+
+            {(role === "casting" || role === "agent") && (
+              <section className="hub-block">
+                <header className="hub-block__head">
+                  <div>
+                    <h2 className="hub-block__title">{hub.peopleTitle}</h2>
+                    <p className="hub-block__lead">{hub.peopleLead}</p>
+                  </div>
+                  <Link
+                    href={withRole(role === "agent" ? "/search?mine=1" : "/faces", role)}
+                    className="hub-block__link"
+                  >
+                    {role === "agent" ? `Ростер · ${peopleTotal} →` : `Все ${peopleTotal} →`}
+                  </Link>
+                </header>
+                <div className="faces-strip" aria-label="Ростер">
+                  {people.slice(0, 8).map((p) => {
+                    const { kind, label } = rosterStatus(p);
+                    return (
+                      <PersonCard
+                        key={p.slug}
+                        person={p}
+                        variant="strip"
+                        status={label}
+                        statusKind={kind}
+                      />
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            <section className="hub-block">
+              <header className="hub-block__head">
+                <div>
                   <h2 className="hub-block__title">{hub.feedTitle}</h2>
                   <p className="hub-block__lead">{hub.feedLead}</p>
                 </div>
@@ -135,25 +250,6 @@ export function HomeHub({ faces }: { faces: FaceCard[] }) {
                 </Link>
               </header>
               <div className="feed-list feed-list--compact">
-                {(role === "casting" || role === "agent") && pulses.length ? (
-                  <section className="pulse-strip" aria-label="Статусы актёров">
-                    <div className="pulse-strip__head">Статусы актёров</div>
-                    {pulses.slice(0, 4).map((p) => (
-                      <Link
-                        key={p.id}
-                        href={withRole(`/people/${p.personSlug}`, role)}
-                        className="pulse-card"
-                      >
-                        <img src={p.avatar} alt="" width={40} height={40} />
-                        <span>
-                          <strong>{p.name}</strong>
-                          <em>{AVAILABILITY_LABEL[p.availability]}</em>
-                          <span>{p.text}</span>
-                        </span>
-                      </Link>
-                    ))}
-                  </section>
-                ) : null}
                 {posts
                   .filter((post) => (role === "actor" ? post.authorRole === "actor" : false))
                   .slice(0, 1)
@@ -179,6 +275,11 @@ export function HomeHub({ faces }: { faces: FaceCard[] }) {
                   const isSaved = saved.includes(savedKey);
                   return (
                     <article key={p.slug} className="feed-card feed-card--casting">
+                      <Link href={cardHref} className="feed-card__hero media-16x9">
+                        <img src={p.media} alt="" />
+                        {p.urgent ? <CoverBadge kind="urgent">Срочно</CoverBadge> : null}
+                        <CoverBadge kind="casting">Кастинг</CoverBadge>
+                      </Link>
                       <div className="feed-card__top">
                         <img
                           src={project?.studioAvatar || "/assets/figma/avatar-04.png"}
@@ -193,14 +294,7 @@ export function HomeHub({ faces }: { faces: FaceCard[] }) {
                             {project ? `${project.title} · ${p.meta}` : p.meta}
                           </div>
                         </div>
-                        <div className="feed-card__tags">
-                          {p.urgent ? <span className="tag tag-orange">Срочно</span> : null}
-                          <span className="tag tag-green">Кастинг</span>
-                        </div>
                       </div>
-                      <Link href={cardHref} className="feed-card__hero media-16x9">
-                        <img src={p.media} alt="" />
-                      </Link>
                       <h3 className="feed-card__title">
                         <Link href={cardHref}>{p.title}</Link>
                       </h3>
@@ -252,8 +346,8 @@ export function HomeHub({ faces }: { faces: FaceCard[] }) {
                         className="platform-card__logo"
                         style={{
                           background: p.bg,
-                          color: p.border ? "hsla(0,0%,97%,0.76)" : undefined,
-                          border: p.border ? "1px solid hsla(0,0%,97%,0.1)" : undefined,
+                          color: p.border ? "var(--ss-text-secondary)" : undefined,
+                          border: p.border ? "1px solid var(--ss-border)" : undefined,
                         }}
                       >
                         {p.mark}
@@ -287,21 +381,23 @@ export function HomeHub({ faces }: { faces: FaceCard[] }) {
                 {(role === "casting" ? visibleProjects : visibleProjects.slice(0, 4)).map((p) => {
                   const href = withRole(`/projects/${p.slug}`, role);
                   const related = castingsForProject(p.slug);
+                  const urgent = related.some((c) => c.urgent && c.deadline !== "закрыт");
                   return (
                     <article key={p.slug} className="feed-card feed-card--project">
+                      <Link href={href} className="feed-card__hero media-16x9">
+                        <img src={p.cover} alt="" />
+                        {urgent ? <CoverBadge kind="urgent">Срочно</CoverBadge> : null}
+                        <CoverBadge kind={statusKind(p.status)}>{p.status}</CoverBadge>
+                      </Link>
                       <div className="feed-card__top">
                         <img src={p.studioAvatar} alt="" className="feed-card__avatar" width={40} height={40} />
                         <div className="feed-card__who">
                           <div className="feed-card__org">{p.studio}</div>
                           <div className="feed-card__meta">
-                            {p.kind} · {p.platform} · {p.status.toLowerCase()}
+                            {p.kind} · {p.platform} · {p.city}
                           </div>
                         </div>
-                        <span className="tag tag-blue">Проект</span>
                       </div>
-                      <Link href={href} className="feed-card__hero media-16x9">
-                        <img src={p.cover} alt="" />
-                      </Link>
                       <h3 className="feed-card__title">
                         <Link href={href}>{p.title}</Link>
                       </h3>
@@ -329,22 +425,6 @@ export function HomeHub({ faces }: { faces: FaceCard[] }) {
               </div>
             </section>
 
-            <section className="hub-block">
-              <header className="hub-block__head">
-                <div>
-                  <h2 className="hub-block__title">{hub.peopleTitle}</h2>
-                  <p className="hub-block__lead">{hub.peopleLead}</p>
-                </div>
-                <Link href={withRole(role === "agent" ? "/search?mine=1" : role === "casting" ? "/faces" : "/search", role)} className="hub-block__link">
-                  {role === "agent" ? `Ростер · ${people.length} →` : `Все ${people.length} →`}
-                </Link>
-              </header>
-              <div className="faces-strip">
-                {people.slice(0, 8).map((p) => (
-                  <PersonCard key={p.slug} person={p} variant="strip" />
-                ))}
-              </div>
-            </section>
           </div>
         </div>
       </main>

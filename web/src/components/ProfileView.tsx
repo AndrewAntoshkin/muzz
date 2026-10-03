@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import type { PersonProfile } from "@/lib/people";
-import { VZMETNEV_CARD, DEMO_BIOS } from "@/lib/demo-profiles";
-import { LINK_LABELS, assetSrc, initialsOf, personIsPro } from "@/lib/labels";
+import { VZMETNEV_CARD, KEVORKOVA_CARD, DEMO_BIOS, demoActorSchedule } from "@/lib/demo-profiles";
+import { LINK_LABELS, CONTACT_KINDS, contactHref, assetSrc, initialsOf } from "@/lib/labels";
+import { PLAN_META, openPlanModal, personIsStudent, parsePlan, visiblePlan, type PlanId } from "@/lib/plans";
 import {
   ageLabel,
   asCard,
@@ -14,19 +15,20 @@ import {
   type Schedule,
   type Showreel,
 } from "@/lib/person-card";
+import { emptySchedule, eventVisibleInMonth, formatEventWhen, normalizeSchedule, WEEKDAYS } from "@/lib/calendar";
 import { castingsForCd, getProject, projectsForCd } from "@/lib/productions";
-import { AVAILABILITY_LABEL } from "@/lib/workspace";
+import { availabilityLabel, personAvailability } from "@/lib/workspace";
 import { AGENCY_PAGES } from "@/lib/agencies";
 import { useEffect, useMemo, useState } from "react";
 import { AnketaTabs } from "./AnketaTabs";
 import { HideIfOwn, ProfileViewerActions, WriteButton } from "./ProfileViewerActions";
+import { MonthCalendar } from "./MonthCalendar";
 import { ProfileEditModal, type ProfileEditTab } from "./ProfileEditModal";
 import { StatusModal } from "./StatusModal";
 import { useWorkspace } from "./useWorkspace";
 import { profileSlug, withRole } from "@/lib/roles";
 import { useDemoRole } from "./useDemoRole";
 
-const WEEKDAYS = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"];
 const VIDEO_KINDS = new Set(["vimeo", "youtube", "video"]);
 
 function MetaLine({ bits }: { bits: (string | null | undefined)[] }) {
@@ -218,6 +220,20 @@ function Anketa({ card }: { card: PersonCard }) {
   );
 }
 
+function useVisiblePlan(person: { slug: string; profession?: string | null }) {
+  const { cfg } = useDemoRole();
+  const { settings } = useWorkspace();
+  return visiblePlan(person.slug, person.profession, profileSlug(cfg), parsePlan(settings.plan));
+}
+
+function planRingClass(plan: PlanId) {
+  return `kadr-avatar plan-ring plan-ring--${plan}`;
+}
+
+function heroSectionClass(plan: PlanId) {
+  return plan === "premium" ? "detail-hero kadr-profile--premium" : "detail-hero";
+}
+
 function Avatar({
   person,
   onOpen,
@@ -225,20 +241,22 @@ function Avatar({
   person: PersonProfile;
   onOpen?: (src: string) => void;
 }) {
+  const plan = useVisiblePlan(person);
   const src = assetSrc(person.imageUrl);
   const initials = person.initials || initialsOf(person.name);
+  const ring = planRingClass(plan);
   if (src) {
     if (onOpen) {
       return (
         <button type="button" className="kadr-avatar-btn" onClick={() => onOpen(src)} aria-label="Открыть фото">
-          <img className="kadr-avatar" src={src} alt="" />
+          <img className={ring} src={src} alt="" />
         </button>
       );
     }
-    return <img className="kadr-avatar" src={src} alt="" />;
+    return <img className={ring} src={src} alt="" />;
   }
   return (
-    <div className="kadr-avatar kadr-avatar--fallback" style={{ background: person.bg || "#5C4A45" }}>
+    <div className={`${ring} kadr-avatar--fallback`} style={{ background: person.bg || "#5C4A45" }}>
       {initials}
     </div>
   );
@@ -253,17 +271,10 @@ function cardFor(person: PersonProfile, patch?: import("@/lib/workspace").Profil
   const base = asCard(person.card);
   const card =
     person.slug === "vzmetnev"
-      ? {
-          ...VZMETNEV_CARD,
-          ...base,
-          showreel: base.showreel ?? VZMETNEV_CARD.showreel,
-          schedule: base.schedule ?? VZMETNEV_CARD.schedule,
-          params: base.params?.length ? base.params : VZMETNEV_CARD.params,
-          appearance: base.appearance?.length ? base.appearance : VZMETNEV_CARD.appearance,
-          languages: base.languages?.length ? base.languages : VZMETNEV_CARD.languages,
-          skills: base.skills?.length ? base.skills : VZMETNEV_CARD.skills,
-        }
-      : base;
+      ? { ...base, ...VZMETNEV_CARD, manager: undefined }
+      : person.slug === "kevorkova"
+        ? { ...base, ...KEVORKOVA_CARD, manager: undefined }
+        : base;
   if (!patch) return card;
   return {
     ...card,
@@ -274,7 +285,14 @@ function cardFor(person: PersonProfile, patch?: import("@/lib/workspace").Profil
     height: kvValue(patch.params ?? card.params, "Рост") || card.height,
     education: patch.education ?? card.education,
     showreel: patch.showreel === null ? undefined : (patch.showreel ?? card.showreel),
-    schedule: patch.schedule === null ? undefined : (patch.schedule ?? card.schedule),
+    schedule:
+      patch.schedule === null
+        ? undefined
+        : patch.schedule
+          ? normalizeSchedule(patch.schedule)
+          : card.schedule
+            ? normalizeSchedule(card.schedule)
+            : undefined,
     credits: patch.credits ?? card.credits,
   };
 }
@@ -316,7 +334,7 @@ function ShowreelBlock({ data }: { data: Showreel }) {
       {data.duration ? <div className="kadr-showreel__dur">{data.duration}</div> : null}
       <div className="kadr-showreel__play">
         <span className="kadr-showreel__play-btn">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="hsla(0,0%,97%,0.95)" aria-hidden>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="var(--ss-on-image)" aria-hidden>
             <path d="M8 5v14l11-7z" />
           </svg>
         </span>
@@ -342,39 +360,14 @@ function ShowreelBlock({ data }: { data: Showreel }) {
   );
 }
 
-function juneDays(schedule: Schedule) {
-  const days: { n: number; cls: string }[] = [26, 27, 28, 29, 30, 31].map((n) => ({ n, cls: "off" }));
-  for (let d = 1; d <= 29; d++) {
-    const bits: string[] = [];
-    if (schedule.busy.includes(d)) bits.push("busy");
-    if (schedule.hold.includes(d)) bits.push("hold");
-    if (schedule.today === d) bits.push("today");
-    days.push({ n: d, cls: bits.join(" ") });
-  }
-  return days;
-}
-
-function currentMonthDays() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const first = new Date(year, month, 1);
-  const last = new Date(year, month + 1, 0);
-  const today = now.getDate();
-  let pad = first.getDay() - 1;
-  if (pad < 0) pad = 6;
-  const prevLast = new Date(year, month, 0).getDate();
-  const days: { n: number; cls: string }[] = [];
-  for (let i = pad; i > 0; i--) days.push({ n: prevLast - i + 1, cls: "off" });
-  for (let d = 1; d <= last.getDate(); d++) days.push({ n: d, cls: d === today ? "today" : "" });
-  return days;
-}
-
 function ScheduleBlock({ card, feminine }: { card: PersonCard; feminine: boolean }) {
+  const now = new Date();
+  const [year, setYear] = useState(now.getFullYear());
+  const [month, setMonth] = useState(now.getMonth());
   const openLabel = feminine ? "Открыта к предложениям" : "Открыт к предложениям";
   const freeLine = feminine ? "Свободна для съёмок" : "Свободен для съёмок";
-  const schedule = card.schedule;
-  const days = schedule ? juneDays(schedule) : currentMonthDays();
+  const schedule = card.schedule ? normalizeSchedule(card.schedule) : emptySchedule();
+  const events = schedule.events.filter((event) => eventVisibleInMonth(event, year, month));
   return (
     <section className="detail-block" id="schedule">
       <div className="detail-block__head">
@@ -383,18 +376,15 @@ function ScheduleBlock({ card, feminine }: { card: PersonCard; feminine: boolean
       </div>
       <div className="kadr-cal-grid">
         <div>
-          <div className="mini-cal">
-            {WEEKDAYS.map((day) => (
-              <span className="mini-cal__h" key={day}>
-                {day}
-              </span>
-            ))}
-            {days.map((day, i) => (
-              <span className={day.cls ? `mini-cal__d ${day.cls}` : "mini-cal__d"} key={`${day.n}-${i}`}>
-                {day.n}
-              </span>
-            ))}
-          </div>
+          <MonthCalendar
+            year={year}
+            month={month}
+            onYearMonth={(nextYear, nextMonth) => {
+              setYear(nextYear);
+              setMonth(nextMonth);
+            }}
+            schedule={schedule}
+          />
           <div className="kadr-cal-legend">
             <span className="kadr-cal-legend__item">
               <span className="kadr-cal-legend__swatch kadr-cal-legend__swatch--busy" />
@@ -411,10 +401,11 @@ function ScheduleBlock({ card, feminine }: { card: PersonCard; feminine: boolean
           </div>
         </div>
         <ul className="kadr-cal-events">
-          {schedule?.events?.length ? (
-            schedule.events.map((event) => (
-              <li key={`${event.when}-${event.title}`}>
-                <strong>{event.when}</strong> · {event.title}
+          {events.length ? (
+            events.map((event) => (
+              <li key={`${event.start ?? event.when}-${event.title}`}>
+                <strong>{formatEventWhen(event)}</strong>
+                {event.title ? <> · {event.title}</> : null}
                 {event.meta ? <div className="kadr-cal-events__meta">{event.meta}</div> : null}
               </li>
             ))
@@ -427,13 +418,68 @@ function ScheduleBlock({ card, feminine }: { card: PersonCard; feminine: boolean
   );
 }
 
-function HeroTitle({ person }: { person: PersonProfile }) {
+function ContactsPanel({
+  links,
+  isOwn,
+  onAdd,
+}: {
+  links: { id: string; kind: string; url: string }[];
+  isOwn: boolean;
+  onAdd: () => void;
+}) {
+  const rows = CONTACT_KINDS.map((kind) => {
+    const value = links.find((l) => l.kind === kind)?.url.trim() ?? "";
+    return { kind, label: LINK_LABELS[kind], value, href: contactHref(kind, value) };
+  });
+  return (
+    <section className="detail-side__panel">
+      <div className="detail-side__title">Контакты</div>
+      <dl className="detail-kv">
+        {rows.map((row) => (
+          <span key={row.kind} style={{ display: "contents" }}>
+            <dt>{row.label}</dt>
+            <dd>
+              {row.value && row.href ? (
+                <a className="link-accent" href={row.href}>
+                  {row.value}
+                </a>
+              ) : isOwn ? (
+                <button type="button" className="kadr-contact-add" onClick={onAdd}>
+                  добавить
+                </button>
+              ) : (
+                <span className="kadr-contact-empty">не указан</span>
+              )}
+            </dd>
+          </span>
+        ))}
+      </dl>
+    </section>
+  );
+}
+
+function HeroTitle({
+  person,
+  education,
+}: {
+  person: PersonProfile;
+  education?: string | string[] | null;
+}) {
+  const plan = useVisiblePlan(person);
+  const isActor = person.profession === "actor" || person.profession === "actress";
+  const student = isActor && personIsStudent(person.slug, education);
+  const planBadge = plan === "standard" ? null : PLAN_META[plan].badge;
   return (
     <div className="kadr-hero-title">
-      <h1 className="detail-hero__title">
-        {person.name}
-        {personIsPro(person) ? <span className="kadr-pro">PRO</span> : null}
-      </h1>
+      <h1 className="detail-hero__title">{person.name}</h1>
+      {planBadge || isActor ? (
+        <span className="kadr-hero-chips">
+          {planBadge ? <span className={`kadr-plan-pill kadr-plan-pill--${plan}`}>{planBadge}</span> : null}
+          {isActor ? (
+            <span className={`kadr-kind-chip${student ? " is-student" : ""}`}>{student ? "Студент" : "Проф."}</span>
+          ) : null}
+        </span>
+      ) : null}
     </div>
   );
 }
@@ -446,6 +492,7 @@ function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard
   const [statusOpen, setStatusOpen] = useState(false);
   const [photoSrc, setPhotoSrc] = useState<string | null>(null);
   const isOwn = person.slug === profileSlug(cfg);
+  const plan = useVisiblePlan(person);
   const patch = profilePatches[person.slug];
   const feminine = person.profession === "actress";
   const height = card.height || kvValue(card.params, "Рост");
@@ -453,14 +500,10 @@ function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard
   const agencyName = person.agencyName;
   const agentName = person.agentName;
   const hasAgency = Boolean(agencyName || agentName);
-  const agentSlug = (person.agencyId && AGENCY_PAGES[person.agencyId]?.agentSlug) || "kevorkova";
+  const agentSlug = (person.agencyId && AGENCY_PAGES[person.agencyId]?.agentSlug) || "soykina";
   const showreel = resolveShowreel(person, card);
   const pulse = pulses.find((p) => p.personSlug === person.slug);
-  const openLabel = pulse
-    ? AVAILABILITY_LABEL[pulse.availability]
-    : feminine
-      ? "Открыта к предложениям"
-      : "Открыт к предложениям";
+  const openLabel = availabilityLabel(personAvailability(person.slug, pulses), feminine);
   const agencyLine = agencyName ? quotedAgency(agencyName) : null;
   const bio = patch?.bio ?? person.bio;
   const city = patch?.city ?? person.city;
@@ -481,7 +524,7 @@ function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard
           ? [{ id: `${person.slug}-hero`, url: person.imageUrl }]
           : []
       ).map((p) => ({ id: p.id, url: p.url })),
-      schedule: card.schedule || VZMETNEV_CARD.schedule || { busy: [], hold: [], today: 1, events: [] },
+      schedule: normalizeSchedule(card.schedule || demoActorSchedule()),
       credits: card.credits || VZMETNEV_CARD.credits || [],
       links: person.links.map((l) => ({ id: l.id, kind: l.kind, url: l.url })),
     }),
@@ -501,10 +544,10 @@ function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard
     <div className="page-scroll detail-page">
       <div className="detail-grid">
         <div>
-          <section className="detail-hero">
+          <section className={heroSectionClass(plan)}>
             <div className="detail-hero__body kadr-hero-body">
               <Avatar person={person} onOpen={setPhotoSrc} />
-              <HeroTitle person={person} />
+              <HeroTitle person={person} education={educationLines(card)} />
               <MetaLine bits={[person.role, city, ageLabel(person.birthDate), height, ...(card.heroMeta || [])]} />
               {bio ? (
                 <p className="kadr-bio">{bio}</p>
@@ -537,10 +580,21 @@ function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard
                   </div>
                   <WriteButton
                     personSlug={agentSlug}
+                    profession="agent"
                     label="Написать агенту"
                     primary
                     className="kadr-manager__write"
                   />
+                </div>
+              ) : !hasAgency ? (
+                <div className="callout kadr-manager kadr-manager--solo">
+                  <div>
+                    <div className="object-type" style={{ marginBottom: 4 }}>
+                      Представительство
+                    </div>
+                    <div className="kadr-manager__name">Без агента</div>
+                    <div className="kadr-manager__meta">Пишите напрямую</div>
+                  </div>
                 </div>
               ) : null}
             </div>
@@ -570,6 +624,18 @@ function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard
               <p className="profile-pulse-side">
                 Анкета, образование, шоурил, фото, график и фильмография
               </p>
+            </section>
+          ) : null}
+          {isOwn ? (
+            <section className="detail-side__panel">
+              <div className="detail-side__title">Подписка</div>
+              <p className="profile-pulse-side" style={{ marginTop: 0 }}>
+                Сейчас {PLAN_META[plan].name}
+                {plan === "standard" ? " · бесплатно" : " · до 4 октября"}
+              </p>
+              <button type="button" className="btn-secondary btn-block" onClick={() => openPlanModal()}>
+                Все тарифы
+              </button>
             </section>
           ) : null}
           <section className="detail-side__panel kadr-open-panel">
@@ -615,23 +681,14 @@ function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard
               ) : null}
             </section>
           ) : null}
-          {links.length ? (
-            <section className="detail-side__panel">
-              <div className="detail-side__title">Контакты</div>
-              <dl className="detail-kv">
-                {links.map((link) => (
-                  <span key={link.id} style={{ display: "contents" }}>
-                    <dt>{LINK_LABELS[link.kind] || link.kind}</dt>
-                    <dd>
-                      <a className="link-accent" href={link.url} target="_blank" rel="noopener noreferrer">
-                        Перейти
-                      </a>
-                    </dd>
-                  </span>
-                ))}
-              </dl>
-            </section>
-          ) : null}
+          <ContactsPanel
+            links={links}
+            isOwn={isOwn}
+            onAdd={() => {
+              setEditTab("links");
+              setEditOpen(true);
+            }}
+          />
         </aside>
       </div>
       {editOpen ? (
@@ -650,6 +707,7 @@ function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard
 }
 
 function CastingLayout({ person, card }: { person: PersonProfile; card: PersonCard }) {
+  const plan = useVisiblePlan(person);
   const activeCastings = castingsForCd(person.slug);
   const cdProjects = projectsForCd(person.slug);
 
@@ -657,7 +715,7 @@ function CastingLayout({ person, card }: { person: PersonProfile; card: PersonCa
     <div className="page-scroll detail-page">
       <div className="detail-grid">
         <div>
-          <section className="detail-hero">
+          <section className={heroSectionClass(plan)}>
             <div className="detail-hero__body kadr-hero-body">
               <Avatar person={person} />
               <HeroTitle person={person} />
@@ -746,8 +804,12 @@ function CastingLayout({ person, card }: { person: PersonProfile; card: PersonCa
               </div>
             </section>
           ) : (
-            <Filmography credits={card.credits || []} title="Закрытые проекты" />
+            <Filmography credits={card.credits || []} title="Фильмография" />
           )}
+
+          {cdProjects.length && card.credits?.length ? (
+            <Filmography credits={card.credits} title="Фильмография" />
+          ) : null}
         </div>
 
         <aside className="detail-side">
@@ -791,19 +853,20 @@ function CastingLayout({ person, card }: { person: PersonProfile; card: PersonCa
 function AgentLayout({ person, card }: { person: PersonProfile; card: PersonCard }) {
   const { role, cfg } = useDemoRole();
   const isOwn = person.slug === profileSlug(cfg);
+  const plan = useVisiblePlan(person);
   const agencyHref = person.agencyId ? `/agencies/${person.agencyId}` : null;
 
   return (
     <div className="page-scroll detail-page">
       <div className="detail-grid">
         <div>
-          <section className="detail-hero">
+          <section className={heroSectionClass(plan)}>
             <div className="detail-hero__body kadr-hero-body">
               <Avatar person={person} />
               <HeroTitle person={person} />
               <MetaLine bits={[person.role, person.agencyName ? `агентство «${person.agencyName}»` : null, person.city]} />
               {person.bio ? <p className="kadr-bio">{person.bio}</p> : null}
-              <ProfileViewerActions personSlug={person.slug} profession={person.profession} />
+              <ProfileViewerActions personSlug={person.slug} profession={person.profession} agencyId={person.agencyId} />
             </div>
           </section>
 
@@ -822,7 +885,7 @@ function AgentLayout({ person, card }: { person: PersonProfile; card: PersonCard
             <section className="detail-block">
               <Link href={withRole(agencyHref, role)} className="agency-door">
                 <span className="agency-door__kicker">Агентство</span>
-                <span className="agency-door__name">«{person.agencyName || "Актёр 1"}»</span>
+                <span className="agency-door__name">«{person.agencyName || "Агентство"}»</span>
                 <span className="agency-door__meta">
                   {[person.city, person.agencyWebsite ? goLabel(person.agencyWebsite) : null].filter(Boolean).join(" · ")}
                   {" · ростер и размещения"}
@@ -830,6 +893,24 @@ function AgentLayout({ person, card }: { person: PersonProfile; card: PersonCard
               </Link>
             </section>
           ) : null}
+
+          {card.clients?.length ? (
+            <section className="detail-block">
+              <div className="detail-block__head">
+                <h2 className="detail-block__title">Артисты</h2>
+              </div>
+              {card.clients.map((client) => (
+                <div className="response-row" key={client.name} style={{ gridTemplateColumns: "1fr", padding: "10px 0" }}>
+                  <div>
+                    <div className="response-row__name">{client.name}</div>
+                    {client.meta ? <div className="response-row__meta">{client.meta}</div> : null}
+                  </div>
+                </div>
+              ))}
+            </section>
+          ) : null}
+
+          <Filmography credits={card.credits || []} title="Кастинг" />
 
           {isOwn && card.castings?.length ? (
             <section className="detail-block">

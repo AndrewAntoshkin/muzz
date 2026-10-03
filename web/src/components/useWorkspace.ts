@@ -24,15 +24,18 @@ import {
   type AppKind,
   type AppStatus,
   type Application,
+  type CastingPin,
   type ChatLine,
+  type RoleLayout,
   type WorkspaceState,
 } from "@/lib/workspace";
 import { useDemoRole } from "./useDemoRole";
+import { rehearsalMonthKey, rehearsalsUsed } from "@/lib/rehearsal";
 
 const CD = {
-  slug: "lebedeva",
-  name: "Анна Лебедева",
-  avatar: "/assets/figma/avatar-02.png",
+  slug: "kevorkova",
+  name: "Анна Кеворкова",
+  avatar: "/assets/people/kevorkova.jpg",
 };
 
 const STATUS_FLASH: Record<AppStatus, string> = {
@@ -91,7 +94,7 @@ function useWorkspaceValue() {
   }, [state.applications, role, actorSlug]);
 
   const applyToCasting = useCallback(
-    (castingSlug: string, kind: AppKind = "selftape") => {
+    (castingSlug: string, kind: AppKind = "selftape", tape?: Application["tape"]) => {
       const exists = state.applications.some(
         (a) => a.castingSlug === castingSlug && a.actorSlug === actorSlug && a.source === "actor",
       );
@@ -110,13 +113,14 @@ function useWorkspaceValue() {
         status: "sent",
         source: "actor",
         createdAt: Date.now(),
+        tape,
       };
       const casting = findCasting(state, castingSlug);
       update((prev) => ({
         ...prev,
         applications: [app, ...prev.applications],
         threads: prev.threads.map((t) =>
-          t.id !== "lebedeva-vzmetnev"
+          t.id !== "kevorkova-vzmetnev"
             ? t
             : {
                 ...t,
@@ -138,6 +142,9 @@ function useWorkspaceValue() {
                           meta: `до ${casting.deadline}`,
                           href: `/castings/${casting.slug}`,
                         }
+                      : undefined,
+                    tape: tape
+                      ? { title: tape.title, duration: tape.duration, href: tape.href }
                       : undefined,
                   },
                 ],
@@ -186,7 +193,7 @@ function useWorkspaceValue() {
         ...prev,
         applications: [app, ...prev.applications],
         threads: prev.threads.map((t) =>
-          t.id !== "kevorkova-lebedeva"
+          t.id !== "kevorkova-soykina"
             ? t
             : {
                 ...t,
@@ -241,7 +248,7 @@ function useWorkspaceValue() {
       const project: Project = {
         slug,
         title: draft.title.startsWith("«") ? draft.title : `«${draft.title}»`,
-        studio: draft.studio || "Анна Лебедева",
+        studio: draft.studio || "Анна Кеворкова",
         studioAvatar: CD.avatar,
         platform: draft.platform || "открытый",
         kind: draft.kind || "Полный метр",
@@ -280,6 +287,17 @@ function useWorkspaceValue() {
         projects: prev.projects.map((p) => (p.slug === projectSlug ? { ...p, ...patch } : p)),
       }));
       flash("Проект обновлён");
+    },
+    [flash, update],
+  );
+
+  const updateCasting = useCallback(
+    (castingSlug: string, patch: Partial<Casting>) => {
+      update((prev) => ({
+        ...prev,
+        castings: prev.castings.map((c) => (c.slug === castingSlug ? { ...c, ...patch } : c)),
+      }));
+      flash("Кастинг обновлён");
     },
     [flash, update],
   );
@@ -344,15 +362,16 @@ function useWorkspaceValue() {
   );
 
   const sendMessage = useCallback(
-    (threadId: string, text: string) => {
+    (threadId: string, text: string, tape?: ChatLine["tape"]) => {
       const trimmed = text.trim();
-      if (!trimmed) return;
+      if (!trimmed && !tape) return;
       const msg: ChatLine = {
         id: `m-${Date.now().toString(36)}`,
         authorRole: role,
         text: trimmed,
         time: nowTime(),
         createdAt: Date.now(),
+        tape,
       };
       update((prev) => ({
         ...prev,
@@ -403,6 +422,21 @@ function useWorkspaceValue() {
     [update],
   );
 
+  const bumpRehearsal = useCallback(() => {
+    const month = rehearsalMonthKey();
+    update((prev) => {
+      const used = rehearsalsUsed(prev.settings);
+      return {
+        ...prev,
+        settings: {
+          ...prev.settings,
+          rehearsalsMonth: month,
+          rehearsalsUsed: used + 1,
+        },
+      };
+    });
+  }, [update]);
+
   const resetDemo = useCallback(() => {
     const seed = cloneSeed();
     saveWorkspace(seed);
@@ -445,6 +479,58 @@ function useWorkspaceValue() {
     [flash, update],
   );
 
+  const addPin = useCallback(
+    (pin: Omit<CastingPin, "id" | "rotation"> & { rotation?: number }) => {
+      update((prev) => {
+        const exists = (prev.boards || []).some(
+          (p) => p.projectSlug === pin.projectSlug && p.actorSlug === pin.actorSlug,
+        );
+        if (exists) return prev;
+        const next: CastingPin = {
+          ...pin,
+          id: `pin-${Date.now().toString(36)}`,
+          rotation: pin.rotation ?? (Math.random() * 10 - 5),
+        };
+        return { ...prev, boards: [...(prev.boards || []), next] };
+      });
+      flash("На доске");
+    },
+    [flash, update],
+  );
+
+  const removePin = useCallback(
+    (id: string) => {
+      update((prev) => ({
+        ...prev,
+        boards: (prev.boards || []).filter((p) => p.id !== id),
+      }));
+    },
+    [update],
+  );
+
+  const updatePin = useCallback(
+    (id: string, patch: Partial<Pick<CastingPin, "character" | "x" | "y" | "chosen">>) => {
+      update((prev) => ({
+        ...prev,
+        boards: (prev.boards || []).map((p) => (p.id === id ? { ...p, ...patch } : p)),
+      }));
+    },
+    [update],
+  );
+
+  const updateRoleLayout = useCallback(
+    (projectSlug: string, castingSlug: string, pos: { x: number; y: number }) => {
+      update((prev) => {
+        const list = prev.roleLayout || [];
+        const i = list.findIndex((r) => r.projectSlug === projectSlug && r.castingSlug === castingSlug);
+        const next: RoleLayout = { projectSlug, castingSlug, ...pos };
+        const roleLayout = i >= 0 ? list.map((r, idx) => (idx === i ? next : r)) : [...list, next];
+        return { ...prev, roleLayout };
+      });
+    },
+    [update],
+  );
+
   return {
     ready,
     notice,
@@ -457,6 +543,9 @@ function useWorkspaceValue() {
     myApplications,
     posts: state.posts,
     pulses: state.pulses ?? [],
+    boards: state.boards ?? [],
+    shortlist: state.shortlist ?? [],
+    roleLayout: state.roleLayout ?? [],
     profilePatches: state.profilePatches ?? {},
     threads,
     unread,
@@ -478,13 +567,19 @@ function useWorkspaceValue() {
     addProject,
     updateProject,
     addCasting,
+    updateCasting,
     addPost,
     publishStatus,
     saveProfilePatch,
+    addPin,
+    removePin,
+    updatePin,
+    updateRoleLayout,
     sendMessage,
     markRead,
     toggleSaved,
     setSettings,
+    bumpRehearsal,
     resetDemo,
     flash,
   };

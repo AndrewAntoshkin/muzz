@@ -7,28 +7,30 @@ export function IconSearch() {
   );
 }
 
-export function IconHome() {
+type TabIconProps = { filled?: boolean };
+
+export function IconHome({ filled }: TabIconProps = {}) {
   return (
-    <svg className="sidebar-item__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+    <svg className="sidebar-item__icon" width="16" height="16" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth={filled ? "1.2" : "1.6"}>
       <path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5z" />
     </svg>
   );
 }
 
-export function IconCasting() {
+export function IconCasting({ filled }: TabIconProps = {}) {
   return (
-    <svg className="sidebar-item__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+    <svg className="sidebar-item__icon" width="16" height="16" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth={filled ? "1.2" : "1.6"}>
       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <path d="M14 2v6h6M8 13h8M8 17h5" />
+      <path d="M14 2v6h6M8 13h8M8 17h5" fill="none" />
     </svg>
   );
 }
 
-export function IconProject() {
+export function IconProject({ filled }: TabIconProps = {}) {
   return (
-    <svg className="sidebar-item__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+    <svg className="sidebar-item__icon" width="16" height="16" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth={filled ? "1.2" : "1.6"}>
       <path d="M20 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z" />
-      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" fill="none" />
     </svg>
   );
 }
@@ -50,20 +52,20 @@ export function IconBell() {
   );
 }
 
-export function IconFaces() {
+export function IconFaces({ filled }: TabIconProps = {}) {
   return (
-    <svg className="sidebar-item__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+    <svg className="sidebar-item__icon" width="16" height="16" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth={filled ? "1.2" : "1.6"}>
       <circle cx="12" cy="8" r="4" />
-      <path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" />
+      <path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" fill="none" />
     </svg>
   );
 }
 
-export function IconResponses() {
+export function IconResponses({ filled }: TabIconProps = {}) {
   return (
-    <svg className="sidebar-item__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <path d="M14 2v6h6M8 13h8M8 17h5" />
+    <svg className="sidebar-item__icon" width="16" height="16" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth={filled ? "1.2" : "1.6"}>
+      <rect x="6" y="3" width="12" height="18" rx="2" />
+      <path d="M9 3.5v2h6v-2M9 10h6M9 14h6M9 18h4" fill="none" />
     </svg>
   );
 }
@@ -123,6 +125,33 @@ export function IconBack() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
       <path d="M15 18 9 12l6-6" />
+    </svg>
+  );
+}
+
+export function IconBolt() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
+    </svg>
+  );
+}
+
+export function IconUpload() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M12 16V7" />
+      <path d="m8.5 10.5 3.5-3.5 3.5 3.5" />
+      <path d="M5 19h14" />
+    </svg>
+  );
+}
+
+export function IconFile() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <path d="M14 2v6h6" />
     </svg>
   );
 }

@@ -32,13 +32,14 @@ export function AgencyView({
     <div className="page-scroll detail-page agency-page">
       <section className="agency-hero">
         <div className="agency-mark" aria-hidden>
-          А1
+          {agency.id === "akter1" ? "А1" : agency.name.replace(/[«»]/g, "").split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase()}
         </div>
         <div>
           <p className="agency-kicker">Актёрское агентство</p>
           <h1 className="agency-title">«{agency.name}»</h1>
           <p className="agency-meta">
-            {agency.city} · с {agency.founded} · {rosterCount} в ростере
+            {agency.city} · с {agency.founded}
+            {rosterCount ? ` · ${rosterCount} в ростере` : ""}
           </p>
           <p className="agency-about">{agency.about}</p>
         </div>
@@ -79,6 +80,7 @@ export function AgencyView({
                 ) : (
                   <WriteButton
                     personSlug={agent.slug}
+                    profession="agent"
                     label={role === "casting" ? "Запросить актёра" : "Написать агенту"}
                     primary
                   />

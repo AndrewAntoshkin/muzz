@@ -1,5 +1,5 @@
 import { FacesCatalog } from "@/components/FacesCatalog";
-import { listFaces } from "@/lib/people";
+import { searchFaces } from "@/lib/people";
 
 export const dynamic = "force-dynamic";
 
@@ -12,20 +12,25 @@ export default async function FacesPage({
 }: {
   searchParams: Promise<{ profession?: string }>;
 }) {
-  let people: Awaited<ReturnType<typeof listFaces>> = [];
+  const sp = await searchParams;
+  const profession = sp.profession === "actress" ? "actress" : sp.profession || "";
+  let people: Awaited<ReturnType<typeof searchFaces>>["items"] = [];
+  let peopleTotal = 0;
   try {
-    people = await listFaces();
+    const found = await searchFaces({ profession, limit: 96 });
+    people = found.items;
+    peopleTotal = found.total;
   } catch {
     people = [];
   }
-  const sp = await searchParams;
-  const profession = sp.profession === "actress" ? "actress" : sp.profession || "";
 
   return (
     <div className="app-main__body app-main__body--catalog">
       <main className="page-area">
         <FacesCatalog
           people={people}
+          peopleTotal={peopleTotal}
+          remote
           initialProfession={profession}
           title="База"
           lead="Актёры, агенты и кастинг-директора. Фильтры по профессии и городу."

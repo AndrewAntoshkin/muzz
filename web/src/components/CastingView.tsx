@@ -1,10 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { withRole } from "@/lib/roles";
-import { timelineClass, type TimelineItem } from "@/lib/productions";
+import { useState } from "react";
+import { withRole, type RoleId } from "@/lib/roles";
+import { timelineClass, type ProjectTeamMember, type TimelineItem } from "@/lib/productions";
 import { decodeSlug } from "@/lib/workspace";
+import { IconBolt } from "./icons";
+import { FileDropzone, FileStoreRow, fileExt, fileKindLabel, persistFileUrl } from "./FileDropzone";
 import { useWorkspace } from "./useWorkspace";
+import { RehearsalStudio } from "./RehearsalStudio";
+import { openPlanModal, parsePlan, rehearsalCap } from "@/lib/plans";
+import { rehearsalLeft, rehearsalsUsed } from "@/lib/rehearsal";
+import { VZMETNEV_CARD } from "@/lib/demo-profiles";
+import { kvValue } from "@/lib/person-card";
 
 function ruWord(n: number, one: string, few: string, many: string) {
   const n10 = n % 10;
@@ -29,11 +37,91 @@ function fallbackTimeline(deadline: string, responses: number): TimelineItem[] {
   ];
 }
 
+type TeamProject = { slug: string; studio: string; studioAvatar: string } | null | undefined;
+
+function CastingTeamList({
+  project,
+  team,
+  casting,
+  role,
+}: {
+  project: TeamProject;
+  team: ProjectTeamMember[];
+  casting: { cdSlug: string; cdName: string };
+  role: RoleId;
+}) {
+  return (
+    <div className="casting-team">
+      {project ? (
+        <Link href={withRole(`/projects/${project.slug}`, role)} className="casting-team__row">
+          <img src={project.studioAvatar} alt="" />
+          <div>
+            <div className="response-row__name">{project.studio}</div>
+            <div className="response-row__meta">Продакшн-компания</div>
+          </div>
+        </Link>
+      ) : null}
+      {team.map((member) => {
+        const inner = (
+          <>
+            {member.avatar ? (
+              <img src={member.avatar} alt="" />
+            ) : (
+              <span className="project-team-card__ava" style={{ background: member.bg || "#2c2c2b" }}>
+                {member.initials || member.name.slice(0, 2)}
+              </span>
+            )}
+            <div>
+              <div className="response-row__name">{member.name}</div>
+              <div className="response-row__meta">{member.role}</div>
+            </div>
+          </>
+        );
+        if (member.href) {
+          return (
+            <Link key={`${member.name}-${member.role}`} href={withRole(member.href, role)} className="casting-team__row">
+              {inner}
+            </Link>
+          );
+        }
+        return (
+          <div key={`${member.name}-${member.role}`} className="casting-team__row">
+            {inner}
+          </div>
+        );
+      })}
+      {!project ? (
+        <Link href={withRole(`/people/${casting.cdSlug}`, role)} className="casting-team__row">
+          <div>
+            <div className="response-row__name">{casting.cdName}</div>
+            <div className="response-row__meta">Кастинг-директор</div>
+          </div>
+        </Link>
+      ) : null}
+    </div>
+  );
+}
+
 export function CastingView({ slug }: { slug: string }) {
   const ws = useWorkspace();
-  const { role, ready, alreadyApplied, applyToCasting, toggleSaved, saved, flash, responseCount, applications } = ws;
+  const {
+    role,
+    cfg,
+    ready,
+    alreadyApplied,
+    applyToCasting,
+    toggleSaved,
+    saved,
+    flash,
+    responseCount,
+    applications,
+    settings,
+    bumpRehearsal,
+  } = ws;
   const casting = ws.getCasting(decodeSlug(slug));
   const project = casting ? ws.getProject(casting.projectSlug) : null;
+  const [tapeFile, setTapeFile] = useState<{ name: string; kind: string; href?: string } | null>(null);
+  const [studioOpen, setStudioOpen] = useState(false);
 
   if (!ready) {
     return (
@@ -60,6 +148,36 @@ export function CastingView({ slug }: { slug: string }) {
   const timeline = casting.timeline?.length ? casting.timeline : fallbackTimeline(casting.deadline, n);
   const liveApps = applications.filter((a) => a.castingSlug === casting.slug);
   const team = project?.team?.filter((m) => m.name && !/актёр|актриса/i.test(m.role)) ?? [];
+  const plan = parsePlan(settings.plan);
+  const used = rehearsalsUsed(settings);
+  const cap = rehearsalCap(plan);
+  const left = rehearsalLeft(plan, used);
+  const height = kvValue(VZMETNEV_CARD.params, "Рост") || "180 см";
+  const myApp = applications.find((a) => a.castingSlug === casting.slug && a.source === "actor");
+  const tapeHref = tapeFile?.href || myApp?.tape?.href;
+  const tapeName = tapeFile?.name || myApp?.tape?.title || "Самопроба";
+  const tapeKind = tapeFile?.kind || "видео";
+
+  async function keepTape(file: File) {
+    try {
+      const href = await persistFileUrl(file, "selftape");
+      setTapeFile({ name: file.name, kind: fileExt(file.name) || "видео", href });
+      return href;
+    } catch (err) {
+      flash(err instanceof Error ? err.message : "Не удалось сохранить самопробу");
+      throw err;
+    }
+  }
+
+  function openStudio() {
+    if (cap <= 0 || left <= 0) {
+      if (cap <= 0) flash("Репетиции открываются на Про");
+      else flash("Лимит репетиций на этот месяц");
+      openPlanModal();
+      return;
+    }
+    setStudioOpen(true);
+  }
 
   async function share() {
     try {
@@ -143,6 +261,11 @@ export function CastingView({ slug }: { slug: string }) {
           <section className="detail-block">
             <div className="detail-block__head">
               <h2 className="detail-block__title">О роли</h2>
+              {role === "casting" ? (
+                <Link href={withRole(`/castings/${casting.slug}?settings=general`, role)} className="detail-block__link">
+                  Править
+                </Link>
+              ) : null}
             </div>
             <p className="casting-detail__lead">{casting.text}</p>
             {project?.logline ? <p className="casting-detail__logline">{project.logline}</p> : null}
@@ -158,18 +281,31 @@ export function CastingView({ slug }: { slug: string }) {
             ) : null}
           </section>
 
-          {casting.scenes?.length ? (
+          {project || team.length ? (
+            <section className="detail-block">
+              <div className="detail-block__head">
+                <h2 className="detail-block__title">Команда проекта</h2>
+              </div>
+              <CastingTeamList project={project} team={team} casting={casting} role={role} />
+            </section>
+          ) : null}
+
+          {casting.scenes?.length || role === "casting" ? (
             <section className="casting-detail__files">
               <div className="detail-block__head">
                 <h2 className="detail-block__title">Сцены для самопробы</h2>
-                {casting.scenesPdf ? (
+                {role === "casting" ? (
+                  <Link href={withRole(`/castings/${casting.slug}?settings=scenes`, role)} className="detail-block__link">
+                    Править
+                  </Link>
+                ) : casting.scenesPdf ? (
                   <a href={casting.scenesPdf} className="detail-block__link" download>
                     Скачать все сцены (.pdf)
                   </a>
                 ) : null}
               </div>
               <div className="scenes-list">
-                {casting.scenes.map((scene) => {
+                {(casting.scenes ?? []).map((scene) => {
                   const body = (
                     <>
                       <span className="scene-row__num">{scene.num}</span>
@@ -196,10 +332,14 @@ export function CastingView({ slug }: { slug: string }) {
                   );
                 })}
               </div>
-              <p className="casting-detail__slate">
-                Слейт-стандарт: имя · рост · агентство · {project?.title ?? casting.title} · самопроба.
-                Вертикально, естественный свет, без музыки.
-              </p>
+              {!casting.scenes?.length && role === "casting" ? (
+                <p className="project-empty-note">Сцен пока нет. Добавьте файлы в настройках кастинга.</p>
+              ) : (
+                <p className="casting-detail__slate">
+                  Слейт-стандарт: имя · рост · агентство · {project?.title ?? casting.title} · самопроба.
+                  Вертикально, естественный свет, без музыки.
+                </p>
+              )}
             </section>
           ) : null}
 
@@ -209,14 +349,75 @@ export function CastingView({ slug }: { slug: string }) {
                 <h2 className="detail-block__title">Ваша самопроба</h2>
                 <span className="casting-detail__deadline-hint">до {casting.deadline}</span>
               </div>
-              <div className="tape-upload">
-                <div className="tape-upload__title">Загрузите 1 видео до 500 МБ</div>
-                <div className="tape-upload__hint">
-                  MP4 / MOV. Желательно 1080p, вертикально. Сцены — одним файлом, склейка без переходов.
-                </div>
-                <button type="button" className="btn-primary" onClick={() => applyToCasting(casting.slug, "selftape")}>
-                  {applied ? "Самопроба отправлена" : "Выбрать файл"}
-                </button>
+              <div className="file-store">
+                {role === "actor" && !applied ? (
+                  <div className="rehearsal-launch">
+                    <button type="button" className="btn-primary" onClick={openStudio}>
+                      Репетиция
+                    </button>
+                    <span>
+                      {cap <= 0
+                        ? "на Про и Премиум — камера, суфлёр, слейт"
+                        : Number.isFinite(left)
+                          ? `ещё ${left} из ${cap} в этом месяце`
+                          : "безлимит в этом месяце"}
+                    </span>
+                  </div>
+                ) : role === "actor" ? (
+                  <div className="rehearsal-launch">
+                    <button type="button" className="btn-secondary" onClick={openStudio}>
+                      Репетиция
+                    </button>
+                    <span>отклик уже ушёл — можно снять дубль себе</span>
+                  </div>
+                ) : null}
+                {applied ? (
+                  <>
+                    <p className="proj-settings-hint" style={{ margin: 0 }}>
+                      Самопроба уже в хранилище этого кастинга.
+                    </p>
+                    <FileStoreRow name={tapeName} kind={tapeKind} href={tapeHref} />
+                  </>
+                ) : (
+                  <>
+                    <FileDropzone
+                      accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm"
+                      multiple={false}
+                      maxBytes={200 * 1024 * 1024}
+                      title="Перетащите самопробу сюда"
+                      hint="MP4 / MOV / WebM · до 200 МБ · желательно 1080p, вертикально, сцены одним файлом"
+                      onError={flash}
+                      onFiles={(files) => {
+                        const file = files[0];
+                        if (!file) return;
+                        void keepTape(file).catch(() => undefined);
+                      }}
+                    />
+                    {tapeFile ? (
+                      <FileStoreRow
+                        name={tapeFile.name}
+                        kind={tapeFile.kind}
+                        href={tapeFile.href}
+                        onRemove={() => setTapeFile(null)}
+                      />
+                    ) : null}
+                    <button
+                      type="button"
+                      className="btn-primary"
+                      disabled={!tapeFile}
+                      onClick={() => {
+                        if (!tapeFile) return;
+                        applyToCasting(casting.slug, "selftape", {
+                          title: tapeFile.name,
+                          poster: "",
+                          href: tapeFile.href,
+                        });
+                      }}
+                    >
+                      Отправить самопробу
+                    </button>
+                  </>
+                )}
               </div>
             </section>
           ) : null}
@@ -296,59 +497,14 @@ export function CastingView({ slug }: { slug: string }) {
 
         <aside className="detail-side">
           <section className="detail-side__panel">
-            <div className="detail-side__title">Команда проекта</div>
-            <div className="casting-team">
-              {project ? (
-                <Link href={withRole(`/projects/${project.slug}`, role)} className="casting-team__row">
-                  <img src={project.studioAvatar} alt="" />
-                  <div>
-                    <div className="response-row__name">{project.studio}</div>
-                    <div className="response-row__meta">Продакшн-компания</div>
-                  </div>
-                </Link>
-              ) : null}
-              {team.map((member) => {
-                const inner = (
-                  <>
-                    {member.avatar ? (
-                      <img src={member.avatar} alt="" />
-                    ) : (
-                      <span className="project-team-card__ava" style={{ background: member.bg || "#2c2c2b" }}>
-                        {member.initials || member.name.slice(0, 2)}
-                      </span>
-                    )}
-                    <div>
-                      <div className="response-row__name">{member.name}</div>
-                      <div className="response-row__meta">{member.role}</div>
-                    </div>
-                  </>
-                );
-                if (member.href) {
-                  return (
-                    <Link key={`${member.name}-${member.role}`} href={withRole(member.href, role)} className="casting-team__row">
-                      {inner}
-                    </Link>
-                  );
-                }
-                return (
-                  <div key={`${member.name}-${member.role}`} className="casting-team__row">
-                    {inner}
-                  </div>
-                );
-              })}
-              {!project ? (
-                <Link href={withRole(`/people/${casting.cdSlug}`, role)} className="casting-team__row">
-                  <div>
-                    <div className="response-row__name">{casting.cdName}</div>
-                    <div className="response-row__meta">Кастинг-директор</div>
-                  </div>
+            <div className="detail-side__head">
+              <div className="detail-side__title">Этапы кастинга</div>
+              {role === "casting" ? (
+                <Link href={withRole(`/castings/${casting.slug}?settings=timeline`, role)} className="detail-block__link">
+                  Править
                 </Link>
               ) : null}
             </div>
-          </section>
-
-          <section className="detail-side__panel">
-            <div className="detail-side__title">Этапы кастинга</div>
             <div className="timeline">
               {timeline.map((item) => (
                 <div key={`${item.date}-${item.title}`} className={timelineClass(item.state)}>
@@ -360,45 +516,82 @@ export function CastingView({ slug }: { slug: string }) {
             </div>
           </section>
 
-          {casting.docs?.length ? (
+          {role !== "actor" && (casting.docs?.length || role === "casting") ? (
             <section className="detail-side__panel">
-              <div className="detail-side__title">Документы</div>
-              <dl className="detail-kv detail-kv--stack">
-                {casting.docs.map((row) => (
-                  <FragmentDoc key={row.label} label={row.label} value={row.value} />
-                ))}
-              </dl>
+              <div className="detail-side__head">
+                <div className="detail-side__title">Документы</div>
+                {role === "casting" ? (
+                  <Link href={withRole(`/castings/${casting.slug}?settings=docs`, role)} className="detail-block__link">
+                    Загрузить
+                  </Link>
+                ) : null}
+              </div>
+              {casting.docs?.length ? (
+                <div className="file-store__list">
+                  {casting.docs.map((row) => (
+                    <FileStoreRow
+                      key={row.label}
+                      name={row.label}
+                      kind={fileKindLabel(row.label, row.value)}
+                      href={row.href}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p className="project-empty-note">Документов пока нет. Загрузите файлы в настройках кастинга.</p>
+              )}
             </section>
           ) : null}
 
-          {project ? (
+          {role === "actor" && project ? (
             <section className="detail-side__panel casting-detail__pulse">
-              <div className="detail-side__title">
-                {project.studio} · отвечает
+              <div className="casting-detail__pulse-body">
+                <div className="detail-side__title">
+                  {project.studio} · отвечает
+                </div>
+                <p>
+                  Медиана ответа на отклик — <strong>1 день 6 часов</strong>. Конверсия в очные пробы — <strong>14%</strong>.
+                </p>
+                <Link href={withRole(`/projects/${project.slug}`, role)} className="casting-detail__side-link">
+                  К проекту →
+                </Link>
               </div>
-              <p>
-                Медиана ответа на отклик — <strong>1 день 6 часов</strong>. Конверсия в очные пробы — <strong>14%</strong>.
-              </p>
-              <Link href={withRole(`/projects/${project.slug}`, role)} className="casting-detail__side-link">
-                К проекту →
-              </Link>
+              <span className="casting-detail__pulse-icon">
+                <IconBolt />
+              </span>
             </section>
           ) : null}
         </aside>
       </div>
+      {studioOpen ? (
+        <RehearsalStudio
+          casting={casting}
+          projectTitle={project?.title}
+          actor={{
+            name: cfg.name,
+            city: cfg.city,
+            height,
+            agency: "без агентства",
+          }}
+          left={left}
+          cap={cap}
+          canSend={!applied}
+          onClose={() => setStudioOpen(false)}
+          onTake={bumpRehearsal}
+          onSend={async (file, duration) => {
+            flash("Сохраняю самопробу…");
+            const href = await keepTape(file);
+            applyToCasting(casting.slug, "selftape", {
+              title: file.name,
+              poster: "",
+              duration,
+              href,
+            });
+            setStudioOpen(false);
+          }}
+        />
+      ) : null}
     </div>
   );
 }
 
-function FragmentDoc({ label, value }: { label: string; value: string }) {
-  return (
-    <>
-      <dt>{label}</dt>
-      <dd>
-        <a href="#doc" className="link-accent" onClick={(e) => e.preventDefault()}>
-          {value}
-        </a>
-      </dd>
-    </>
-  );
-}

@@ -64,11 +64,8 @@ export function CastingResponsesView({ slug }: { slug: string }) {
               rows={rows}
               role={role}
               from="casting"
-              getCastingTitle={(s) => getCasting(s)?.title}
-              getProjectTitle={(s) => {
-                const c = getCasting(s);
-                return c ? getProject(c.projectSlug)?.title : undefined;
-              }}
+              getCasting={getCasting}
+              getProject={getProject}
             />
           ) : (
             <p className="catalog-empty">Пока нет откликов на этот кастинг.</p>

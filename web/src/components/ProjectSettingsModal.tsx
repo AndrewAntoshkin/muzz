@@ -12,6 +12,7 @@ import {
   type ProjectDoc,
 } from "@/lib/productions";
 import { useWorkspace } from "./useWorkspace";
+import { FileDropzone, FileStoreRow, fileExt, fileKindLabel, persistFileUrl } from "./FileDropzone";
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -132,7 +133,53 @@ function PartnerListEditor({
   );
 }
 
-type TabId =
+function DocsListEditor({
+  rows,
+  onChange,
+  onError,
+}: {
+  rows: ProjectDoc[];
+  onChange: (next: ProjectDoc[]) => void;
+  onError: (msg: string) => void;
+}) {
+  function update(idx: number, patch: Partial<ProjectDoc>) {
+    onChange(rows.map((row, i) => (i === idx ? { ...row, ...patch } : row)));
+  }
+  async function addFiles(files: File[]) {
+    const added: ProjectDoc[] = [];
+    for (const file of files) {
+      const href = await persistFileUrl(file, "doc");
+      added.push({
+        href,
+        label: file.name,
+        value: fileExt(file.name) || "файл",
+      });
+    }
+    if (added.length) onChange([...rows, ...added]);
+  }
+
+  return (
+    <div className="file-store">
+      <FileDropzone onFiles={(files) => void addFiles(files)} onError={onError} />
+      {rows.length ? (
+        <div className="file-store__list">
+          {rows.map((row, i) => (
+            <FileStoreRow
+              key={`${row.label}-${i}`}
+              name={row.label}
+              kind={fileKindLabel(row.label, row.value)}
+              href={row.href}
+              onRename={(label) => update(i, { label })}
+              onRemove={() => onChange(rows.filter((_, idx) => idx !== i))}
+            />
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+export type ProjectSettingsTab =
   | "general"
   | "schedule"
   | "budget"
@@ -143,7 +190,7 @@ type TabId =
   | "openings"
   | "team";
 
-const TABS: { id: TabId; label: string }[] = [
+const TABS: { id: ProjectSettingsTab; label: string }[] = [
   { id: "general", label: "Основное" },
   { id: "schedule", label: "Статус и график" },
   { id: "budget", label: "Бюджет" },
@@ -155,11 +202,17 @@ const TABS: { id: TabId; label: string }[] = [
   { id: "team", label: "Команда" },
 ];
 
+export function parseSettingsTab(raw: string | null | undefined): ProjectSettingsTab | null {
+  return TABS.some((t) => t.id === raw) ? (raw as ProjectSettingsTab) : null;
+}
+
 export function ProjectSettingsModal({
   projectSlug,
+  initialTab,
   onClose,
 }: {
   projectSlug: string;
+  initialTab?: ProjectSettingsTab | null;
   onClose: () => void;
 }) {
   const ws = useWorkspace();
@@ -167,7 +220,7 @@ export function ProjectSettingsModal({
   const project = ws.getProject(projectKey);
   const allCastings = ws.castingsForProject(projectKey);
 
-  const [tab, setTab] = useState<TabId>("general");
+  const [tab, setTab] = useState<ProjectSettingsTab>(initialTab || "general");
 
   const [logline, setLogline] = useState(project?.logline ?? "");
   const [text, setText] = useState(project?.text ?? "");
@@ -228,7 +281,7 @@ export function ProjectSettingsModal({
       financing: financing.filter((r) => r.label || r.value),
       distribution: distribution.filter((r) => r.label || r.value),
       partners: partners.filter((p) => p.name),
-      docs: docs.filter((d) => d.label),
+      docs: docs.filter((d) => d.label || d.href),
       openings: openings.filter((o) => o.title),
       team: team.filter((m) => m.name),
     });
@@ -373,15 +426,8 @@ export function ProjectSettingsModal({
 
             {tab === "docs" ? (
               <div className="kadr-form">
-                <p className="proj-settings-hint">Документы и юридические статусы.</p>
-                <KvListEditor
-                  col1="Документ"
-                  col2="Статус"
-                  rows={docs}
-                  onChange={setDocs}
-                  onAdd={() => setDocs([...docs, { label: "", value: "" }])}
-                  addLabel="Добавить документ"
-                />
+                <p className="proj-settings-hint">Хранилище файлов проекта. PDF, Word, Excel или изображение — до 8 МБ.</p>
+                <DocsListEditor rows={docs} onChange={setDocs} onError={ws.flash} />
               </div>
             ) : null}
 

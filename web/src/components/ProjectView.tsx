@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { Fragment } from "react";
-import { initialsOf } from "@/lib/labels";
+import { initialsOf, platformLogo } from "@/lib/labels";
 import {
   parseFraction,
   scheduleTimeline,
   timelineClass,
+  type ProjectDoc,
   type ProjectKv,
   type ProjectOpening,
   type ProjectPartner,
@@ -14,6 +15,8 @@ import {
 } from "@/lib/productions";
 import { withRole, type RoleId } from "@/lib/roles";
 import { decodeSlug } from "@/lib/workspace";
+import { FileStoreRow, fileKindLabel } from "./FileDropzone";
+import { ProjectBoardLink } from "./ProjectBoard";
 import { useWorkspace } from "./useWorkspace";
 
 function ruWord(n: number, one: string, few: string, many: string) {
@@ -24,25 +27,33 @@ function ruWord(n: number, one: string, few: string, many: string) {
   return many;
 }
 
-function Kv({ rows, linked }: { rows: ProjectKv[]; linked?: boolean }) {
+function Kv({ rows }: { rows: ProjectKv[] }) {
   if (!rows.length) return null;
   return (
     <dl className="detail-kv">
       {rows.map((row) => (
         <Fragment key={`${row.label}-${row.value}`}>
           <dt>{row.label}</dt>
-          <dd>
-            {linked ? (
-              <a href="#docs" className="link-accent" onClick={(e) => e.preventDefault()}>
-                {row.value}
-              </a>
-            ) : (
-              row.value
-            )}
-          </dd>
+          <dd>{row.value}</dd>
         </Fragment>
       ))}
     </dl>
+  );
+}
+
+function DocsList({ docs }: { docs: ProjectDoc[] }) {
+  if (!docs.length) return null;
+  return (
+    <div className="file-store__list">
+      {docs.map((doc) => (
+        <FileStoreRow
+          key={`${doc.label}-${doc.href || doc.value}`}
+          name={doc.label}
+          kind={fileKindLabel(doc.label, doc.value)}
+          href={doc.href}
+        />
+      ))}
+    </div>
   );
 }
 
@@ -118,7 +129,12 @@ export function ProjectView({ slug }: { slug: string }) {
   const financing = project.financing?.filter((r) => r.value) ?? [];
   const distribution = project.distribution?.filter((r) => r.value) ?? [];
   const partners = project.partners?.filter((p) => p.name) ?? [];
-  const docs = project.docs?.filter((d) => d.label) ?? [];
+  const docs = project.docs?.filter((d) => d.label || d.href) ?? [];
+  const budgetRows: ProjectKv[] = [
+    ...(project.budget ? [{ label: "Бюджет", value: project.budget }] : []),
+    ...financing,
+    ...(project.spent ? [{ label: "Освоено", value: project.spent }] : []),
+  ];
   const team = project.team?.filter((m) => m.name) ?? [];
   const openings = project.openings ?? [];
   const updates = project.updates ?? [];
@@ -126,6 +142,11 @@ export function ProjectView({ slug }: { slug: string }) {
   const savedKey = `project:${project.slug}`;
   const isSaved = saved.includes(savedKey);
   const firstCasting = castings[0];
+  const logo = platformLogo(project.platform);
+  const facts = [
+    ...project.kind.split("·").map((part) => part.trim()).filter(Boolean),
+    project.city,
+  ].filter(Boolean);
 
   const statusExtra: ProjectKv[] = [
     { label: "Этап", value: project.status },
@@ -148,42 +169,50 @@ export function ProjectView({ slug }: { slug: string }) {
     <div className="page-scroll detail-page">
       <div className="detail-grid">
         <div>
-          <section className="detail-hero">
+          <section className="detail-hero project-hero">
             <div className="detail-hero__img">
               <img src={project.cover} alt="" />
             </div>
             <div className="detail-hero__body">
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <div className="project-hero__tags">
                 <span className="tag tag-blue">Проект</span>
                 <span className="tag tag-green">{project.status}</span>
               </div>
               <h1 className="detail-hero__title">{project.title}</h1>
-              <p className="detail-hero__meta">
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                  <img
-                    src={project.studioAvatar}
-                    alt=""
-                    style={{ width: 24, height: 24, borderRadius: "50%", objectFit: "cover" }}
-                  />
+              <div className="detail-hero__meta project-hero-meta">
+                <div className="project-hero-meta__studio">
+                  <img src={project.studioAvatar} alt="" className="project-hero-meta__ava" />
                   <strong>{project.studio}</strong>
-                </span>
-                <span>·</span>
-                <span>{project.kind}</span>
-                <span>·</span>
-                <span>
-                  <strong>{project.platform}</strong>
-                </span>
-                <span>·</span>
-                <span>{project.city}</span>
-                {project.shifts ? (
-                  <>
-                    <span>·</span>
-                    <span>
-                      <strong>{project.shifts}</strong> смен
-                    </span>
-                  </>
+                  {logo ? (
+                    <img
+                      src={logo.src}
+                      alt={project.platform}
+                      title={project.platform}
+                      className={`project-hero-meta__logo${logo.invert ? " project-hero-meta__logo--invert" : ""}`}
+                    />
+                  ) : project.platform ? (
+                    <span className="project-hero-meta__platform">{project.platform}</span>
+                  ) : null}
+                </div>
+                {facts.length || project.shifts ? (
+                  <p className="project-hero-meta__facts">
+                    {facts.map((item, i) => (
+                      <Fragment key={`${item}-${i}`}>
+                        {i > 0 ? <span className="project-hero-meta__dot">·</span> : null}
+                        <span>{item}</span>
+                      </Fragment>
+                    ))}
+                    {project.shifts ? (
+                      <>
+                        {facts.length ? <span className="project-hero-meta__dot">·</span> : null}
+                        <span>
+                          <strong>{project.shifts}</strong> смен
+                        </span>
+                      </>
+                    ) : null}
+                  </p>
                 ) : null}
-              </p>
+              </div>
               <div className="detail-hero__actions">
                 {role === "casting" ? (
                   <Link href={withRole(`/compose?type=casting&project=${project.slug}`, role)} className="btn-primary">
@@ -211,6 +240,44 @@ export function ProjectView({ slug }: { slug: string }) {
             <p className="project-logline">{project.logline}</p>
             {project.text && project.text !== project.logline ? <p className="project-logline-note">{project.text}</p> : null}
           </section>
+
+          {role === "casting" ? (
+            <section className="detail-block">
+              <ProjectBoardLink slug={project.slug} />
+            </section>
+          ) : null}
+
+          {role === "casting" ? (
+            <section className="detail-block">
+              <div className="detail-block__head">
+                <h2 className="detail-block__title">Бюджет и финансирование</h2>
+                <Link href={withRole(`/projects/${project.slug}?settings=budget`, role)} className="detail-block__link">
+                  Править
+                </Link>
+              </div>
+              {budgetRows.length ? (
+                <Kv rows={budgetRows} />
+              ) : (
+                <p className="project-empty-note">Бюджет пока не указан. Добавьте суммы в настройках проекта.</p>
+              )}
+            </section>
+          ) : null}
+
+          {role === "casting" ? (
+            <section className="detail-block">
+              <div className="detail-block__head">
+                <h2 className="detail-block__title">Документы и юр.</h2>
+                <Link href={withRole(`/projects/${project.slug}?settings=docs`, role)} className="detail-block__link">
+                  Загрузить
+                </Link>
+              </div>
+              {docs.length ? (
+                <DocsList docs={docs} />
+              ) : (
+                <p className="project-empty-note">Документов пока нет. Загрузите файлы в настройках.</p>
+              )}
+            </section>
+          ) : null}
 
           <section className="detail-block">
               <div className="detail-block__head">
@@ -386,39 +453,19 @@ export function ProjectView({ slug }: { slug: string }) {
             <Kv rows={statusExtra} />
           </section>
 
-          {project.budget || financing.length ? (
-            <section className="detail-side__panel">
-              <div className="detail-side__title">Бюджет и финансирование</div>
-              <Kv
-                rows={[
-                  ...(project.budget ? [{ label: "Бюджет", value: project.budget }] : []),
-                  ...financing,
-                  ...(project.spent ? [{ label: "Освоено", value: project.spent }] : []),
-                ]}
-              />
-            </section>
-          ) : null}
-
-          {distribution.length ? (
+          {role === "casting" && distribution.length ? (
             <section className="detail-side__panel">
               <div className="detail-side__title">Прокат и платформа</div>
               <Kv rows={distribution} />
             </section>
           ) : null}
 
-          {partners.length ? (
+          {role === "casting" && partners.length ? (
             <section className="detail-side__panel">
               <div className="detail-side__title">Партнёры производства</div>
               {partners.map((partner) => (
                 <PartnerRow key={partner.name} partner={partner} />
               ))}
-            </section>
-          ) : null}
-
-          {docs.length ? (
-            <section className="detail-side__panel">
-              <div className="detail-side__title">Документы и юр.</div>
-              <Kv rows={docs} linked />
             </section>
           ) : null}
         </aside>

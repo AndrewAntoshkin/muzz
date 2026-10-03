@@ -72,11 +72,8 @@ function ResponsesInner() {
               rows={rows}
               role={role}
               from="all"
-              getCastingTitle={(s) => getCasting(s)?.title}
-              getProjectTitle={(s) => {
-                const c = getCasting(s);
-                return c ? getProject(c.projectSlug)?.title : undefined;
-              }}
+              getCasting={getCasting}
+              getProject={getProject}
             />
           ) : (
             <p className="catalog-empty">

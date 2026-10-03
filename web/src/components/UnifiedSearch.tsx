@@ -22,6 +22,7 @@ import {
   ruCount,
 } from "@/lib/labels";
 import type { FaceCard } from "@/lib/people";
+import { fetchFaces } from "@/lib/people-query";
 import type { Casting, Project } from "@/lib/productions";
 
 type Tab = "all" | "people" | "projects" | "castings";
@@ -45,7 +46,15 @@ function castingHay(c: Casting, project: Project | null) {
   return `${c.title} ${c.roleLabel} ${c.text} ${c.meta} ${c.cdName} ${project?.title ?? ""} ${project?.studio ?? ""} ${project?.platform ?? ""}`;
 }
 
-export function UnifiedSearch({ people }: { people: FaceCard[] }) {
+export function UnifiedSearch({
+  people,
+  peopleTotal,
+  remote = false,
+}: {
+  people: FaceCard[];
+  peopleTotal?: number;
+  remote?: boolean;
+}) {
   const { role } = useDemoRole();
   const { projects, castings, getProject, castingsForProject, responseCount } = useWorkspace();
   const [q, setQ] = useState("");
@@ -58,11 +67,13 @@ export function UnifiedSearch({ people }: { people: FaceCard[] }) {
   const [roleKind, setRoleKind] = useState("");
   const [urgentOnly, setUrgentOnly] = useState(false);
   const [openOnly, setOpenOnly] = useState(false);
-  const [visiblePeople, setVisiblePeople] = useState(96);
+  const [remotePeople, setRemotePeople] = useState(people);
+  const [remoteTotal, setRemoteTotal] = useState(peopleTotal ?? people.length);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const query = q.trim().toLowerCase();
 
-  const matchedPeople = useMemo(
+  const localMatched = useMemo(
     () =>
       people.filter((p) => {
         if (profession && p.profession !== profession) return false;
@@ -71,6 +82,38 @@ export function UnifiedSearch({ people }: { people: FaceCard[] }) {
       }),
     [people, profession, city, query],
   );
+  const matchedPeople = remote ? remotePeople : localMatched;
+  const peopleCount = remote ? remoteTotal : localMatched.length;
+
+  useEffect(() => {
+    if (!remote) return;
+    const ac = new AbortController();
+    const timer = window.setTimeout(() => {
+      void fetchFaces({
+        q,
+        profession,
+        city,
+        kind: "actors",
+        limit: 96,
+        offset: 0,
+      })
+        .then((data) => {
+          if (ac.signal.aborted) return;
+          setRemotePeople(data.items);
+          setRemoteTotal(data.total);
+        })
+        .catch(() => {
+          if (!ac.signal.aborted) {
+            setRemotePeople([]);
+            setRemoteTotal(0);
+          }
+        });
+    }, 200);
+    return () => {
+      ac.abort();
+      window.clearTimeout(timer);
+    };
+  }, [q, profession, city, remote]);
 
   const matchedProjects = useMemo(
     () =>
@@ -102,22 +145,22 @@ export function UnifiedSearch({ people }: { people: FaceCard[] }) {
   );
 
   useEffect(() => {
-    setVisiblePeople(96);
-  }, [q, profession, city, tab]);
+    if (remote) return;
+    setRemotePeople(people);
+  }, [people, remote]);
 
   const visibleProjects = tab === "people" || tab === "castings" ? [] : matchedProjects;
   const visibleCastings = tab === "people" || tab === "projects" ? [] : matchedCastings;
   const showPeople = tab === "all" || tab === "people";
-  const peopleShown =
-    tab === "people" ? matchedPeople.slice(0, visiblePeople) : matchedPeople.slice(0, PEOPLE_PREVIEW);
+  const peopleShown = tab === "people" ? matchedPeople : matchedPeople.slice(0, PEOPLE_PREVIEW);
 
   const empty =
-    (!showPeople || matchedPeople.length === 0) &&
+    (!showPeople || peopleCount === 0) &&
     visibleProjects.length === 0 &&
     visibleCastings.length === 0;
 
   const total =
-    (showPeople ? matchedPeople.length : 0) + visibleProjects.length + visibleCastings.length;
+    (showPeople ? peopleCount : 0) + visibleProjects.length + visibleCastings.length;
 
   function reset() {
     setQ("");
@@ -134,7 +177,7 @@ export function UnifiedSearch({ people }: { people: FaceCard[] }) {
 
   const countLabel =
     tab === "people"
-      ? peopleCountLabel(matchedPeople.length)
+      ? peopleCountLabel(peopleCount)
       : tab === "projects"
         ? ruCount(matchedProjects.length, "проект", "проекта", "проектов")
         : tab === "castings"
@@ -277,7 +320,7 @@ export function UnifiedSearch({ people }: { people: FaceCard[] }) {
 
       <div className="catalog-stats catalog-stats--3" aria-label="Сводка">
         <button type="button" className="catalog-stat" onClick={() => setTab("people")}>
-          <strong>{matchedPeople.length}</strong>
+          <strong>{peopleCount}</strong>
           <span>актёров</span>
           <em>в базе</em>
         </button>
@@ -330,14 +373,14 @@ export function UnifiedSearch({ people }: { people: FaceCard[] }) {
         </p>
       ) : (
         <div className="catalog-results">
-          {showPeople && matchedPeople.length ? (
+          {showPeople && peopleCount ? (
             <section className="catalog-section">
               {tab === "all" ? (
                 <header className="catalog-section__head">
                   <h2 className="catalog-section__title">Актёры</h2>
-                  {matchedPeople.length > PEOPLE_PREVIEW ? (
+                  {peopleCount > PEOPLE_PREVIEW ? (
                     <button type="button" className="catalog-section__link" onClick={() => setTab("people")}>
-                      Все {matchedPeople.length} →
+                      Все {peopleCount} →
                     </button>
                   ) : null}
                 </header>
@@ -347,14 +390,34 @@ export function UnifiedSearch({ people }: { people: FaceCard[] }) {
                   <PersonCard key={p.slug} person={p} />
                 ))}
               </div>
-              {tab === "people" && visiblePeople < matchedPeople.length ? (
+              {tab === "people" && matchedPeople.length < peopleCount ? (
                 <button
                   type="button"
                   className="btn-secondary"
                   style={{ margin: "20px auto", display: "block" }}
-                  onClick={() => setVisiblePeople((n) => n + 96)}
+                  disabled={loadingMore}
+                  onClick={() => {
+                    if (!remote) return;
+                    setLoadingMore(true);
+                    void fetchFaces({
+                      q,
+                      profession,
+                      city,
+                      kind: "actors",
+                      limit: 96,
+                      offset: matchedPeople.length,
+                    })
+                      .then((data) => {
+                        setRemotePeople((cur) => {
+                          const have = new Set(cur.map((p) => p.slug));
+                          return [...cur, ...data.items.filter((p) => !have.has(p.slug))];
+                        });
+                        setRemoteTotal(data.total);
+                      })
+                      .finally(() => setLoadingMore(false));
+                  }}
                 >
-                  Показать ещё ({matchedPeople.length - visiblePeople})
+                  {loadingMore ? "Загрузка…" : `Показать ещё (${peopleCount - matchedPeople.length})`}
                 </button>
               ) : null}
             </section>

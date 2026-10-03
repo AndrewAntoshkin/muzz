@@ -123,7 +123,7 @@ export function AuthView() {
                   />
                 </label>
                 <fieldset className="auth-roles">
-                  <legend>Роль</legend>
+                  <legend>Кто вы</legend>
                   <div className="search-filter__chips">
                     {ROLE_SWITCH.map(([key, label]) => (
                       <button

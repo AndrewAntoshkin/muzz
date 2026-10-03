@@ -3,9 +3,15 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { canMessageCasting, canMessageCompany, openPlanModal, parsePlan } from "@/lib/plans";
 import { profileSlug, withRole } from "@/lib/roles";
 import { useAuth } from "./AuthProvider";
 import { useWorkspace } from "./useWorkspace";
+
+function isCompanyTarget(slug: string, profession?: string) {
+  if (profession === "producer") return true;
+  return /studio|kino/i.test(slug);
+}
 
 export function HideIfOwn({
   personSlug,
@@ -24,17 +30,30 @@ export function WriteButton({
   label,
   primary,
   className,
+  profession,
 }: {
   personSlug: string;
   label: string;
   primary?: boolean;
   className?: string;
+  profession?: string;
 }) {
   const { user, role } = useAuth();
-  const { threads } = useWorkspace();
+  const { threads, settings } = useWorkspace();
   const router = useRouter();
+  const plan = parsePlan(settings.plan);
 
   async function openChat() {
+    if (role === "actor") {
+      if (isCompanyTarget(personSlug, profession) && !canMessageCompany(plan)) {
+        openPlanModal();
+        return;
+      }
+      if (profession === "casting" && !canMessageCasting(plan)) {
+        openPlanModal();
+        return;
+      }
+    }
     if (!user || user.isDemo) {
       const href = `/people/${personSlug}`;
       const thread = threads.find((t) => t.views[role]?.profileHref === href) ?? threads.find((t) => t.id.includes(personSlug));
@@ -70,11 +89,13 @@ export function WriteButton({
 export function ProfileViewerActions({
   personSlug,
   profession,
+  agencyId,
   onEditProfile,
   onEditStatus,
 }: {
   personSlug: string;
   profession?: string;
+  agencyId?: string | null;
   onEditProfile?: () => void;
   onEditStatus?: () => void;
 }) {
@@ -118,7 +139,7 @@ export function ProfileViewerActions({
   if (role === "casting" && isTalent) {
     return (
       <div className="detail-hero__actions">
-        <WriteButton personSlug={personSlug} label="Написать в чат" primary />
+        <WriteButton personSlug={personSlug} profession={profession} label="Написать в чат" primary />
         <Link href={withRole("/search", role)} className="btn-secondary">
           Пригласить на кастинг
         </Link>
@@ -132,7 +153,7 @@ export function ProfileViewerActions({
         <Link href={withRole("/compose?type=propose", role)} className="btn-primary">
           Предложить на кастинг
         </Link>
-        <WriteButton personSlug={personSlug} label="Написать актёру" />
+        <WriteButton personSlug={personSlug} profession={profession} label="Написать актёру" />
       </div>
     );
   }
@@ -140,7 +161,7 @@ export function ProfileViewerActions({
   if (role === "actor" && isCasting) {
     return (
       <div className="detail-hero__actions">
-        <WriteButton personSlug={personSlug} label="Написать кастинг-директору" primary />
+        <WriteButton personSlug={personSlug} profession={profession} label="Написать кастинг-директору" primary />
         <Link href={withRole("/castings", role)} className="btn-secondary">
           Смотреть кастинги
         </Link>
@@ -151,7 +172,7 @@ export function ProfileViewerActions({
   if (role === "agent" && isCasting) {
     return (
       <div className="detail-hero__actions">
-        <WriteButton personSlug={personSlug} label="Ответить в чат" primary />
+        <WriteButton personSlug={personSlug} profession={profession} label="Ответить в чат" primary />
         <Link href={withRole("/castings", role)} className="btn-secondary">
           Предложить ростер
         </Link>
@@ -159,11 +180,13 @@ export function ProfileViewerActions({
     );
   }
 
+  const agencyHref = `/agencies/${agencyId || "akter1"}`;
+
   if (role === "casting" && isAgent) {
     return (
       <div className="detail-hero__actions">
-        <WriteButton personSlug={personSlug} label="Написать агенту" primary />
-        <Link href={withRole("/agencies/akter1", role)} className="btn-secondary">
+        <WriteButton personSlug={personSlug} profession={profession} label="Написать агенту" primary />
+        <Link href={withRole(agencyHref, role)} className="btn-secondary">
           Ростер агентства
         </Link>
       </div>
@@ -173,8 +196,8 @@ export function ProfileViewerActions({
   if (isAgent) {
     return (
       <div className="detail-hero__actions">
-        <WriteButton personSlug={personSlug} label="Написать" primary />
-        <Link href={withRole("/agencies/akter1", role)} className="btn-secondary">
+        <WriteButton personSlug={personSlug} profession={profession} label="Написать" primary />
+        <Link href={withRole(agencyHref, role)} className="btn-secondary">
           Агентство
         </Link>
       </div>
@@ -183,7 +206,7 @@ export function ProfileViewerActions({
 
   return (
     <div className="detail-hero__actions">
-      <WriteButton personSlug={personSlug} label="Написать" primary />
+      <WriteButton personSlug={personSlug} profession={profession} label="Написать" primary />
     </div>
   );
 }

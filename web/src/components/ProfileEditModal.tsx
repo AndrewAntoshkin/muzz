@@ -2,10 +2,13 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { LINK_LABELS } from "@/lib/labels";
+import { upsertLink } from "@/lib/labels";
+import { formatEventWhen, normalizeSchedule, parseISODate, toISODate } from "@/lib/calendar";
 import type { Credit, KvPair, Schedule, Showreel } from "@/lib/person-card";
 import type { ProfilePatch, ProfilePhoto } from "@/lib/workspace";
 import { useWorkspace } from "./useWorkspace";
+import { MonthCalendar } from "./MonthCalendar";
+import { FileDropzone, FileStoreRow, fileExt, persistFileUrl } from "./FileDropzone";
 
 export type ProfileEditTab =
   | "about"
@@ -34,9 +37,7 @@ const TABS: { id: ProfileEditTab; label: string }[] = [
   { id: "links", label: "Контакты" },
 ];
 
-const LINK_KINDS = Object.keys(LINK_LABELS);
 const CREDIT_KINDS = ["Кино", "Сериал"];
-const WEEKDAYS = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"];
 
 export type ProfileEditDefaults = Required<
   Pick<ProfilePatch, "params" | "appearance" | "languages" | "skills">
@@ -56,41 +57,6 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
     <label className="kadr-field">
       <span>{label}</span>
       {children}
-    </label>
-  );
-}
-
-function readFile(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result || ""));
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
-}
-
-function FileBtn({
-  label,
-  accept,
-  onPick,
-}: {
-  label: string;
-  accept: string;
-  onPick: (file: File) => void;
-}) {
-  return (
-    <label className="proj-settings-add kadr-file-btn">
-      {label}
-      <input
-        type="file"
-        accept={accept}
-        hidden
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          e.target.value = "";
-          if (file) onPick(file);
-        }}
-      />
     </label>
   );
 }
@@ -143,27 +109,32 @@ function KvEditor({
 }
 
 function CalEditor({ value, onChange }: { value: Schedule; onChange: (next: Schedule) => void }) {
-  const days: { n: number; cls: string }[] = [26, 27, 28, 29, 30, 31].map((n) => ({ n, cls: "off" }));
-  for (let d = 1; d <= 30; d++) {
-    const bits: string[] = [];
-    if (value.busy.includes(d)) bits.push("busy");
-    if (value.hold.includes(d)) bits.push("hold");
-    if (value.today === d) bits.push("today");
-    days.push({ n: d, cls: bits.join(" ") });
+  const now = new Date();
+  const [year, setYear] = useState(now.getFullYear());
+  const [month, setMonth] = useState(now.getMonth());
+  const schedule = normalizeSchedule(value);
+
+  function setMonthCursor(nextYear: number, nextMonth: number) {
+    setYear(nextYear);
+    setMonth(nextMonth);
   }
 
-  function toggle(d: number, off: boolean) {
-    if (off) return;
-    const busy = value.busy.includes(d);
-    const hold = value.hold.includes(d);
-    if (!busy && !hold) onChange({ ...value, busy: [...value.busy, d].sort((a, b) => a - b) });
+  function toggle(iso: string, off: boolean) {
+    if (off) {
+      const d = parseISODate(iso);
+      setMonthCursor(d.getFullYear(), d.getMonth());
+      return;
+    }
+    const busy = schedule.busy.includes(iso);
+    const hold = schedule.hold.includes(iso);
+    if (!busy && !hold) onChange({ ...schedule, busy: [...schedule.busy, iso].sort() });
     else if (busy) {
       onChange({
-        ...value,
-        busy: value.busy.filter((x) => x !== d),
-        hold: [...value.hold, d].sort((a, b) => a - b),
+        ...schedule,
+        busy: schedule.busy.filter((x) => x !== iso),
+        hold: [...schedule.hold, iso].sort(),
       });
-    } else onChange({ ...value, hold: value.hold.filter((x) => x !== d) });
+    } else onChange({ ...schedule, hold: schedule.hold.filter((x) => x !== iso) });
   }
 
   return (
@@ -171,23 +142,14 @@ function CalEditor({ value, onChange }: { value: Schedule; onChange: (next: Sche
       <p className="proj-settings-hint" style={{ margin: "0 0 10px" }}>
         Клик по дню: свободно → смена → hold → свободно
       </p>
-      <div className="mini-cal kadr-settings-cal">
-        {WEEKDAYS.map((day) => (
-          <span className="mini-cal__h" key={day}>
-            {day}
-          </span>
-        ))}
-        {days.map((day, i) => (
-          <button
-            type="button"
-            className={day.cls ? `mini-cal__d ${day.cls}` : "mini-cal__d"}
-            key={`${day.n}-${i}`}
-            onClick={() => toggle(day.n, day.cls === "off")}
-          >
-            {day.n}
-          </button>
-        ))}
-      </div>
+      <MonthCalendar
+        year={year}
+        month={month}
+        onYearMonth={setMonthCursor}
+        schedule={schedule}
+        interactive
+        onDayClick={(cell) => toggle(cell.iso, cell.off)}
+      />
       <div className="kadr-cal-legend" style={{ marginTop: 10 }}>
         <span className="kadr-cal-legend__item">
           <span className="kadr-cal-legend__swatch kadr-cal-legend__swatch--busy" />
@@ -199,16 +161,16 @@ function CalEditor({ value, onChange }: { value: Schedule; onChange: (next: Sche
         </span>
       </div>
       <div className="proj-settings-section-title">События</div>
-      {value.events.map((event, i) => (
+      {schedule.events.map((event, i) => (
         <div key={i} className="kadr-settings-event">
           <input
             className="proj-settings-input"
-            value={event.when}
+            value={formatEventWhen(event)}
             placeholder="Когда"
             onChange={(e) =>
               onChange({
-                ...value,
-                events: value.events.map((ev, idx) => (idx === i ? { ...ev, when: e.target.value } : ev)),
+                ...schedule,
+                events: schedule.events.map((ev, idx) => (idx === i ? { ...ev, when: e.target.value } : ev)),
               })
             }
           />
@@ -218,8 +180,8 @@ function CalEditor({ value, onChange }: { value: Schedule; onChange: (next: Sche
             placeholder="Событие"
             onChange={(e) =>
               onChange({
-                ...value,
-                events: value.events.map((ev, idx) => (idx === i ? { ...ev, title: e.target.value } : ev)),
+                ...schedule,
+                events: schedule.events.map((ev, idx) => (idx === i ? { ...ev, title: e.target.value } : ev)),
               })
             }
           />
@@ -229,8 +191,8 @@ function CalEditor({ value, onChange }: { value: Schedule; onChange: (next: Sche
             placeholder="Комментарий"
             onChange={(e) =>
               onChange({
-                ...value,
-                events: value.events.map((ev, idx) => (idx === i ? { ...ev, meta: e.target.value } : ev)),
+                ...schedule,
+                events: schedule.events.map((ev, idx) => (idx === i ? { ...ev, meta: e.target.value } : ev)),
               })
             }
           />
@@ -238,7 +200,7 @@ function CalEditor({ value, onChange }: { value: Schedule; onChange: (next: Sche
             type="button"
             className="proj-settings-remove"
             aria-label="Удалить"
-            onClick={() => onChange({ ...value, events: value.events.filter((_, idx) => idx !== i) })}
+            onClick={() => onChange({ ...schedule, events: schedule.events.filter((_, idx) => idx !== i) })}
           >
             ×
           </button>
@@ -247,7 +209,12 @@ function CalEditor({ value, onChange }: { value: Schedule; onChange: (next: Sche
       <button
         type="button"
         className="proj-settings-add"
-        onClick={() => onChange({ ...value, events: [...value.events, { when: "", title: "", meta: "" }] })}
+        onClick={() =>
+          onChange({
+            ...schedule,
+            events: [...schedule.events, { start: toISODate(new Date()), title: "", meta: "" }],
+          })
+        }
       >
         + Событие
       </button>
@@ -268,7 +235,7 @@ export function ProfileEditModal({
   onClose: () => void;
   initialTab?: ProfileEditTab;
 }) {
-  const { saveProfilePatch } = useWorkspace();
+  const { saveProfilePatch, flash } = useWorkspace();
   const [tab, setTab] = useState<ProfileEditTab>(initialTab);
   const [bio, setBio] = useState(initial.bio ?? defaults.bio);
   const [city, setCity] = useState(initial.city ?? defaults.city);
@@ -279,7 +246,7 @@ export function ProfileEditModal({
   const [education, setEducation] = useState(initial.education ?? defaults.education);
   const [showreel, setShowreel] = useState<Showreel>(initial.showreel ?? defaults.showreel);
   const [photos, setPhotos] = useState<ProfilePhoto[]>(initial.photos ?? defaults.photos);
-  const [schedule, setSchedule] = useState<Schedule>(initial.schedule ?? defaults.schedule);
+  const [schedule, setSchedule] = useState<Schedule>(() => normalizeSchedule(initial.schedule ?? defaults.schedule));
   const [credits, setCredits] = useState<Credit[]>(initial.credits ?? defaults.credits);
   const [links, setLinks] = useState(initial.links ?? defaults.links);
   const [mounted, setMounted] = useState(false);
@@ -437,21 +404,34 @@ export function ProfileEditModal({
                 {showreel.poster ? (
                   <img className="kadr-settings-poster" src={showreel.poster} alt="" />
                 ) : null}
-                <div className="kadr-file-row">
-                  <FileBtn
-                    label="Загрузить постер"
-                    accept="image/*"
-                    onPick={(file) => void readFile(file).then((url) => setShowreel({ ...showreel, poster: url }))}
+                <FileDropzone
+                  maxBytes={200 * 1024 * 1024}
+                  accept="image/*,video/*"
+                  title="Перетащите постер или ролик"
+                  hint="изображение — постер, видео — шоурил · до 200 МБ"
+                  onError={flash}
+                  onFiles={(files) => {
+                    for (const file of files) {
+                      if (file.type.startsWith("video/")) {
+                        void persistFileUrl(file, "video").then((href) =>
+                          setShowreel((prev) => ({ ...prev, href, title: prev.title || file.name })),
+                        );
+                      } else {
+                        void persistFileUrl(file, "photo").then((url) =>
+                          setShowreel((prev) => ({ ...prev, poster: url })),
+                        );
+                      }
+                    }
+                  }}
+                />
+                {showreel.href && /^(blob:|data:)/.test(showreel.href) ? (
+                  <FileStoreRow
+                    name={showreel.title || "Шоурил"}
+                    kind={fileExt(showreel.href) || "видео"}
+                    href={showreel.href}
+                    onRemove={() => setShowreel({ ...showreel, href: "" })}
                   />
-                  <FileBtn
-                    label="Загрузить ролик"
-                    accept="video/*"
-                    onPick={(file) => {
-                      const href = URL.createObjectURL(file);
-                      setShowreel({ ...showreel, href, title: showreel.title || file.name });
-                    }}
-                  />
-                </div>
+                ) : null}
                 <Field label="Ссылка на ролик">
                   <input
                     value={showreel.href || ""}
@@ -483,8 +463,24 @@ export function ProfileEditModal({
             {tab === "photos" ? (
               <div className="kadr-form">
                 <p className="proj-settings-hint" style={{ margin: 0 }}>
-                  До 40 фото. В демо файлы хранятся локально.
+                  Хранилище фото. До 40 снимков.
                 </p>
+                <FileDropzone
+                  accept="image/*"
+                  title="Перетащите фото сюда"
+                  hint="или нажмите, чтобы выбрать · JPG, PNG, WEBP · до 8 МБ"
+                  disabled={photos.length >= 40}
+                  onError={flash}
+                  onFiles={(files) => {
+                    const room = Math.max(0, 40 - photos.length);
+                    void Promise.all(files.slice(0, room).map((file) => persistFileUrl(file, "photo"))).then((urls) => {
+                      setPhotos([
+                        ...photos,
+                        ...urls.map((url, i) => ({ id: `photo-${Date.now()}-${i}`, url })),
+                      ]);
+                    });
+                  }}
+                />
                 <div className="kadr-settings-photos">
                   {photos.map((photo) => (
                     <div key={photo.id} className="kadr-settings-photo">
@@ -499,18 +495,6 @@ export function ProfileEditModal({
                       </button>
                     </div>
                   ))}
-                </div>
-                <div className="kadr-file-row">
-                  <FileBtn
-                    label="Загрузить фото"
-                    accept="image/*"
-                    onPick={(file) => {
-                      if (photos.length >= 40) return;
-                      void readFile(file).then((url) =>
-                        setPhotos([...photos, { id: `photo-${Date.now()}`, url }]),
-                      );
-                    }}
-                  />
                 </div>
                 <Field label="Или ссылка на фото">
                   <input
@@ -529,54 +513,31 @@ export function ProfileEditModal({
             {tab === "schedule" ? <CalEditor value={schedule} onChange={setSchedule} /> : null}
             {tab === "links" ? (
               <div className="kadr-form">
-                {links.map((link, i) => (
-                  <div key={link.id} className="kadr-settings-link">
-                    <select
-                      className="proj-settings-input"
-                      value={link.kind}
-                      onChange={(e) =>
-                        setLinks(links.map((l, idx) => (idx === i ? { ...l, kind: e.target.value } : l)))
-                      }
-                    >
-                      {LINK_KINDS.map((k) => (
-                        <option key={k} value={k}>
-                          {LINK_LABELS[k]}
-                        </option>
-                      ))}
-                    </select>
-                    <input
-                      className="proj-settings-input"
-                      value={link.url}
-                      placeholder="https://"
-                      onChange={(e) =>
-                        setLinks(links.map((l, idx) => (idx === i ? { ...l, url: e.target.value } : l)))
-                      }
-                    />
-                    <button
-                      type="button"
-                      className="proj-settings-remove"
-                      aria-label="Удалить"
-                      onClick={() => setLinks(links.filter((_, idx) => idx !== i))}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  className="proj-settings-add"
-                  onClick={() =>
-                    setLinks([...links, { id: `link-${Date.now()}`, kind: "site", url: "" }])
-                  }
-                >
-                  + Контакт
-                </button>
+                <Field label="Почта">
+                  <input
+                    type="email"
+                    value={links.find((l) => l.kind === "email")?.url ?? ""}
+                    placeholder="name@studio.ru"
+                    onChange={(e) => setLinks(upsertLink(links, "email", e.target.value))}
+                  />
+                </Field>
+                <Field label="Телефон">
+                  <input
+                    type="tel"
+                    value={links.find((l) => l.kind === "phone")?.url ?? ""}
+                    placeholder="+7 999 000-00-00"
+                    onChange={(e) => setLinks(upsertLink(links, "phone", e.target.value))}
+                  />
+                </Field>
+                <p className="proj-settings-hint" style={{ margin: "4px 0 0" }}>
+                  Видно кастинг-директорам и агентам
+                </p>
               </div>
             ) : null}
           </div>
         </div>
         <footer className="proj-settings-footer">
-          <p className="proj-settings-hint">Сохраняется локально в демо</p>
+          <p className="proj-settings-hint">Фото и документы пишутся в хранилище, когда оно подключено. Иначе остаются в браузере.</p>
           <div style={{ display: "flex", gap: 8 }}>
             <button type="button" className="btn-secondary" onClick={onClose}>
               Отмена

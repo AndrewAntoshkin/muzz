@@ -9,11 +9,75 @@ import {
   type AppStatus,
 } from "@/lib/workspace";
 import { withRole, type RoleId } from "@/lib/roles";
+import type { Casting, Project } from "@/lib/productions";
 
 function statusTag(status: AppStatus) {
   if (status === "invited" || status === "shortlist") return "tag-green";
   if (status === "declined") return "tag-orange";
   return "tag-gray";
+}
+
+const TILE_STATUS: Record<AppStatus, string> = {
+  sent: "Отправлено",
+  shortlist: "Шорт-лист",
+  invited: "Приглашение",
+  declined: "Отклонено",
+};
+
+function fold(s: string) {
+  return s.replace(/[«»""]/g, "").replace(/\s+/g, " ").trim().toLowerCase();
+}
+
+function covers(hay: string, bit: string) {
+  const h = fold(hay);
+  const b = fold(bit);
+  return b.length >= 2 && h.includes(b);
+}
+
+function uniqueJoin(parts: (string | null | undefined)[]) {
+  const out: string[] = [];
+  for (const part of parts) {
+    const v = part?.trim();
+    if (!v) continue;
+    if (out.some((x) => covers(x, v) || covers(v, x))) continue;
+    out.push(v);
+  }
+  return out.join(" · ");
+}
+
+function tileCopy(
+  item: Application,
+  role: RoleId,
+  from: "casting" | "all",
+  casting?: Casting | null,
+  project?: Project | null,
+) {
+  const kind = KIND_LABEL[item.kind];
+  const castingTitle = casting?.title;
+  const projectTitle = project?.title;
+  const deadline = casting?.deadline ? `до ${casting.deadline}` : null;
+
+  const title =
+    role === "actor" ? (castingTitle ?? "Кастинг") : item.actorName;
+
+  const subtitle =
+    from === "casting"
+      ? uniqueJoin([kind, item.actorMeta])
+      : role === "actor"
+        ? uniqueJoin([kind, projectTitle].filter((bit) => !covers(title, bit || "")))
+        : uniqueJoin([kind, castingTitle, projectTitle]);
+
+  const castingLines = [
+    casting?.meta,
+    role === "actor"
+      ? uniqueJoin([
+          casting?.cdName ? `Кастинг-директор · ${casting.cdName}` : null,
+          deadline,
+        ])
+      : deadline,
+  ].filter((line): line is string => Boolean(line));
+
+  return { title, subtitle, castingLines };
 }
 
 export function ResponseTape({
@@ -26,7 +90,7 @@ export function ResponseTape({
   const inner = (
     <>
       <span className="response-tape__frame">
-        <img src={tape.poster} alt="" />
+        {tape.poster ? <img src={tape.poster} alt="" /> : <span className="response-tape__ph" />}
         <span className="response-tape__play" aria-hidden>
           ▶
         </span>
@@ -38,7 +102,7 @@ export function ResponseTape({
       </span>
     </>
   );
-  if (tape.href?.startsWith("http")) {
+  if (tape.href && /^(https?:|blob:|data:|\/api\/)/.test(tape.href)) {
     return (
       <a className="response-tape" href={tape.href} target="_blank" rel="noopener noreferrer">
         {inner}
@@ -199,34 +263,22 @@ export function ResponseDetailSheet({
 export function ResponseCards({
   rows,
   role,
-  getCastingTitle,
-  getProjectTitle,
+  getCasting,
+  getProject,
   from = "casting",
 }: {
   rows: Application[];
   role: RoleId;
-  getCastingTitle: (slug: string) => string | undefined;
-  getProjectTitle: (castingSlug: string) => string | undefined;
+  getCasting: (slug: string) => Casting | null | undefined;
+  getProject: (slug: string) => Project | null | undefined;
   from?: "casting" | "all";
 }) {
   return (
     <div className="response-cards">
       {rows.map((item) => {
-        const castingTitle = getCastingTitle(item.castingSlug);
-        const projectTitle = getProjectTitle(item.castingSlug);
-        const title = role === "actor" ? castingTitle ?? "Кастинг" : item.actorName;
-        const projectBit =
-          projectTitle &&
-          castingTitle &&
-          !castingTitle.replace(/[«»]/g, "").includes(projectTitle.replace(/[«»]/g, ""))
-            ? projectTitle
-            : role === "actor"
-              ? projectTitle
-              : null;
-        const subtitle =
-          role === "actor"
-            ? [projectBit, KIND_LABEL[item.kind]].filter(Boolean).join(" · ")
-            : [castingTitle, projectBit, KIND_LABEL[item.kind]].filter(Boolean).join(" · ");
+        const casting = getCasting(item.castingSlug);
+        const project = casting ? getProject(casting.projectSlug) : undefined;
+        const { title, subtitle, castingLines } = tileCopy(item, role, from, casting, project);
         const detailHref = withRole(
           from === "all" ? `/responses/${item.id}?from=all` : `/responses/${item.id}`,
           role,
@@ -234,7 +286,11 @@ export function ResponseCards({
 
         return (
           <Link key={item.id} href={detailHref} className="response-tile">
-            <span className="response-tile__top">
+            <span className="response-tile__head">
+              <span className={`tag ${statusTag(item.status)}`}>{TILE_STATUS[item.status]}</span>
+              {item.match ? <span className="response-tile__match">{item.match}</span> : null}
+            </span>
+            <span className="response-tile__person">
               {item.actorAvatar ? (
                 <img src={item.actorAvatar} alt="" className="response-tile__ava" />
               ) : (
@@ -244,13 +300,16 @@ export function ResponseCards({
                 <span className="response-tile__title">{title}</span>
                 {subtitle ? <span className="response-tile__sub">{subtitle}</span> : null}
               </span>
-              {item.match ? <span className="response-tile__match">{item.match}</span> : null}
             </span>
-            {item.note ? <span className="response-tile__note">{item.note}</span> : null}
-            <span className="response-tile__tags">
-              <span className="response-tile__kind">{KIND_LABEL[item.kind]}</span>
-              <span className={`tag ${statusTag(item.status)}`}>{STATUS_LABEL[item.status]}</span>
-            </span>
+            {castingLines.length ? (
+              <span className="response-tile__casting">
+                {castingLines.map((line, i) => (
+                  <span key={i} className="response-tile__casting-line">
+                    {line}
+                  </span>
+                ))}
+              </span>
+            ) : null}
           </Link>
         );
       })}

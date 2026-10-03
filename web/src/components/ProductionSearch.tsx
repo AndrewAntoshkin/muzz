@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { CatalogFilterBar, CatalogSearchField } from "@/components/CatalogFilterBar";
+import { CoverBadge, statusKind } from "@/components/CatalogTiles";
 import { FacesCatalog } from "@/components/FacesCatalog";
 import { UnifiedSearch } from "@/components/UnifiedSearch";
 import { IconCheck, IconFilm, IconPin, IconProject } from "@/components/icons";
@@ -40,14 +41,18 @@ function castingHay(c: Casting, project: Project | null) {
 
 export function SearchSwitch({
   people,
+  peopleTotal,
   initialProfession = "",
   mine = false,
   agency = "",
+  remote = false,
 }: {
   people: FaceCard[];
+  peopleTotal?: number;
   initialProfession?: string;
   mine?: boolean;
   agency?: string;
+  remote?: boolean;
 }) {
   const { role } = useDemoRole();
   const roster = people.filter(
@@ -68,8 +73,7 @@ export function SearchSwitch({
     );
   }
   if (role === "actor") return <ProductionSearch />;
-  const actors = people.filter((p) => p.profession === "actor" || p.profession === "actress");
-  return <UnifiedSearch people={actors} />;
+  return <UnifiedSearch people={people} peopleTotal={peopleTotal ?? people.length} remote={remote} />;
 }
 
 export function ProductionSearch() {
@@ -244,9 +248,15 @@ function ProjectCard({
 }) {
   const href = withRole(`/projects/${p.slug}`, role);
   const open = related;
+  const urgent = related.some((c) => c.urgent && c.deadline !== "закрыт");
 
   return (
     <article className="feed-card feed-card--project">
+      <Link href={href} className="feed-card__hero media-16x9">
+        <img src={p.cover} alt="" />
+        {urgent ? <CoverBadge kind="urgent">Срочно</CoverBadge> : null}
+        <CoverBadge kind={statusKind(p.status)}>{p.status}</CoverBadge>
+      </Link>
       <div className="feed-card__top">
         <img src={p.studioAvatar} alt="" className="feed-card__avatar" width={40} height={40} />
         <div className="feed-card__who">
@@ -255,11 +265,7 @@ function ProjectCard({
             {p.kind} · {p.platform} · {p.city}
           </div>
         </div>
-        <span className="tag tag-blue">Проект</span>
       </div>
-      <Link href={href} className="feed-card__hero media-16x9">
-        <img src={p.cover} alt="" />
-      </Link>
       <h3 className="feed-card__title">
         <Link href={href}>{p.title}</Link>
       </h3>
@@ -307,6 +313,11 @@ function CastingCard({
 
   return (
     <article className="feed-card feed-card--casting">
+      <Link href={cardHref} className="feed-card__hero media-16x9">
+        <img src={c.media} alt="" />
+        {c.urgent ? <CoverBadge kind="urgent">Срочно</CoverBadge> : null}
+        <CoverBadge kind="casting">Кастинг</CoverBadge>
+      </Link>
       <div className="feed-card__top">
         <img
           src={project?.studioAvatar || "/assets/figma/avatar-04.png"}
@@ -322,14 +333,7 @@ function CastingCard({
             {c.meta}
           </div>
         </div>
-        <div className="feed-card__tags">
-          {c.urgent ? <span className="tag tag-orange">Срочно</span> : null}
-          <span className="tag tag-green">Кастинг</span>
-        </div>
       </div>
-      <Link href={cardHref} className="feed-card__hero media-16x9">
-        <img src={c.media} alt="" />
-      </Link>
       <h3 className="feed-card__title">
         <Link href={cardHref}>{c.title}</Link>
       </h3>

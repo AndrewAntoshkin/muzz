@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { canSwitchKind } from "@/lib/access";
 import type { SessionUser } from "@/lib/session";
 import { DEMO_ROLES, parseRole, ROLE_STORE, type DemoRole, type RoleId } from "@/lib/roles";
 import { useSearchParams } from "next/navigation";
@@ -33,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fromUrl = searchParams.get("role");
   const [user, setUser] = useState<SessionUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [demoRole, setDemoRole] = useState<RoleId>(parseRole(fromUrl));
+  const [previewKind, setPreviewKind] = useState<RoleId>(parseRole(fromUrl));
 
   const refresh = useCallback(async () => {
     try {
@@ -55,11 +56,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void refresh();
   }, [refresh]);
 
+  const switching = canSwitchKind(user);
+
   useEffect(() => {
-    if (!user?.isDemo) return;
+    if (!switching) return;
     if (fromUrl) {
       const next = parseRole(fromUrl);
-      setDemoRole(next);
+      setPreviewKind(next);
       try {
         localStorage.setItem(ROLE_STORE, next);
       } catch {
@@ -68,11 +71,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     try {
-      setDemoRole(parseRole(localStorage.getItem(ROLE_STORE)));
+      setPreviewKind(parseRole(localStorage.getItem(ROLE_STORE)));
     } catch {
-      setDemoRole("actor");
+      setPreviewKind("actor");
     }
-  }, [fromUrl, user?.isDemo]);
+  }, [fromUrl, switching]);
 
   const logout = useCallback(async () => {
     await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
@@ -80,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.location.href = "/auth";
   }, []);
 
-  const role: RoleId = user?.isDemo ? demoRole : user?.role || "actor";
+  const role: RoleId = switching ? previewKind : user?.role || "actor";
   const cfg = useMemo(
     () => (user ? cfgFromSession(user, role) : DEMO_ROLES[role]),
     [user, role],

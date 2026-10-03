@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import {
   IconBack,
   IconCaret,
@@ -13,14 +13,24 @@ import {
   IconProject,
   IconMessages,
   IconResponses,
+  IconSearch,
+  IconSettings,
 } from "./icons";
+import { AccountDrawer } from "./AccountDrawer";
+import { MobileTabBar } from "./MobileTabBar";
 import { ROLE_SWITCH, switchRoleHref, withRole, type RoleId } from "@/lib/roles";
+import { canSwitchKind, isAdmin } from "@/lib/access";
+import { getEvent } from "@/lib/events";
+import { parsePlan } from "@/lib/plans";
 import { useAuth } from "./AuthProvider";
 import { useWorkspace } from "./useWorkspace";
-import { ProjectSettingsModal } from "./ProjectSettingsModal";
+import { ProjectSettingsModal, parseSettingsTab } from "./ProjectSettingsModal";
+import { CastingSettingsModal, parseCastingSettingsTab } from "./CastingSettingsModal";
 import { InboxBell } from "./InboxBell";
 import { PlanBadge } from "./PlanBadge";
+import { PlanModal } from "./PlanModal";
 import { DropdownMenu } from "./DropdownMenu";
+import { ThemeToggle } from "./ThemeToggle";
 
 const NAV_ICONS: Record<string, ReactNode> = {
   home: <IconHome />,
@@ -95,7 +105,7 @@ function RoleSelect({
         ref={btn}
         type="button"
         className="sidebar-demo__select"
-        aria-label="Роль демо"
+        aria-label="Вид пользователя"
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
@@ -135,12 +145,19 @@ export function Shell({ children }: { children: ReactNode }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { role, cfg, user, logout } = useAuth();
-  const { unread, notice, ready, applications } = useWorkspace();
+  const { unread, notice, ready, applications, settings } = useWorkspace();
+  const userPlan = parsePlan(settings.plan);
   const [projectSettingsOpen, setProjectSettingsOpen] = useState(false);
-  const [navOpen, setNavOpen] = useState(false);
+  const [castingSettingsOpen, setCastingSettingsOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const closeAccount = useCallback(() => setAccountOpen(false), []);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const mine = searchParams.get("mine") === "1";
   const agency = searchParams.get("agency");
   const composeType = searchParams.get("type");
+  const settingsQuery = searchParams.get("settings");
+  const settingsTab = parseSettingsTab(settingsQuery);
+  const castingSettingsTab = parseCastingSettingsTab(settingsQuery);
 
   const onHome = pathname === "/";
   const onFaces = pathname.startsWith("/faces");
@@ -159,30 +176,38 @@ export function Shell({ children }: { children: ReactNode }) {
   const onCompose = pathname.startsWith("/compose");
   const onProfile = pathname.startsWith("/people/");
   const onAgency = pathname.startsWith("/agencies/");
+  const onEvent = pathname.startsWith("/events/");
+  const eventSlug = onEvent ? pathname.match(/^\/events\/([^/]+)/)?.[1] : undefined;
+  const event = eventSlug ? getEvent(eventSlug) : undefined;
+  const onProjectBoard = /^\/projects\/[^/]+\/board\/?$/.test(pathname);
   const castingDetail = /^\/castings\/[^/]+\/?$/.test(pathname);
-  const projectDetail = /^\/projects\/[^/]+/.test(pathname);
-  const projectSlug = projectDetail ? pathname.match(/^\/projects\/([^/]+)/)?.[1] : undefined;
+  const projectDetail = /^\/projects\/[^/]+\/?$/.test(pathname);
+  const projectSlug = pathname.match(/^\/projects\/([^/]+)/)?.[1];
+  const castingSlug = castingDetail ? pathname.match(/^\/castings\/([^/]+)/)?.[1] : undefined;
   const responseId = onResponseDetail ? pathname.match(/^\/responses\/([^/]+)/)?.[1] : undefined;
   const responseApp = responseId ? applications.find((a) => a.id === responseId) : undefined;
   const fromAll = searchParams.get("from") === "all" || searchParams.get("via") === "all";
   const fromResponseId = searchParams.get("from") === "response" ? searchParams.get("app") : null;
   const backTo = backHref(pathname, role, {
-    onHome,
     onProfile,
     onAgency,
+    onEvent,
     castingDetail,
     projectDetail,
+    onProjectBoard,
     onCastingResponses,
     onResponseDetail,
-    onResponsesList,
     responseCastingSlug: responseApp?.castingSlug,
     fromAll,
     fromResponseId,
+    agencyId: agency,
   });
   const crumb = onAgency
     ? "Агентство"
     : onProfile
       ? "Профиль"
+    : onEvent
+      ? event?.shortTitle || "Мероприятие"
     : onSettings
       ? "Настройки"
       : onCompose
@@ -195,7 +220,9 @@ export function Shell({ children }: { children: ReactNode }) {
             : agency
               ? "Ростер"
               : "Поиск"
-          : onProjects
+          : onProjectBoard
+            ? "Доска"
+            : onProjects
             ? cfg.nav.find((n) => n.id === "projects")?.label || "Проекты"
             : onCastingResponses
               ? "Отклики"
@@ -215,6 +242,8 @@ export function Shell({ children }: { children: ReactNode }) {
         ? "home"
         : onSearchPage
           ? "search"
+          : onProjectBoard
+            ? "board"
           : onProjects
             ? "projects"
             : onCastingResponses || onResponseDetail || onResponsesList
@@ -231,15 +260,18 @@ export function Shell({ children }: { children: ReactNode }) {
                         ? "agency"
                         : onProfile
                         ? "profile"
+                        : onEvent
+                          ? "event"
                         : "page";
     document.body.setAttribute("data-page", page);
-    document.body.setAttribute("data-layout", onHome ? "hub" : "");
+    document.body.setAttribute("data-layout", onHome ? "hub" : onProjectBoard ? "board" : "");
     document.body.setAttribute("data-page-title", crumb);
     document.body.setAttribute("data-profession", role);
     document.body.setAttribute("data-user-name", cfg.name);
   }, [
     onHome,
     onSearchPage,
+    onProjectBoard,
     onProjects,
     onCastings,
     onCastingResponses,
@@ -247,6 +279,7 @@ export function Shell({ children }: { children: ReactNode }) {
     onResponsesList,
     onProfile,
     onAgency,
+    onEvent,
     onSettings,
     onCompose,
     crumb,
@@ -254,7 +287,21 @@ export function Shell({ children }: { children: ReactNode }) {
     cfg.name,
   ]);
 
-  const inCastingTree = onCastings || (onResponseDetail && !fromAll);
+  useEffect(() => {
+    setSidebarCollapsed(onProjectBoard);
+  }, [onProjectBoard]);
+
+  useEffect(() => {
+    setAccountOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    const toggle = () => setSidebarCollapsed((v) => !v);
+    window.addEventListener("kadr:toggle-sidebar", toggle);
+    return () => window.removeEventListener("kadr:toggle-sidebar", toggle);
+  }, []);
+
+  const inCastingTree = onCastings;
   const activeNav = onHome
     ? "home"
     : inCastingTree
@@ -272,25 +319,62 @@ export function Shell({ children }: { children: ReactNode }) {
                 : onFaces
                   ? "faces"
                   : "";
+  const hideTabBar = onProjectBoard || onCompose;
+  const messageUnread = unread ? (unread > 9 ? "9+" : String(unread)) : "";
+  const initials = (cfg.name || "?")
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? "")
+    .join("");
+
+  const accountBtn = (
+    <button
+      type="button"
+      className="ss-head__account"
+      aria-label="Аккаунт"
+      aria-expanded={accountOpen}
+      aria-controls="account-drawer"
+      onClick={() => setAccountOpen(true)}
+    >
+      {cfg.avatar ? (
+        <img
+          src={cfg.avatar}
+          alt=""
+          className={`ss-head__ava plan-ring plan-ring--${userPlan}`}
+          width={32}
+          height={32}
+        />
+      ) : (
+        <span className={`ss-head__ava ss-head__ava--fallback plan-ring plan-ring--${userPlan}`}>{initials}</span>
+      )}
+    </button>
+  );
 
   return (
-    <div className={`app-frame${navOpen ? " is-nav-open" : ""}`}>
+    <div className={`app-frame${accountOpen ? " is-account-open" : ""}${hideTabBar ? " is-tabbar-hidden" : ""}${onProjectBoard ? " is-board" : ""}${onProjectBoard && sidebarCollapsed ? " is-sidebar-collapsed" : ""}`}>
       <button
         type="button"
         className="nav-scrim"
         aria-label="Закрыть меню"
-        hidden={!navOpen}
-        onClick={() => setNavOpen(false)}
+        hidden={!accountOpen}
+        onClick={closeAccount}
+      />
+      <AccountDrawer
+        open={accountOpen}
+        onClose={closeAccount}
+        role={role}
+        cfg={cfg}
+        onRoleChange={(next) => router.push(switchRoleHref(pathname, searchParams, next))}
+        RoleSelect={RoleSelect}
       />
       <aside className="sidebar-panel" id="app-sidebar">
         <div className="sidebar-head">
-          <Link href={withRole("/", role)} className="sidebar-brand__link" aria-label="На главную" onClick={() => setNavOpen(false)}>
+          <Link href={withRole("/", role)} className="sidebar-brand__link" aria-label="На главную">
             <img src="/assets/logo.svg" alt="kadr" width={42} height={20} />
           </Link>
           <Link
             href={withRole("/search", role)}
             className={onSearch ? "sidebar-search is-active" : "sidebar-search"}
-            onClick={() => setNavOpen(false)}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
               <circle cx="11" cy="11" r="7" />
@@ -312,7 +396,6 @@ export function Shell({ children }: { children: ReactNode }) {
                 count={item.id === "messages" ? (unread ? String(unread) : undefined) : item.count}
                 active={activeNav === item.id}
                 live={item.live}
-                onNavigate={() => setNavOpen(false)}
               />
             ))}
           </nav>
@@ -329,7 +412,6 @@ export function Shell({ children }: { children: ReactNode }) {
                   icon={<IconFolder />}
                   live={t.live}
                   active={onAgency && t.href.startsWith("/agencies")}
-                  onNavigate={() => setNavOpen(false)}
                 />
               ))}
             </nav>
@@ -346,7 +428,6 @@ export function Shell({ children }: { children: ReactNode }) {
                   label={item.label}
                   quiet
                   live={item.live}
-                  onNavigate={() => setNavOpen(false)}
                 />
               ))}
             </nav>
@@ -354,11 +435,21 @@ export function Shell({ children }: { children: ReactNode }) {
         </div>
 
         <div className="sidebar-foot">
-          {user?.isDemo ? (
+          {isAdmin(user) ? (
+            <NavRow
+              href="/admin"
+              id="admin"
+              label="Админка"
+              quiet
+              live
+              active={pathname === "/admin" || pathname.startsWith("/admin/")}
+            />
+          ) : null}
+          <ThemeToggle />
+          {canSwitchKind(user) ? (
             <RoleSelect
               role={role}
               onChange={(next) => {
-                setNavOpen(false);
                 router.push(switchRoleHref(pathname, searchParams, next));
               }}
             />
@@ -367,33 +458,24 @@ export function Shell({ children }: { children: ReactNode }) {
               <span className="sidebar-item__label">Выйти</span>
             </button>
           )}
-          {user?.isDemo ? (
+          {canSwitchKind(user) ? (
             <button type="button" className="sidebar-item sidebar-item--quiet" onClick={() => void logout()}>
-              <span className="sidebar-item__label">Выйти из демо</span>
+              <span className="sidebar-item__label">{user?.isDemo ? "Выйти из демо" : "Выйти"}</span>
             </button>
           ) : null}
         </div>
       </aside>
 
-      <div className="app-main">
+      <div className="app-main" inert={accountOpen || undefined}>
         <header className="app-topbar ss-head">
           <div className="ss-head__lead">
-            <button
-              type="button"
-              className="ss-head__menu"
-              aria-label="Меню"
-              aria-expanded={navOpen}
-              onClick={() => setNavOpen((v) => !v)}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M4 7h16M4 12h16M4 17h16" />
-              </svg>
-            </button>
             {backTo ? (
               <Link href={backTo} className="ss-head__back" aria-label="Назад">
                 <IconBack />
               </Link>
-            ) : null}
+            ) : (
+              accountBtn
+            )}
             <h1 className="ss-head__title" data-page-title-slot>
               {crumb}
             </h1>
@@ -402,35 +484,91 @@ export function Shell({ children }: { children: ReactNode }) {
             {projectDetail && role === "casting" ? (
               <button
                 type="button"
-                className="btn-secondary btn-sm"
+                className="ss-head__page-action"
                 onClick={() => setProjectSettingsOpen(true)}
               >
-                Настройки проекта
+                <span className="ss-head__page-action-label">Настройки проекта</span>
+                <IconSettings />
+              </button>
+            ) : null}
+            {castingDetail && role === "casting" ? (
+              <button
+                type="button"
+                className="ss-head__page-action"
+                onClick={() => setCastingSettingsOpen(true)}
+              >
+                <span className="ss-head__page-action-label">Настройки кастинга</span>
+                <IconSettings />
               </button>
             ) : null}
             {role === "actor" ? <PlanBadge /> : null}
             <InboxBell />
+            <Link
+              href={withRole("/search", role)}
+              className={`ss-head__icon${onSearch ? " is-active" : ""}`}
+              aria-label="Поиск"
+            >
+              <IconSearch />
+            </Link>
+            <Link
+              href={withRole("/messages", role)}
+              className={`ss-head__icon${onMessages ? " is-active" : ""}`}
+              aria-label={messageUnread ? `Сообщения, ${messageUnread}` : "Сообщения"}
+            >
+              <IconMessages />
+              {messageUnread ? <span className="ss-head__bell-dot">{messageUnread}</span> : null}
+            </Link>
+            {backTo ? accountBtn : null}
             <Link href={withRole(cfg.profile, role)} className="ss-head__me" aria-label="Профиль">
               {cfg.avatar ? (
-                <img src={cfg.avatar} alt="" className="ss-head__ava" width={36} height={36} />
+                <img
+                  src={cfg.avatar}
+                  alt=""
+                  className={`ss-head__ava plan-ring plan-ring--${userPlan}`}
+                  width={36}
+                  height={36}
+                />
               ) : (
-                <span className="ss-head__ava ss-head__ava--fallback">
-                  {(cfg.name || "?")
-                    .split(/\s+/)
-                    .slice(0, 2)
-                    .map((p) => p[0]?.toUpperCase() ?? "")
-                    .join("")}
-                </span>
+                <span className={`ss-head__ava ss-head__ava--fallback plan-ring plan-ring--${userPlan}`}>{initials}</span>
               )}
             </Link>
           </div>
         </header>
         {children}
-        {projectDetail && role === "casting" && projectSettingsOpen && ready && projectSlug ? (
-          <ProjectSettingsModal projectSlug={projectSlug} onClose={() => setProjectSettingsOpen(false)} />
+        {projectDetail && role === "casting" && (projectSettingsOpen || settingsTab) && ready && projectSlug ? (
+          <ProjectSettingsModal
+            projectSlug={projectSlug}
+            initialTab={settingsTab}
+            onClose={() => {
+              setProjectSettingsOpen(false);
+              if (searchParams.has("settings")) {
+                const next = new URLSearchParams(searchParams.toString());
+                next.delete("settings");
+                const q = next.toString();
+                router.replace(q ? `${pathname}?${q}` : pathname);
+              }
+            }}
+          />
         ) : null}
+        {castingDetail && role === "casting" && (castingSettingsOpen || castingSettingsTab) && ready && castingSlug ? (
+          <CastingSettingsModal
+            castingSlug={castingSlug}
+            initialTab={castingSettingsTab}
+            onClose={() => {
+              setCastingSettingsOpen(false);
+              if (searchParams.has("settings")) {
+                const next = new URLSearchParams(searchParams.toString());
+                next.delete("settings");
+                const q = next.toString();
+                router.replace(q ? `${pathname}?${q}` : pathname);
+              }
+            }}
+          />
+        ) : null}
+        <PlanModal />
         {notice ? <div className="kadr-toast">{notice}</div> : null}
       </div>
+      <MobileTabBar cfg={cfg} role={role} activeId={activeNav} hidden={hideTabBar} inert={accountOpen} />
     </div>
   );
 }
@@ -447,21 +585,20 @@ function backHref(
   pathname: string,
   role: RoleId,
   flags: {
-    onHome: boolean;
     onProfile: boolean;
     onAgency: boolean;
+    onEvent: boolean;
     castingDetail: boolean;
     projectDetail: boolean;
+    onProjectBoard?: boolean;
     onCastingResponses: boolean;
     onResponseDetail: boolean;
-    onResponsesList: boolean;
     responseCastingSlug?: string;
     fromAll?: boolean;
     fromResponseId?: string | null;
+    agencyId?: string | null;
   },
 ) {
-  if (flags.onHome) return null;
-
   if (flags.onProfile && flags.fromResponseId) {
     const q = flags.fromAll ? `?from=all` : "";
     return withRole(`/responses/${flags.fromResponseId}${q}`, role);
@@ -477,25 +614,28 @@ function backHref(
     return slug ? withRole(`/castings/${slug}`, role) : withRole("/castings", role);
   }
 
-  if (flags.onResponsesList) return withRole("/", role);
-
   if (flags.onProfile || flags.onAgency) {
     return role === "actor" ? withRole("/", role) : role === "casting" ? withRole("/faces", role) : withRole("/search", role);
   }
 
+  if (flags.onEvent) return withRole("/", role);
+
+  if (flags.onProjectBoard) {
+    const slug = pathname.match(/^\/projects\/([^/]+)/)?.[1];
+    return slug ? withRole(`/projects/${slug}`, role) : withRole("/projects", role);
+  }
+
   if (flags.castingDetail) return withRole("/castings", role);
 
-  if (flags.projectDetail) {
-    return withRole("/projects", role);
-  }
+  if (flags.projectDetail) return withRole("/projects", role);
 
-  if (pathname.startsWith("/settings") || pathname.startsWith("/compose") || pathname.startsWith("/messages")) {
+  if (pathname.startsWith("/settings") || pathname.startsWith("/compose")) {
     return withRole("/", role);
   }
 
-  if (pathname === "/castings" || pathname === "/projects" || pathname === "/search" || pathname.startsWith("/faces")) {
-    return withRole("/", role);
+  if (pathname === "/search" && flags.agencyId) {
+    return withRole(`/agencies/${flags.agencyId}`, role);
   }
 
-  return withRole("/", role);
+  return null;
 }

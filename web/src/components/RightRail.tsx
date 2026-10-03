@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { listEvents } from "@/lib/events";
 import { STATUS_LABEL } from "@/lib/workspace";
 import { withRole, type RoleId } from "@/lib/roles";
 import { useDemoRole } from "./useDemoRole";
@@ -85,7 +86,23 @@ type ActionItem = {
   urgent?: boolean;
 };
 
-type EventItem = [string, string, string, string, string];
+type EventItem = {
+  day: string;
+  month: string;
+  title: string;
+  meta: string;
+  iso: string;
+  href: string;
+};
+
+const VGIK_EVENTS: EventItem[] = listEvents().map((event) => ({
+  day: event.day,
+  month: event.month,
+  title: event.shortTitle,
+  meta: event.meta,
+  iso: event.iso,
+  href: `/events/${event.slug}`,
+}));
 
 function actorActions(ws: ReturnType<typeof useWorkspace>): ActionItem[] {
   const mine = ws.myApplications.slice(0, 3).map((a) => {
@@ -139,7 +156,7 @@ function agentActions(ws: ReturnType<typeof useWorkspace>): ActionItem[] {
   return [
     {
       kind: "Бриф",
-      title: "Лебедева · главная + вторая",
+      title: "Кеворкова · главная + вторая",
       meta: "«Тихий январь» · 28–34 и мужская 30–40 · до 6 июня",
       href: "/compose?type=propose&casting=tihiy-yanvar-lead",
       urgent: true,
@@ -155,21 +172,9 @@ function agentActions(ws: ReturnType<typeof useWorkspace>): ActionItem[] {
 }
 
 const EVENTS: Record<RoleId, EventItem[]> = {
-  actor: [
-    ["16", "апр", "48-й ММКФ", "Показы и Q&A · Москва", "2026-04-16"],
-    ["6", "июн", "Самопробы «Тихий январь»", "Дедлайн плёнки · Sreda", "2026-06-06"],
-    ["1", "окт", "Высшие курсы ВГИК", "Набор на кино и ТВ", "2026-10-01"],
-  ],
-  casting: [
-    ["16", "апр", "ММКФ · industry", "Аккредитация кастинг-директоров", "2026-04-16"],
-    ["10", "июн", "Очные «Тихий январь»", "Студия Sreda · 10–14 июня", "2026-06-10"],
-    ["20", "июн", "Союз кастинг-директоров", "Закрытая сессия · Москва", "2026-06-20"],
-  ],
-  agent: [
-    ["6", "июн", "Окно самопроб для ростера", "«Тихий январь» · успеть подать", "2026-06-06"],
-    ["14", "июн", "Очные пробы · Sreda", "Устюгов / Чадов в шорт-листе", "2026-06-14"],
-    ["16", "апр", "ММКФ · кинорынок", "Встречи с платформами", "2026-04-16"],
-  ],
+  actor: VGIK_EVENTS,
+  casting: VGIK_EVENTS,
+  agent: VGIK_EVENTS,
 };
 
 function roleCopy(role: RoleId) {
@@ -177,20 +182,20 @@ function roleCopy(role: RoleId) {
     return {
       actionsTitle: "Очередь разбора",
       actionsEmpty: "Новых откликов нет — очередь пуста.",
-      eventsTitle: "Пробы и рынок",
+      eventsTitle: "ВГИК",
     };
   }
   if (role === "agent") {
     return {
       actionsTitle: "Запросы и занятость",
       actionsEmpty: "Нет открытых запросов от кастинг-директоров.",
-      eventsTitle: "Сроки ростера",
+      eventsTitle: "ВГИК",
     };
   }
   return {
     actionsTitle: "Самопробы и дедлайны",
     actionsEmpty: "Нет активных самопроб — откройте кастинги.",
-    eventsTitle: "Индустрия",
+    eventsTitle: "ВГИК",
   };
 }
 
@@ -301,17 +306,17 @@ export function RightRail() {
       <section className="rail-panel">
         <h3 className="rail-panel__title">{copy.eventsTitle}</h3>
         <div className="rail-events">
-          {events.map(([d, m, title, meta, iso]) => (
-            <div key={iso} className="rail-event">
-              <time className="rail-event__date" dateTime={iso}>
-                {d}
-                <span>{m}</span>
+          {events.map((event) => (
+            <Link key={event.href} href={withRole(event.href, role)} className="rail-event">
+              <time className="rail-event__date" dateTime={event.iso}>
+                {event.day}
+                <span>{event.month}</span>
               </time>
               <div className="rail-event__body">
-                <span className="rail-event__title">{title}</span>
-                <span className="rail-event__meta">{meta}</span>
+                <span className="rail-event__title">{event.title}</span>
+                <span className="rail-event__meta">{event.meta}</span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </section>
