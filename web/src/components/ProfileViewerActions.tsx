@@ -180,15 +180,18 @@ export function ProfileViewerActions({
     );
   }
 
-  const agencyHref = `/agencies/${agencyId || "akter1"}`;
+  // Only link to an agency the profile actually belongs to (every agencyId has a page).
+  const agencyHref = agencyId ? `/agencies/${encodeURIComponent(agencyId)}` : null;
 
   if (role === "casting" && isAgent) {
     return (
       <div className="detail-hero__actions">
         <WriteButton personSlug={personSlug} profession={profession} label="Написать агенту" primary />
-        <Link href={withRole(agencyHref, role)} className="btn-secondary">
-          Ростер агентства
-        </Link>
+        {agencyHref ? (
+          <Link href={withRole(agencyHref, role)} className="btn-secondary">
+            Ростер агентства
+          </Link>
+        ) : null}
       </div>
     );
   }
@@ -197,9 +200,11 @@ export function ProfileViewerActions({
     return (
       <div className="detail-hero__actions">
         <WriteButton personSlug={personSlug} profession={profession} label="Написать" primary />
-        <Link href={withRole(agencyHref, role)} className="btn-secondary">
-          Агентство
-        </Link>
+        {agencyHref ? (
+          <Link href={withRole(agencyHref, role)} className="btn-secondary">
+            Агентство
+          </Link>
+        ) : null}
       </div>
     );
   }

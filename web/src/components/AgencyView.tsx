@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { AgencyPage } from "@/lib/agencies";
-import type { FaceCard, PersonProfile } from "@/lib/people";
+import type { FaceCard } from "@/lib/people";
 import { assetSrc, initialsOf } from "@/lib/labels";
 import { profileSlug, withRole } from "@/lib/roles";
 import { PersonCard } from "./PersonCard";
@@ -18,7 +18,8 @@ export function AgencyView({
   agency: AgencyPage;
   roster: FaceCard[];
   featured: FaceCard[];
-  agent: PersonProfile | null;
+  /** Only what the card renders; the full profile row (birth date, e-mail, source URL) stays on the server. */
+  agent: { slug: string; name: string; imageUrl: string | null; initials: string | null } | null;
 }) {
   const { role, cfg } = useAuth();
   const isOwnAgency = role === "agent" && profileSlug(cfg) === agency.agentSlug;
