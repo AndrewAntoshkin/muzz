@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { db } from "@/db";
-import { agencies, people } from "@/db/schema";
+import { agencies, castings, people, projects } from "@/db/schema";
 import { getAgencyPage } from "./agencies";
 import { INDUSTRY } from "./demo-industry";
 import { getEvent } from "./events";
@@ -13,13 +13,15 @@ import { getEvent } from "./events";
  * with 200 (see node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/loading.md,
  * "Status Codes"). Keep these cheap: primary-key lookups plus a short in-memory cache.
  *
- * Routes that depend on browser localStorage state (castings, projects, responses) are
- * intentionally NOT checked here.
+ * Castings and projects live in the database too (archived ones count as missing). We only check
+ * that the slug exists, not who may see it: visibility is enforced by the workspace API.
  */
 
-type Kind = "people" | "agencies" | "events";
+type Kind = "people" | "agencies" | "events" | "castings" | "projects";
 
-const ROUTE = /^\/(people|agencies|events)\/([^/]+)\/?$/;
+const ROUTE = /^\/(people|agencies|events|castings|projects)\/([^/]+)(\/board|\/responses)?\/?$/;
+/** Какие подстраницы существуют у каких разделов. */
+const SUBPAGE: Partial<Record<Kind, string>> = { projects: "/board", castings: "/responses" };
 
 const POSITIVE_TTL_MS = 5 * 60_000;
 const NEGATIVE_TTL_MS = 15_000;
@@ -43,6 +45,14 @@ async function lookup(kind: Kind, key: string): Promise<boolean> {
     const [row] = await db.select({ slug: people.slug }).from(people).where(eq(people.slug, key)).limit(1);
     return Boolean(row);
   }
+  if (kind === "castings") {
+    const [row] = await db.select({ id: castings.id }).from(castings).where(and(eq(castings.slug, key), isNull(castings.archivedAt))).limit(1);
+    return Boolean(row);
+  }
+  if (kind === "projects") {
+    const [row] = await db.select({ id: projects.id }).from(projects).where(and(eq(projects.slug, key), isNull(projects.archivedAt))).limit(1);
+    return Boolean(row);
+  }
   if (getAgencyPage(key)) return true;
   const [row] = await db.select({ id: agencies.id }).from(agencies).where(eq(agencies.id, key)).limit(1);
   return Boolean(row);
@@ -53,6 +63,7 @@ export type RouteCheck = { kind: Kind; key: string };
 export function matchCheckedRoute(pathname: string): RouteCheck | null {
   const m = ROUTE.exec(pathname);
   if (!m) return null;
+  if (m[3] && SUBPAGE[m[1] as Kind] !== m[3]) return null;
   let key: string;
   try {
     key = decodeURIComponent(m[2]);
