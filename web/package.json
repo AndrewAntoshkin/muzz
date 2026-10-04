@@ -15,6 +15,7 @@
     "db:push": "drizzle-kit push",
     "db:seed": "tsx scripts/seed.ts",
     "db:seed-auth": "tsx scripts/seed-auth.ts",
+    "db:seed-workspace": "tsx scripts/seed-workspace.ts",
     "db:enrich": "tsx scripts/enrich-akter1.ts",
     "db:purge-fakes": "tsx scripts/purge-fakes.ts",
     "db:purge-geo": "tsx scripts/purge-non-allowed-geo.ts",

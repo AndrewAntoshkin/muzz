@@ -1,3 +1,4 @@
+import { todayMsk } from "./deadline";
 import type { Casting } from "./productions";
 import { rehearsalCap, type PlanId } from "./plans";
 
@@ -33,8 +34,9 @@ const SCRIPTS: Record<string, CueLine[]> = {
   ],
 };
 
+/** Месяц считаем по Москве и на клиенте, и на сервере — иначе на стыке месяцев счётчики разойдутся. */
 export function rehearsalMonthKey(d = new Date()) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  return todayMsk(d).slice(0, 7);
 }
 
 export function rehearsalsUsed(settings: { rehearsalsUsed?: number; rehearsalsMonth?: string }) {

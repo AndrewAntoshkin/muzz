@@ -16,7 +16,6 @@ import {
   type Showreel,
 } from "@/lib/person-card";
 import { emptySchedule, eventVisibleInMonth, formatEventWhen, normalizeSchedule, WEEKDAYS } from "@/lib/calendar";
-import { castingsForCd, getProject, projectsForCd } from "@/lib/productions";
 import { availabilityLabel, personAvailability } from "@/lib/workspace";
 import { AGENCY_PAGES } from "@/lib/agencies";
 import { useEffect, useMemo, useState } from "react";
@@ -503,33 +502,35 @@ function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard
   const agentSlug = (person.agencyId && AGENCY_PAGES[person.agencyId]?.agentSlug) || "soykina";
   const showreel = resolveShowreel(person, card);
   const pulse = pulses.find((p) => p.personSlug === person.slug);
-  const openLabel = availabilityLabel(personAvailability(person.slug, pulses), feminine);
+  const availability = personAvailability(person.slug, pulses);
+  const openLabel = availability ? availabilityLabel(availability, feminine) : "Статус не опубликован";
   const agencyLine = agencyName ? quotedAgency(agencyName) : null;
   const bio = patch?.bio ?? person.bio;
   const city = patch?.city ?? person.city;
 
-  const defaults = useMemo(
-    () => ({
-      bio: person.bio || (person.slug === "vzmetnev" ? DEMO_BIOS.vzmetnev : ""),
+  const defaults = useMemo(() => {
+    // Подстановки из демо-карточки — только для самой демо-персоны; у остальных форма стартует с их собственных данных.
+    const demo = person.slug === "vzmetnev" ? VZMETNEV_CARD : undefined;
+    return {
+      bio: person.bio || (demo ? DEMO_BIOS.vzmetnev : ""),
       city: person.city || "",
-      params: card.params || VZMETNEV_CARD.params || [],
-      appearance: card.appearance || VZMETNEV_CARD.appearance || [],
-      languages: card.languages || VZMETNEV_CARD.languages || [],
-      skills: card.skills || VZMETNEV_CARD.skills || [],
-      education: card.education || VZMETNEV_CARD.education || "",
-      showreel: card.showreel || VZMETNEV_CARD.showreel || { poster: "", title: "" },
+      params: card.params || demo?.params || [],
+      appearance: card.appearance || demo?.appearance || [],
+      languages: card.languages || demo?.languages || [],
+      skills: card.skills || demo?.skills || [],
+      education: card.education || demo?.education || "",
+      showreel: card.showreel || demo?.showreel || { poster: "", title: "" },
       photos: (person.photos.length
         ? person.photos
         : person.imageUrl
           ? [{ id: `${person.slug}-hero`, url: person.imageUrl }]
           : []
       ).map((p) => ({ id: p.id, url: p.url })),
-      schedule: normalizeSchedule(card.schedule || demoActorSchedule()),
-      credits: card.credits || VZMETNEV_CARD.credits || [],
+      schedule: normalizeSchedule(card.schedule || (demo ? demoActorSchedule() : emptySchedule())),
+      credits: card.credits || demo?.credits || [],
       links: person.links.map((l) => ({ id: l.id, kind: l.kind, url: l.url })),
-    }),
-    [person, card],
-  );
+    };
+  }, [person, card]);
 
   const photos = (patch?.photos
     ? patch.photos.map((p) => ({ id: p.id, personSlug: person.slug, url: p.url, sort: 0 }))
@@ -559,6 +560,7 @@ function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard
               ) : null}
               <ProfileViewerActions
                 personSlug={person.slug}
+                personName={person.name}
                 profession={person.profession}
                 onEditProfile={() => {
                   setEditTab("about");
@@ -580,6 +582,7 @@ function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard
                   </div>
                   <WriteButton
                     personSlug={agentSlug}
+                    personName={manager.name}
                     profession="agent"
                     label="Написать агенту"
                     primary
@@ -708,7 +711,8 @@ function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard
 
 function CastingLayout({ person, card }: { person: PersonProfile; card: PersonCard }) {
   const plan = useVisiblePlan(person);
-  const activeCastings = castingsForCd(person.slug);
+  const { castingsForCd, projectsForCd, getProject } = useWorkspace();
+  const activeCastings = castingsForCd(person.slug).filter((c) => c.status !== "closed");
   const cdProjects = projectsForCd(person.slug);
 
   return (
@@ -721,7 +725,7 @@ function CastingLayout({ person, card }: { person: PersonProfile; card: PersonCa
               <HeroTitle person={person} />
               <MetaLine bits={[person.role, person.city, ...(card.heroMeta || [])]} />
               {person.bio ? <p className="kadr-bio">{person.bio}</p> : null}
-              <ProfileViewerActions personSlug={person.slug} profession={person.profession} />
+              <ProfileViewerActions personSlug={person.slug} personName={person.name} profession={person.profession} />
             </div>
           </section>
 
@@ -866,7 +870,7 @@ function AgentLayout({ person, card }: { person: PersonProfile; card: PersonCard
               <HeroTitle person={person} />
               <MetaLine bits={[person.role, person.agencyName ? `агентство «${person.agencyName}»` : null, person.city]} />
               {person.bio ? <p className="kadr-bio">{person.bio}</p> : null}
-              <ProfileViewerActions personSlug={person.slug} profession={person.profession} agencyId={person.agencyId} />
+              <ProfileViewerActions personSlug={person.slug} personName={person.name} profession={person.profession} agencyId={person.agencyId} />
             </div>
           </section>
 

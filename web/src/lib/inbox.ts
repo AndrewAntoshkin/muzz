@@ -85,7 +85,7 @@ export function collectInbox(
               ? `Приглашение на очные · ${STATUS_LABEL[app.status]}`
               : `Отклик: ${STATUS_LABEL[app.status]}`,
         href: `/responses/${app.id}`,
-        createdAt: app.createdAt + 1,
+        createdAt: app.updatedAt,
       });
     }
   } else if (role === "casting") {
@@ -100,7 +100,7 @@ export function collectInbox(
         title: casting?.title || "Кастинг",
         text: `${app.actorName} · ${KIND_LABEL[app.kind]} · ${STATUS_LABEL[app.status]}`,
         href: `/responses/${app.id}`,
-        createdAt: app.createdAt,
+        createdAt: app.updatedAt,
       });
     }
   } else if (role === "agent") {
@@ -114,7 +114,7 @@ export function collectInbox(
         title: app.actorName,
         text: `${casting?.title || "Кастинг"} · ${STATUS_LABEL[app.status]}`,
         href: `/responses/${app.id}`,
-        createdAt: app.createdAt,
+        createdAt: app.updatedAt,
       });
     }
   }
@@ -144,7 +144,7 @@ export function collectInbox(
         title: project.title,
         text: `Открыт кастинг: ${casting.title}`,
         href: `/castings/${casting.slug}`,
-        createdAt: Date.now(),
+        createdAt: casting.createdAt ?? 0,
       });
     }
   }

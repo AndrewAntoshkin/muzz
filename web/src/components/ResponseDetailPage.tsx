@@ -1,5 +1,6 @@
 "use client";
 
+import { ResponseActions } from "@/components/ResponseActions";
 import Link from "next/link";
 import {
   KIND_LABEL,
@@ -29,7 +30,7 @@ export function ResponseDetailPage({
   role: RoleId;
   casting: Casting | null;
   project: Project | null;
-  onStatus: (status: AppStatus) => void;
+  onStatus: (status: AppStatus) => void | Promise<unknown>;
   fromAll?: boolean;
 }) {
   const created = new Date(item.createdAt).toLocaleString("ru-RU", {
@@ -44,7 +45,7 @@ export function ResponseDetailPage({
   );
   const castingHref = casting ? withRole(`/castings/${casting.slug}`, role) : null;
   const canOpenProfile = role !== "actor";
-  const showCdActions = role === "casting" && item.status !== "declined";
+  const showCdActions = role === "casting";
 
   const person = (
     <>
@@ -90,23 +91,7 @@ export function ResponseDetailPage({
                   <p>{item.note?.trim() ? item.note : "Без комментария"}</p>
                 </section>
 
-                {showCdActions ? (
-                  <div className="response-detail__footer">
-                    {item.status !== "shortlist" ? (
-                      <button type="button" className="btn-secondary" onClick={() => onStatus("shortlist")}>
-                        В шорт-лист
-                      </button>
-                    ) : null}
-                    {item.status !== "invited" ? (
-                      <button type="button" className="btn-primary" onClick={() => onStatus("invited")}>
-                        Пригласить на очные
-                      </button>
-                    ) : null}
-                    <button type="button" className="btn-secondary" onClick={() => onStatus("declined")}>
-                      Отклонить
-                    </button>
-                  </div>
-                ) : null}
+                {showCdActions ? <ResponseActions className="response-detail__footer" item={item} onStatus={onStatus} /> : null}
               </section>
 
               {item.tape ? (

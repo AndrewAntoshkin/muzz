@@ -8,7 +8,7 @@ import type { Credit, KvPair, Schedule, Showreel } from "@/lib/person-card";
 import type { ProfilePatch, ProfilePhoto } from "@/lib/workspace";
 import { useWorkspace } from "./useWorkspace";
 import { MonthCalendar } from "./MonthCalendar";
-import { FileDropzone, FileStoreRow, fileExt, persistFileUrl } from "./FileDropzone";
+import { FileDropzone, FileStoreRow, fileExt, persistFiles } from "./FileDropzone";
 
 export type ProfileEditTab =
   | "about"
@@ -412,15 +412,13 @@ export function ProfileEditModal({
                   onError={flash}
                   onFiles={(files) => {
                     for (const file of files) {
-                      if (file.type.startsWith("video/")) {
-                        void persistFileUrl(file, "video").then((href) =>
-                          setShowreel((prev) => ({ ...prev, href, title: prev.title || file.name })),
+                      const isVideo = file.type.startsWith("video/");
+                      void persistFiles([file], isVideo ? "video" : "photo", flash).then(([done]) => {
+                        if (!done) return;
+                        setShowreel((prev) =>
+                          isVideo ? { ...prev, href: done.url, title: prev.title || file.name } : { ...prev, poster: done.url },
                         );
-                      } else {
-                        void persistFileUrl(file, "photo").then((url) =>
-                          setShowreel((prev) => ({ ...prev, poster: url })),
-                        );
-                      }
+                      });
                     }
                   }}
                 />
@@ -473,11 +471,9 @@ export function ProfileEditModal({
                   onError={flash}
                   onFiles={(files) => {
                     const room = Math.max(0, 40 - photos.length);
-                    void Promise.all(files.slice(0, room).map((file) => persistFileUrl(file, "photo"))).then((urls) => {
-                      setPhotos([
-                        ...photos,
-                        ...urls.map((url, i) => ({ id: `photo-${Date.now()}-${i}`, url })),
-                      ]);
+                    void persistFiles(files.slice(0, room), "photo", flash).then((done) => {
+                      if (!done.length) return;
+                      setPhotos((prev) => [...prev, ...done.map(({ url }, i) => ({ id: `photo-${Date.now()}-${i}`, url }))]);
                     });
                   }}
                 />

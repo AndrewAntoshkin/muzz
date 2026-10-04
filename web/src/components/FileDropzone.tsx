@@ -43,25 +43,37 @@ function FileTypeIcon({ tone, ext }: { tone: FileKindTone; ext: string }) {
   );
 }
 
-export function readFileAsDataUrl(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result || ""));
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
-}
-
+/**
+ * Загружает файл через общий конвейер (S3/Blob/диск) и возвращает постоянную ссылку.
+ * Никаких запасных вариантов вроде base64 или blob: — они жили только в браузере владельца
+ * и раздували хранилище; при сбое честно бросаем ошибку, а вызывающий код показывает её пользователю.
+ */
 export async function persistFileUrl(file: File, kind: "photo" | "video" | "doc" | "selftape" = "doc") {
   try {
     const stored = await uploadUserFile(file, kind);
     if (stored.url) return stored.url;
+    throw new Error("Хранилище не вернуло ссылку");
   } catch (err) {
-    if (kind === "selftape") throw err;
+    const reason = err instanceof Error && err.message ? err.message : "неизвестная ошибка";
+    throw new Error(`Не удалось загрузить «${file.name}»: ${reason}`);
   }
-  if (kind === "selftape") throw new Error("Не удалось сохранить видео");
-  if (kind === "video") return URL.createObjectURL(file);
-  return readFileAsDataUrl(file);
+}
+
+/** Загрузить несколько файлов: успешные вернём, по каждому сбою сообщим через onError. */
+export async function persistFiles(
+  files: File[],
+  kind: "photo" | "video" | "doc" | "selftape",
+  onError: (msg: string) => void,
+) {
+  const out: { file: File; url: string }[] = [];
+  for (const file of files) {
+    try {
+      out.push({ file, url: await persistFileUrl(file, kind) });
+    } catch (err) {
+      onError(err instanceof Error ? err.message : "Не удалось загрузить файл");
+    }
+  }
+  return out;
 }
 
 export function FileDropzone({

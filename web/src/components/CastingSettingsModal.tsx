@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
+import { todayMsk } from "@/lib/deadline";
+import { withRole } from "@/lib/roles";
 import { decodeSlug } from "@/lib/workspace";
 import type { CastingScene, ProjectDoc, TimelineItem, TimelineState } from "@/lib/productions";
+import { ConfirmDialog } from "./ConfirmDialog";
 import { useWorkspace } from "./useWorkspace";
-import { FileDropzone, FileStoreRow, fileExt, fileKindLabel, persistFileUrl } from "./FileDropzone";
+import { FileDropzone, FileStoreRow, fileExt, fileKindLabel, persistFiles } from "./FileDropzone";
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -53,15 +57,12 @@ function DocsListEditor({
     onChange(rows.map((row, i) => (i === idx ? { ...row, ...patch } : row)));
   }
   async function addFiles(files: File[]) {
-    const added: ProjectDoc[] = [];
-    for (const file of files) {
-      const href = await persistFileUrl(file, "doc");
-      added.push({
-        href,
-        label: file.name,
-        value: fileExt(file.name) || "файл",
-      });
-    }
+    const uploaded = await persistFiles(files, "doc", onError);
+    const added: ProjectDoc[] = uploaded.map(({ file, url }) => ({
+      href: url,
+      label: file.name,
+      value: fileExt(file.name) || "файл",
+    }));
     if (added.length) onChange([...rows, ...added]);
   }
 
@@ -115,6 +116,7 @@ export function CastingSettingsModal({
   onClose: () => void;
 }) {
   const ws = useWorkspace();
+  const router = useRouter();
   const castingKey = useMemo(() => decodeSlug(castingSlug), [castingSlug]);
   const casting = ws.getCasting(castingKey);
   const project = casting ? ws.getProject(casting.projectSlug) : null;
@@ -127,7 +129,9 @@ export function CastingSettingsModal({
   const [platform, setPlatform] = useState(
     () => factValue(casting?.facts ?? [], "Платформа") || project?.platform || "",
   );
-  const [deadline, setDeadline] = useState(casting?.deadline ?? "");
+  const [deadlineOn, setDeadlineOn] = useState(casting?.deadlineOn ?? "");
+  const [saving, setSaving] = useState(false);
+  const [confirm, setConfirm] = useState<"archive" | "close" | null>(null);
   const [published, setPublished] = useState(casting?.published ?? "");
   const [text, setText] = useState(casting?.text ?? "");
   const [urgent, setUrgent] = useState(Boolean(casting?.urgent));
@@ -155,45 +159,65 @@ export function CastingSettingsModal({
   }
 
   async function addSceneFiles(files: File[]) {
-    const added: CastingScene[] = [];
-    for (const file of files) {
-      const href = await persistFileUrl(file, "doc");
-      added.push({
-        num: String(scenes.length + added.length + 1).padStart(2, "0"),
-        title: file.name.replace(/\.[^.]+$/, ""),
-        meta: "",
-        duration: "",
-        href,
-      });
-    }
+    const uploaded = await persistFiles(files, "doc", ws.flash);
+    const added: CastingScene[] = uploaded.map(({ file, url }, i) => ({
+      num: String(scenes.length + i + 1).padStart(2, "0"),
+      title: file.name.replace(/\.[^.]+$/, ""),
+      meta: "",
+      duration: "",
+      href: url,
+    }));
     if (added.length) setScenes([...scenes, ...added]);
   }
 
   async function replaceScenesPdf(files: File[]) {
     const file = files[0];
     if (!file) return;
-    setScenesPdf(await persistFileUrl(file, "doc"));
+    const [done] = await persistFiles([file], "doc", ws.flash);
+    if (done) setScenesPdf(done.url);
   }
 
-  function handleSave() {
-    if (!casting) return;
+  const isClosed = casting.status === "closed";
+
+  async function toggleOpen() {
+    setSaving(true);
+    if (isClosed) await ws.reopenCasting(casting!.slug);
+    else await ws.closeCasting(casting!.slug);
+    setSaving(false);
+  }
+
+  async function doArchive() {
+    setSaving(true);
+    const ok = await ws.archiveCasting(casting!.slug);
+    setSaving(false);
+    setConfirm(null);
+    if (ok) {
+      onClose();
+      router.push(withRole("/castings", ws.role));
+    }
+  }
+
+  async function handleSave() {
+    if (!casting || saving) return;
     const extra = (casting.facts ?? []).filter(
       ([k]) => !["роль", "возраст", "гонорар", "платформа"].includes(k.toLowerCase()),
     );
-    ws.updateCasting(castingKey, {
+    setSaving(true);
+    const ok = await ws.updateCasting(castingKey, {
       title: title.trim() || casting.title,
       roleLabel: roleLabel.trim() || casting.roleLabel,
       text: text.trim(),
-      deadline: deadline.trim() || casting.deadline,
+      ...(deadlineOn !== (casting.deadlineOn ?? "") ? { deadlineOn: deadlineOn || null } : {}),
       published: published.trim() || undefined,
-      urgent: urgent || undefined,
+      urgent,
       facts: buildFacts({ roleLabel, age, fee, platform, extra }),
       timeline: timeline.filter((r) => r.title || r.date),
       scenes: scenes.filter((s) => s.title || s.href),
       scenesPdf: scenesPdf || undefined,
       docs: docs.filter((d) => d.label || d.href),
     });
-    onClose();
+    setSaving(false);
+    if (ok) onClose();
   }
 
   return createPortal(
@@ -269,9 +293,39 @@ export function CastingSettingsModal({
                   <Field label="Опубликовано">
                     <input value={published} onChange={(e) => setPublished(e.target.value)} placeholder="21 мая" />
                   </Field>
-                  <Field label="Дедлайн">
-                    <input value={deadline} onChange={(e) => setDeadline(e.target.value)} placeholder="6 июня" />
+                  <Field label="Принимаем отклики до">
+                    <input type="date" value={deadlineOn} onChange={(e) => setDeadlineOn(e.target.value)} />
                   </Field>
+                </div>
+                {deadlineOn && deadlineOn < todayMsk() ? (
+                  <p className="proj-settings-hint">Эта дата уже прошла — после сохранения набор будет закрыт.</p>
+                ) : null}
+                <div className="lifecycle-panel">
+                  <div className="lifecycle-panel__row">
+                    <div>
+                      <strong>{isClosed ? "Набор закрыт" : "Набор открыт"}</strong>
+                      <p className="lifecycle-panel__hint">
+                        {isClosed
+                          ? "Новых откликов нет, уже полученные сохранены."
+                          : "Актёры могут откликаться, пока не наступит дата или вы не закроете набор."}
+                      </p>
+                    </div>
+                    {isClosed ? (
+                      <button type="button" className="btn-secondary" disabled={saving} onClick={() => void toggleOpen()}>
+                        Открыть снова
+                      </button>
+                    ) : (
+                      <button type="button" className="btn-secondary" disabled={saving} onClick={() => setConfirm("close")}>
+                        Закрыть набор
+                      </button>
+                    )}
+                  </div>
+                  <div className="lifecycle-panel__row">
+                    <p className="lifecycle-panel__hint">Архивный кастинг пропадает из выдачи. Отклики сохраняются.</p>
+                    <button type="button" className="btn-secondary" disabled={saving} onClick={() => setConfirm("archive")}>
+                      В архив
+                    </button>
+                  </div>
                 </div>
                 <label className="kadr-check">
                   <input type="checkbox" checked={urgent} onChange={(e) => setUrgent(e.target.checked)} />
@@ -454,10 +508,36 @@ export function CastingSettingsModal({
           <button type="button" className="btn-secondary" onClick={onClose}>
             Отмена
           </button>
-          <button type="button" className="btn-primary" onClick={handleSave}>
-            Сохранить
+          <button type="button" className="btn-primary" onClick={() => void handleSave()} disabled={saving}>
+            {saving ? "Сохраняем…" : "Сохранить"}
           </button>
         </footer>
+        {confirm === "close" ? (
+          <ConfirmDialog
+            title="Закрыть набор?"
+            confirmLabel="Закрыть набор"
+            busy={saving}
+            onCancel={() => setConfirm(null)}
+            onConfirm={async () => {
+              await toggleOpen();
+              setConfirm(null);
+            }}
+          >
+            Новые отклики приниматься не будут. Уже полученные останутся, и набор можно открыть снова.
+          </ConfirmDialog>
+        ) : null}
+        {confirm === "archive" ? (
+          <ConfirmDialog
+            title="Перенести кастинг в архив?"
+            confirmLabel="В архив"
+            danger
+            busy={saving}
+            onCancel={() => setConfirm(null)}
+            onConfirm={() => void doArchive()}
+          >
+            Кастинг пропадёт из списков и поиска для актёров. Отклики сохранятся.
+          </ConfirmDialog>
+        ) : null}
       </div>
     </div>,
     document.body,

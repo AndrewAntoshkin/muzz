@@ -1,5 +1,6 @@
 import { HomeHub } from "@/components/HomeHub";
 import { countActors, listRoster, searchFaces } from "@/lib/people";
+import { viewerAgencyId } from "@/lib/viewer-agency";
 
 export const dynamic = "force-dynamic";
 
@@ -11,9 +12,11 @@ export default async function HomePage() {
   let roster: Awaited<ReturnType<typeof listRoster>> = [];
   let preview: Awaited<ReturnType<typeof searchFaces>>["items"] = [];
   let actorCount = 0;
+  let agencyId: string | null = null;
   try {
+    agencyId = await viewerAgencyId();
     [roster, preview, actorCount] = await Promise.all([
-      listRoster(),
+      agencyId ? listRoster(agencyId) : Promise.resolve([]),
       searchFaces({ professions: ["actor", "actress"], limit: 16 }).then((r) => r.items),
       countActors(),
     ]);
@@ -23,5 +26,5 @@ export default async function HomePage() {
     actorCount = 0;
   }
 
-  return <HomeHub roster={roster} preview={preview} actorCount={actorCount} />;
+  return <HomeHub roster={roster} preview={preview} actorCount={actorCount} agencyId={agencyId} />;
 }

@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
+import { withRole } from "@/lib/roles";
 import { decodeSlug } from "@/lib/workspace";
 import {
   PROJECT_STATUSES,
@@ -11,8 +13,9 @@ import {
   type ProjectTeamMember,
   type ProjectDoc,
 } from "@/lib/productions";
+import { ConfirmDialog } from "./ConfirmDialog";
 import { useWorkspace } from "./useWorkspace";
-import { FileDropzone, FileStoreRow, fileExt, fileKindLabel, persistFileUrl } from "./FileDropzone";
+import { FileDropzone, FileStoreRow, fileExt, fileKindLabel, persistFiles } from "./FileDropzone";
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -146,15 +149,12 @@ function DocsListEditor({
     onChange(rows.map((row, i) => (i === idx ? { ...row, ...patch } : row)));
   }
   async function addFiles(files: File[]) {
-    const added: ProjectDoc[] = [];
-    for (const file of files) {
-      const href = await persistFileUrl(file, "doc");
-      added.push({
-        href,
-        label: file.name,
-        value: fileExt(file.name) || "файл",
-      });
-    }
+    const uploaded = await persistFiles(files, "doc", onError);
+    const added: ProjectDoc[] = uploaded.map(({ file, url }) => ({
+      href: url,
+      label: file.name,
+      value: fileExt(file.name) || "файл",
+    }));
     if (added.length) onChange([...rows, ...added]);
   }
 
@@ -220,6 +220,9 @@ export function ProjectSettingsModal({
   const project = ws.getProject(projectKey);
   const allCastings = ws.castingsForProject(projectKey);
 
+  const router = useRouter();
+  const [saving, setSaving] = useState(false);
+  const [confirmArchive, setConfirmArchive] = useState(false);
   const [tab, setTab] = useState<ProjectSettingsTab>(initialTab || "general");
 
   const [logline, setLogline] = useState(project?.logline ?? "");
@@ -263,8 +266,21 @@ export function ProjectSettingsModal({
     setTeam(team.map((item, i) => (i === idx ? { ...item, ...patch } : item)));
   }
 
-  function handleSave() {
-    ws.updateProject(projectKey, {
+  async function doArchive() {
+    setSaving(true);
+    const ok = await ws.archiveProject(projectKey);
+    setSaving(false);
+    setConfirmArchive(false);
+    if (ok) {
+      onClose();
+      router.push(withRole("/projects", ws.role));
+    }
+  }
+
+  async function handleSave() {
+    if (saving) return;
+    setSaving(true);
+    const ok = await ws.updateProject(projectKey, {
       logline: logline.trim(),
       text: text.trim(),
       status,
@@ -285,7 +301,8 @@ export function ProjectSettingsModal({
       openings: openings.filter((o) => o.title),
       team: team.filter((m) => m.name),
     });
-    onClose();
+    setSaving(false);
+    if (ok) onClose();
   }
 
   return createPortal(
@@ -363,6 +380,14 @@ export function ProjectSettingsModal({
                   <Field label="Сцены сняты">
                     <input value={scenesDone} onChange={(e) => setScenesDone(e.target.value)} placeholder="156 / 218" />
                   </Field>
+                </div>
+                <div className="lifecycle-panel">
+                  <div className="lifecycle-panel__row">
+                    <p className="lifecycle-panel__hint">Архивный проект пропадает из выдачи вместе с кастингами. Отклики сохраняются.</p>
+                    <button type="button" className="btn-secondary" disabled={saving} onClick={() => setConfirmArchive(true)}>
+                      В архив
+                    </button>
+                  </div>
                 </div>
               </div>
             ) : null}
@@ -605,10 +630,22 @@ export function ProjectSettingsModal({
           <button type="button" className="btn-secondary" onClick={onClose}>
             Отмена
           </button>
-          <button type="button" className="btn-primary" onClick={handleSave}>
-            Сохранить
+          <button type="button" className="btn-primary" onClick={() => void handleSave()} disabled={saving}>
+            {saving ? "Сохраняем…" : "Сохранить"}
           </button>
         </footer>
+        {confirmArchive ? (
+          <ConfirmDialog
+            title="Перенести проект в архив?"
+            confirmLabel="В архив"
+            danger
+            busy={saving}
+            onCancel={() => setConfirmArchive(false)}
+            onConfirm={() => void doArchive()}
+          >
+            Проект и все его кастинги пропадут из списков. Отклики и история сохранятся.
+          </ConfirmDialog>
+        ) : null}
       </div>
     </div>,
     document.body,

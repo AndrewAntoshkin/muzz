@@ -271,14 +271,18 @@ export async function listThreadsForUser(me: SessionUser): Promise<ApiThread[]> 
   return out;
 }
 
+/** У профиля нет аккаунта — написать некому. Клиент показывает приглашение в «Кадр» вместо тупика. */
+export class NoAccountError extends Error {
+  constructor() {
+    super("У этого профиля пока нет аккаунта в «Кадре»");
+    this.name = "NoAccountError";
+  }
+}
+
 export async function openThreadWithPerson(me: SessionUser, personSlug: string) {
   const peers = await db.select().from(users).where(eq(users.personSlug, personSlug)).limit(1);
   const peerUser = peers[0];
-  if (!peerUser) {
-    throw new Error(
-      "У этого профиля ещё нет аккаунта — написать можно только зарегистрированному пользователю",
-    );
-  }
+  if (!peerUser) throw new NoAccountError();
   if (peerUser.id === me.id) throw new Error("Нельзя писать себе");
 
   const mine = await db
@@ -319,12 +323,8 @@ export async function openFileOutbox(me: SessionUser) {
 }
 
 export async function sendChatFile(me: SessionUser, personSlug: string, text: string, fileId: string) {
-  let threadId: string;
-  try {
-    threadId = personSlug ? await openThreadWithPerson(me, personSlug) : await openFileOutbox(me);
-  } catch {
-    threadId = await openFileOutbox(me);
-  }
+  // Файл без адресата — в личное «Избранное»; но если адресат указан и аккаунта нет, молча прятать файл нельзя.
+  const threadId = personSlug ? await openThreadWithPerson(me, personSlug) : await openFileOutbox(me);
   const message = await sendChatMessage(me, threadId, text, fileId);
   return { threadId, message };
 }

@@ -20,12 +20,23 @@ const AuthContext = createContext<AuthState | null>(null);
 function cfgFromSession(user: SessionUser, role: RoleId): DemoRole {
   const base = DEMO_ROLES[role];
   if (user.isDemo) return base;
+  // Настоящий пользователь не должен видеть демо-контент (чужие чаты, «2 сообщения», агентство «Актёр 1»).
+  const profile = user.personSlug ? `/people/${user.personSlug}` : base.profile;
   return {
     ...base,
     firstName: user.firstName || base.firstName,
     name: user.name || base.name,
     avatar: "",
-    profile: user.personSlug ? `/people/${user.personSlug}` : base.profile,
+    profile,
+    nav: base.nav.map(({ count: _count, ...item }) => {
+      void _count;
+      return item;
+    }),
+    block: [],
+    recent: [{ href: profile, label: "Мой профиль", live: true }],
+    now: [],
+    messages: [],
+    events: [],
   };
 }
 

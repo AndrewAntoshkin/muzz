@@ -116,3 +116,5 @@ export const chatMessages = pgTable("chat_messages", {
   fileId: text("file_id").references(() => files.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+export * from "./schema-workspace";

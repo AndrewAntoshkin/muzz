@@ -1,16 +1,20 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { accessLabel, isAdmin } from "@/lib/access";
 import { PLAN_META, openPlanModal, parsePlan } from "@/lib/plans";
 import { withRole } from "@/lib/roles";
 import { useAuth } from "@/components/AuthProvider";
 import { useWorkspace } from "@/components/useWorkspace";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function SettingsPage() {
   const { role, cfg, user, logout } = useAuth();
   const { settings, setSettings, resetDemo } = useWorkspace();
+  const [confirmReset, setConfirmReset] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
   return (
     <div className="app-main__body">
@@ -90,13 +94,33 @@ export default function SettingsPage() {
             </label>
           </section>
 
-          {user?.isDemo ? (
+          {isAdmin(user) ? (
             <section className="detail-block kadr-form-card">
               <h2 className="detail-block__title">Демо-данные</h2>
-              <p className="settings-page__hint">Сбросит отклики, сообщения и созданные проекты в этом браузере.</p>
-              <button type="button" className="btn-secondary" onClick={resetDemo}>
+              <p className="settings-page__hint">
+                Вернёт общий демо-контент (проекты, кастинги, отклики, доску) к исходному для всех демо-аккаунтов. Данные
+                настоящих пользователей не затрагиваются.
+              </p>
+              <button type="button" className="btn-secondary" onClick={() => setConfirmReset(true)}>
                 Сбросить демо
               </button>
+              {confirmReset ? (
+                <ConfirmDialog
+                  title="Сбросить демо-данные?"
+                  confirmLabel="Сбросить"
+                  danger
+                  busy={resetting}
+                  onCancel={() => setConfirmReset(false)}
+                  onConfirm={async () => {
+                    setResetting(true);
+                    await resetDemo();
+                    setResetting(false);
+                    setConfirmReset(false);
+                  }}
+                >
+                  Все правки, сделанные в демо-аккаунтах, будут потеряны.
+                </ConfirmDialog>
+              ) : null}
             </section>
           ) : null}
         </div>
