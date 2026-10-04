@@ -43,6 +43,13 @@
       "when": 1757000006000,
       "tag": "0006_workspace",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1757000007000,
+      "tag": "0007_search_norm",
+      "breakpoints": true
     }
   ]
 }

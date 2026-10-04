@@ -1,6 +1,7 @@
-import { and, asc, count, eq, ilike, inArray, or, type SQL } from "drizzle-orm";
+import { and, asc, count, eq, inArray, or, type SQL } from "drizzle-orm";
 import { db } from "@/db";
 import { agencies, agents, people, personLinks, personPhotos } from "@/db/schema";
+import { searchCondition } from "./search-query";
 import { applyDemoFace, applyDemoPerson, overlayFaces, syntheticIndustry, syntheticGneusheva, syntheticSoykina } from "./demo-overlay";
 
 export type FaceCard = {
@@ -54,22 +55,14 @@ export type FaceSearch = {
   offset?: number;
 };
 
-function likeNeedle(q: string) {
-  return `%${q.replace(/[%_\\]/g, "")}%`;
-}
-
 function faceWhere(opts: FaceSearch): SQL | undefined {
   const parts: SQL[] = [];
   if (opts.profession) parts.push(eq(people.profession, opts.profession));
   else if (opts.professions?.length) parts.push(inArray(people.profession, opts.professions));
   if (opts.city) parts.push(eq(people.city, opts.city));
   if (opts.agencyId) parts.push(eq(people.agencyId, opts.agencyId));
-  const q = opts.q?.trim();
-  if (q) {
-    const needle = likeNeedle(q);
-    const match = or(ilike(people.name, needle), ilike(people.role, needle), ilike(people.city, needle), ilike(people.hint, needle));
-    if (match) parts.push(match);
-  }
+  const match = searchCondition(opts.q);
+  if (match) parts.push(match);
   if (!parts.length) return undefined;
   return parts.length === 1 ? parts[0] : and(...parts);
 }
