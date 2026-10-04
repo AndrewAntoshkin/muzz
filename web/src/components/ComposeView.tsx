@@ -1,8 +1,10 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { todayMsk } from "@/lib/deadline";
 import type { FaceCard } from "@/lib/people";
+import { fetchFaces } from "@/lib/people-query";
 import { parseKvLines, parsePartners, PROJECT_STATUSES } from "@/lib/productions";
 import { profileSlug, withRole, type RoleId } from "@/lib/roles";
 import { useWorkspace } from "./useWorkspace";
@@ -18,6 +20,15 @@ export function ComposeView({ roster }: { roster: FaceCard[] }) {
   const router = useRouter();
   const ws = useWorkspace();
   const { role } = ws;
+  if (!ws.ready) {
+    return (
+      <div className="page-scroll detail-page">
+        <section className="detail-block kadr-form-card">
+          <p className="compose-hint">Загружаем ваши проекты…</p>
+        </section>
+      </div>
+    );
+  }
   const requested = params.get("type") || "post";
   const allowed = COMPOSE_BY_ROLE[role];
   const type = allowed.includes(requested) ? requested : allowed[0];
@@ -68,21 +79,24 @@ function Field({
 function PostForm({ onDone }: { onDone: () => void }) {
   const { addPost } = useWorkspace();
   const [text, setText] = useState("");
+  const [saving, setSaving] = useState(false);
   return (
     <form
       className="kadr-form"
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
-        if (!text.trim()) return;
-        addPost(text.trim());
-        onDone();
+        if (!text.trim() || saving) return;
+        setSaving(true);
+        const ok = await addPost(text.trim());
+        setSaving(false);
+        if (ok) onDone();
       }}
     >
       <Field label="Текст">
         <textarea rows={6} value={text} onChange={(e) => setText(e.target.value)} placeholder="Что происходит на площадке или в кастинге…" required />
       </Field>
-      <button type="submit" className="btn-primary" disabled={!text.trim()}>
-        Опубликовать
+      <button type="submit" className="btn-primary" disabled={!text.trim() || saving}>
+        {saving ? "Публикуем…" : "Опубликовать"}
       </button>
     </form>
   );
@@ -99,14 +113,15 @@ function kvFrom(pairs: [string, string][]) {
 }
 
 function ProjectForm({ onDone }: { onDone: (slug: string) => void }) {
-  const { addProject } = useWorkspace();
+  const { addProject, cfg } = useWorkspace();
+  const [saving, setSaving] = useState(false);
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState("Препродакшн");
-  const [studio, setStudio] = useState("Sreda Production");
-  const [platform, setPlatform] = useState("Кинопоиск");
-  const [kind, setKind] = useState("Полный метр · драма");
-  const [city, setCity] = useState("Москва");
-  const [year, setYear] = useState("2026");
+  const [studio, setStudio] = useState("");
+  const [platform, setPlatform] = useState("");
+  const [kind, setKind] = useState("");
+  const [city, setCity] = useState("");
+  const [year, setYear] = useState(String(new Date().getFullYear()));
   const [shifts, setShifts] = useState("");
   const [logline, setLogline] = useState("");
   const [text, setText] = useState("");
@@ -114,7 +129,7 @@ function ProjectForm({ onDone }: { onDone: (slug: string) => void }) {
   const [budget, setBudget] = useState("");
   const [nature, setNature] = useState("");
   const [pavilion, setPavilion] = useState("");
-  const [cdName, setCdName] = useState("Анна Кеворкова");
+  const [cdName, setCdName] = useState(cfg.name);
   const [shiftsDone, setShiftsDone] = useState("");
   const [scenesDone, setScenesDone] = useState("");
   const [spent, setSpent] = useState("");
@@ -132,9 +147,11 @@ function ProjectForm({ onDone }: { onDone: (slug: string) => void }) {
   return (
     <form
       className="kadr-form"
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
-        const slug = addProject({
+        if (saving) return;
+        setSaving(true);
+        const slug = await addProject({
           title,
           studio,
           platform,
@@ -174,7 +191,8 @@ function ProjectForm({ onDone }: { onDone: (slug: string) => void }) {
             return rows.length ? rows : undefined;
           })(),
         });
-        onDone(slug);
+        setSaving(false);
+        if (slug) onDone(slug);
       }}
     >
       <p className="kadr-form__legend">Проект</p>
@@ -197,10 +215,10 @@ function ProjectForm({ onDone }: { onDone: (slug: string) => void }) {
       </div>
       <div className="kadr-form__row">
         <Field label="Студия">
-          <input value={studio} onChange={(e) => setStudio(e.target.value)} />
+          <input value={studio} onChange={(e) => setStudio(e.target.value)} placeholder="Название студии" />
         </Field>
         <Field label="Платформа">
-          <input value={platform} onChange={(e) => setPlatform(e.target.value)} />
+          <input value={platform} onChange={(e) => setPlatform(e.target.value)} placeholder="Кинотеатры, онлайн-кинотеатр, ТВ…" />
         </Field>
       </div>
       <div className="kadr-form__row">
@@ -314,8 +332,8 @@ function ProjectForm({ onDone }: { onDone: (slug: string) => void }) {
       </Field>
       <p className="kadr-form__hint">По строке: название — роль в проекте</p>
 
-      <button type="submit" className="btn-primary" disabled={!title.trim() || !logline.trim()}>
-        Создать проект
+      <button type="submit" className="btn-primary" disabled={!title.trim() || !logline.trim() || saving}>
+        {saving ? "Создаём…" : "Создать проект"}
       </button>
     </form>
   );
@@ -328,14 +346,23 @@ function CastingForm({
   presetProject: string;
   onDone: (slug: string) => void;
 }) {
-  const { addCasting, projectsForCd, cfg } = useWorkspace();
-  const mine = projectsForCd(profileSlug(cfg));
-  const [projectSlug, setProjectSlug] = useState(presetProject || mine[0]?.slug || "");
+  const { addCasting, projectsForCd, me } = useWorkspace();
+  const mine = projectsForCd(me.slug);
+  // Выбор проекта считаем из данных, а не копируем в state при первом рендере: после обновления страницы
+  // проекты приходят позже, и закешированное пустое значение раньше блокировало отправку формы.
+  const [pickedProject, setPickedProject] = useState("");
+  const projectSlug = mine.some((p) => p.slug === pickedProject)
+    ? pickedProject
+    : mine.some((p) => p.slug === presetProject)
+      ? presetProject
+      : (mine[0]?.slug ?? "");
   const [title, setTitle] = useState("");
-  const [roleLabel, setRoleLabel] = useState("Главная женская");
-  const [age, setAge] = useState("28–34");
-  const [deadline, setDeadline] = useState("20 июня");
+  const [roleLabel, setRoleLabel] = useState("");
+  const [age, setAge] = useState("");
+  const [deadlineOn, setDeadlineOn] = useState("");
   const [text, setText] = useState("");
+  const [saving, setSaving] = useState(false);
+  const today = todayMsk();
 
   if (!mine.length) {
     return (
@@ -348,14 +375,24 @@ function CastingForm({
   return (
     <form
       className="kadr-form"
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
-        const slug = addCasting({ projectSlug, title, roleLabel, text, deadline, age });
-        onDone(slug);
+        if (saving) return;
+        setSaving(true);
+        const slug = await addCasting({
+          projectSlug,
+          title: title.trim(),
+          roleLabel: roleLabel.trim(),
+          text: text.trim(),
+          deadlineOn: deadlineOn || null,
+          age: age.trim() || undefined,
+        });
+        setSaving(false);
+        if (slug) onDone(slug);
       }}
     >
       <Field label="Проект">
-        <select value={projectSlug} onChange={(e) => setProjectSlug(e.target.value)} required>
+        <select value={projectSlug} onChange={(e) => setPickedProject(e.target.value)} required>
           {mine.map((p) => (
             <option key={p.slug} value={p.slug}>
               {p.title}
@@ -368,20 +405,23 @@ function CastingForm({
       </Field>
       <div className="kadr-form__row">
         <Field label="Тип роли">
-          <input value={roleLabel} onChange={(e) => setRoleLabel(e.target.value)} />
+          <input value={roleLabel} onChange={(e) => setRoleLabel(e.target.value)} required placeholder="Главная женская" />
         </Field>
         <Field label="Возраст">
-          <input value={age} onChange={(e) => setAge(e.target.value)} />
+          <input value={age} onChange={(e) => setAge(e.target.value)} placeholder="28–34" />
         </Field>
       </div>
-      <Field label="Дедлайн">
-        <input value={deadline} onChange={(e) => setDeadline(e.target.value)} required />
+      <Field label="Принимаем отклики до">
+        <input type="date" value={deadlineOn} min={today} onChange={(e) => setDeadlineOn(e.target.value)} />
       </Field>
+      <p className="compose-hint" style={{ marginTop: -8 }}>
+        После этой даты кастинг закроется сам. Без даты отклики принимаются, пока вы не закроете кастинг вручную.
+      </p>
       <Field label="О роли">
         <textarea rows={5} value={text} onChange={(e) => setText(e.target.value)} required />
       </Field>
-      <button type="submit" className="btn-primary" disabled={!title.trim() || !text.trim() || !projectSlug}>
-        Опубликовать кастинг
+      <button type="submit" className="btn-primary" disabled={!title.trim() || !roleLabel.trim() || !text.trim() || !projectSlug || saving}>
+        {saving ? "Публикуем…" : "Опубликовать кастинг"}
       </button>
     </form>
   );
@@ -394,6 +434,15 @@ function castingTalentFilter(casting: { title: string; roleLabel?: string }): "a
   return "any";
 }
 
+function useDebounced<T>(value: T, ms: number) {
+  const [v, setV] = useState(value);
+  useEffect(() => {
+    const t = window.setTimeout(() => setV(value), ms);
+    return () => window.clearTimeout(t);
+  }, [value, ms]);
+  return v;
+}
+
 function ProposeForm({
   roster,
   presetCasting,
@@ -403,63 +452,91 @@ function ProposeForm({
   presetCasting: string;
   onDone: () => void;
 }) {
-  const { proposeActor, castings, getProject, flash } = useWorkspace();
-  const [castingSlug, setCastingSlug] = useState(presetCasting || castings[0]?.slug || "");
+  const { proposeActor, castings, getProject, flash, shortlist } = useWorkspace();
+  const open = useMemo(() => castings.filter((c) => c.status !== "closed"), [castings]);
+  const [pickedCasting, setPickedCasting] = useState(presetCasting);
+  const castingSlug = open.some((c) => c.slug === pickedCasting) ? pickedCasting : (open[0]?.slug ?? "");
   const [actorSlug, setActorSlug] = useState("");
   const [note, setNote] = useState("");
   const [q, setQ] = useState("");
+  const [saving, setSaving] = useState(false);
+  const query = useDebounced(q.trim(), 250);
+  const [found, setFound] = useState<FaceCard[] | null>(null);
+  const [searching, setSearching] = useState(false);
 
-  const selectedCasting = castings.find((c) => c.slug === castingSlug) ?? castings[0];
+  const selectedCasting = open.find((c) => c.slug === castingSlug);
   const talentFilter = selectedCasting ? castingTalentFilter(selectedCasting) : "any";
 
-  const rosterForCasting = useMemo(() => {
-    if (talentFilter === "any") return roster;
-    return roster.filter((p) => p.profession === talentFilter);
-  }, [roster, talentFilter]);
+  // Поиск идёт по всему каталогу, а не по ростеру одного агентства: агент может предложить любого актёра.
+  useEffect(() => {
+    let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- индикатор загрузки внешнего запроса
+    setSearching(true);
+    fetchFaces({ q: query || undefined, kind: "actors", profession: talentFilter === "any" ? undefined : talentFilter, limit: 24 })
+      .then((res) => !cancelled && setFound(res.items))
+      .catch(() => !cancelled && setFound([]))
+      .finally(() => !cancelled && setSearching(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [query, talentFilter]);
 
-  const filtered = useMemo(() => {
-    const query = q.trim().toLowerCase();
-    if (!query) return rosterForCasting;
-    return rosterForCasting.filter((p) => `${p.name} ${p.role} ${p.city}`.toLowerCase().includes(query));
-  }, [rosterForCasting, q]);
+  const suggestions = useMemo(() => {
+    const own = new Map<string, FaceCard>();
+    for (const p of shortlist) {
+      own.set(p.slug, {
+        slug: p.slug,
+        name: p.name,
+        role: p.meta?.split(" · ")[0] ?? "",
+        profession: "",
+        city: "",
+        imageUrl: p.photo || null,
+        verified: false,
+        hint: null,
+        initials: null,
+        bg: null,
+        agencyId: null,
+      });
+    }
+    for (const p of roster) if (!own.has(p.slug)) own.set(p.slug, p);
+    return Array.from(own.values()).filter((p) => talentFilter === "any" || !p.profession || p.profession === talentFilter);
+  }, [shortlist, roster, talentFilter]);
 
-  const person =
-    filtered.find((p) => p.slug === actorSlug) ??
-    rosterForCasting.find((p) => p.slug === actorSlug) ??
-    filtered[0] ??
-    null;
+  const list = query ? (found ?? []) : suggestions.length ? suggestions : (found ?? []);
+  const heading = query ? "Результаты поиска" : suggestions.length ? "Ваш шорт-лист и ростер" : "Из каталога";
 
-  if (!roster.length) {
-    return <p style={{ fontSize: 15, color: "var(--text-muted)" }}>Ростер агентства пока пуст.</p>;
+  const person = list.find((p) => p.slug === actorSlug) ?? null;
+
+  if (!open.length) {
+    return <p style={{ fontSize: 15, color: "var(--text-muted)" }}>Сейчас нет открытых кастингов, на которые можно предложить актёра.</p>;
   }
 
   return (
     <form
       className="kadr-form"
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
-        if (!person || !castingSlug) return;
-        if (talentFilter !== "any" && person.profession !== talentFilter) {
-          flash(
-            talentFilter === "actress"
-              ? "На эту роль нужны актрисы из ростера"
-              : "На эту роль нужны актёры из ростера",
-          );
+        if (!person || !castingSlug || saving) return;
+        if (talentFilter !== "any" && person.profession && person.profession !== talentFilter) {
+          flash(talentFilter === "actress" ? "На эту роль нужны актрисы" : "На эту роль нужны актёры");
           return;
         }
-        if (proposeActor(castingSlug, person, note.trim())) onDone();
+        setSaving(true);
+        const ok = await proposeActor(castingSlug, person, note.trim());
+        setSaving(false);
+        if (ok) onDone();
       }}
     >
       <Field label="Кастинг">
         <select
           value={castingSlug}
           onChange={(e) => {
-            setCastingSlug(e.target.value);
+            setPickedCasting(e.target.value);
             setActorSlug("");
           }}
           required
         >
-          {castings.map((c) => {
+          {open.map((c) => {
             const project = getProject(c.projectSlug);
             return (
               <option key={c.slug} value={c.slug}>
@@ -470,19 +547,18 @@ function ProposeForm({
           })}
         </select>
       </Field>
-      <Field label="Поиск по ростеру">
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Имя актёра…" />
+      <Field label="Найти актёра в каталоге">
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Имя, город или типаж…" />
       </Field>
       {talentFilter !== "any" ? (
         <p className="compose-hint">
-          {talentFilter === "actress"
-            ? "Показаны актрисы — под типаж выбранной роли"
-            : "Показаны актёры — под типаж выбранной роли"}
+          {talentFilter === "actress" ? "Показаны актрисы — под выбранную роль" : "Показаны актёры — под выбранную роль"}
         </p>
       ) : null}
+      <p className="compose-hint">{searching ? "Ищем…" : heading}</p>
       <div className="kadr-picker">
-        {filtered.length ? (
-          filtered.slice(0, 24).map((p) => (
+        {list.length ? (
+          list.slice(0, 24).map((p) => (
             <button
               type="button"
               key={p.slug}
@@ -495,15 +571,15 @@ function ProposeForm({
           ))
         ) : (
           <p className="compose-hint" style={{ gridColumn: "1 / -1" }}>
-            В ростере нет подходящих по полу кандидатов на эту роль.
+            {searching ? "" : "Никого не нашли. Попробуйте другое имя."}
           </p>
         )}
       </div>
       <Field label="Комментарий кастинг-директору">
         <textarea rows={3} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Почему этот актёр на роль…" />
       </Field>
-      <button type="submit" className="btn-primary" disabled={!person || !castingSlug}>
-        Предложить
+      <button type="submit" className="btn-primary" disabled={!person || !castingSlug || saving}>
+        {saving ? "Отправляем…" : "Предложить"}
       </button>
     </form>
   );

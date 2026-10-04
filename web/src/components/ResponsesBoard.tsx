@@ -1,5 +1,6 @@
 "use client";
 
+import { ResponseActions } from "@/components/ResponseActions";
 import Link from "next/link";
 import { useEffect } from "react";
 import {
@@ -132,7 +133,7 @@ export function ResponseDetailSheet({
   item: Application;
   role: RoleId;
   onClose: () => void;
-  onStatus: (status: AppStatus) => void;
+  onStatus: (status: AppStatus) => void | Promise<unknown>;
   castingTitle?: string;
   castingSlug: string;
   projectTitle?: string;
@@ -189,7 +190,7 @@ export function ResponseDetailSheet({
             <dt>Тип</dt>
             <dd>{KIND_LABEL[item.kind]}</dd>
             <dt>Источник</dt>
-            <dd>{item.source === "agent" ? "Предложение агента" : "Отклик актёра"}</dd>
+            <dd>{item.source === "agent" ? "Предложение агента" : item.source === "casting" ? "Приглашение от кастинга" : "Отклик актёра"}</dd>
             {item.match ? (
               <>
                 <dt>Совпадение</dt>
@@ -237,23 +238,7 @@ export function ResponseDetailSheet({
             )}
           </div>
 
-          {role === "casting" && item.status !== "declined" ? (
-            <div className="response-sheet__actions">
-              {item.status !== "shortlist" ? (
-                <button type="button" className="btn-secondary" onClick={() => onStatus("shortlist")}>
-                  В шорт-лист
-                </button>
-              ) : null}
-              {item.status !== "invited" ? (
-                <button type="button" className="btn-primary" onClick={() => onStatus("invited")}>
-                  Пригласить на очные
-                </button>
-              ) : null}
-              <button type="button" className="btn-secondary" onClick={() => onStatus("declined")}>
-                Отклонить
-              </button>
-            </div>
-          ) : null}
+          {role === "casting" ? <ResponseActions item={item} onStatus={onStatus} /> : null}
         </div>
       </div>
     </div>

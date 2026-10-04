@@ -32,7 +32,7 @@ const TAG_CLS = {
 function fallbackTimeline(deadline: string, responses: number): TimelineItem[] {
   return [
     { date: "Открыто", title: "Объявление и сбор самопроб", meta: `${responses} откликов`, state: "done" },
-    { date: deadline, title: "Дедлайн самопроб", meta: "приём открыт", state: "current" },
+    { date: deadline, title: "Дедлайн самопроб", meta: deadline.includes("закрыт") ? "приём закрыт" : "приём открыт", state: "current" },
     { date: "далее", title: "Очные пробы", meta: "по приглашениям", state: "future" },
   ];
 }
@@ -139,13 +139,15 @@ export function CastingView({ slug }: { slug: string }) {
   }
 
   const applied = alreadyApplied(casting.slug);
+  const closed = casting.status === "closed";
+  const deadlineLabel = closed ? (casting.deadline ? `закрыт · был до ${casting.deadline}` : "набор закрыт") : casting.deadline || "без срока";
   const savedKey = `casting:${casting.slug}`;
   const isSaved = saved.includes(savedKey);
   const n = responseCount(casting);
   const kind = project?.kind ?? casting.meta;
   const platform = project?.platform;
   const crumb = ["Кастинг", kind, platform].filter(Boolean).join(" · ");
-  const timeline = casting.timeline?.length ? casting.timeline : fallbackTimeline(casting.deadline, n);
+  const timeline = casting.timeline?.length ? casting.timeline : fallbackTimeline(deadlineLabel, n);
   const liveApps = applications.filter((a) => a.castingSlug === casting.slug);
   const team = project?.team?.filter((m) => m.name && !/актёр|актриса/i.test(m.role)) ?? [];
   const plan = parsePlan(settings.plan);
@@ -219,7 +221,7 @@ export function CastingView({ slug }: { slug: string }) {
                 ) : null}
                 <div>
                   <dt>Дедлайн</dt>
-                  <dd className="casting-detail__deadline">{casting.deadline}</dd>
+                  <dd className="casting-detail__deadline">{deadlineLabel}</dd>
                 </div>
                 {role !== "actor" ? (
                   <div>
@@ -243,9 +245,13 @@ export function CastingView({ slug }: { slug: string }) {
                   <Link href={withRole("/responses", role)} className="btn-primary">
                     Отклик отправлен
                   </Link>
+                ) : closed ? (
+                  <button type="button" className="btn-primary" disabled>
+                    Набор закрыт
+                  </button>
                 ) : (
-                  <button type="button" className="btn-primary" onClick={() => applyToCasting(casting.slug, "selftape")}>
-                    Откликнуться самопробой
+                  <button type="button" className="btn-primary" onClick={() => void applyToCasting(casting.slug, "apply")}>
+                    Откликнуться
                   </button>
                 )}
                 <button type="button" className={`btn-secondary${isSaved ? " is-on" : ""}`} onClick={() => toggleSaved(savedKey)}>
@@ -347,7 +353,7 @@ export function CastingView({ slug }: { slug: string }) {
             <section className="detail-block">
               <div className="detail-block__head">
                 <h2 className="detail-block__title">Ваша самопроба</h2>
-                <span className="casting-detail__deadline-hint">до {casting.deadline}</span>
+                <span className="casting-detail__deadline-hint">{closed ? "набор закрыт" : casting.deadline ? `до ${casting.deadline}` : "без срока"}</span>
               </div>
               <div className="file-store">
                 {role === "actor" && !applied ? (
@@ -404,10 +410,10 @@ export function CastingView({ slug }: { slug: string }) {
                     <button
                       type="button"
                       className="btn-primary"
-                      disabled={!tapeFile}
+                      disabled={!tapeFile || closed}
                       onClick={() => {
                         if (!tapeFile) return;
-                        applyToCasting(casting.slug, "selftape", {
+                        void applyToCasting(casting.slug, "selftape", {
                           title: tapeFile.name,
                           poster: "",
                           href: tapeFile.href,
@@ -575,7 +581,7 @@ export function CastingView({ slug }: { slug: string }) {
           }}
           left={left}
           cap={cap}
-          canSend={!applied}
+          canSend={!applied && !closed}
           onClose={() => setStudioOpen(false)}
           onTake={bumpRehearsal}
           onSend={async (file, duration) => {

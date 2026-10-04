@@ -1,24 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import type { PersonProfile } from "@/lib/people";
-import { VZMETNEV_CARD, KEVORKOVA_CARD, DEMO_BIOS, demoActorSchedule } from "@/lib/demo-profiles";
+import type { PublicCard, PublicProfile } from "@/lib/person-public";
+import { VZMETNEV_CARD, DEMO_BIOS, demoActorSchedule } from "@/lib/demo-profiles";
 import { LINK_LABELS, CONTACT_KINDS, contactHref, assetSrc, initialsOf } from "@/lib/labels";
 import { PLAN_META, openPlanModal, personIsStudent, parsePlan, visiblePlan, type PlanId } from "@/lib/plans";
 import {
-  ageLabel,
-  asCard,
+  yearsLabel,
   kvValue,
   type Credit,
   type KvPair,
-  type PersonCard,
-  type Schedule,
   type Showreel,
 } from "@/lib/person-card";
 import { emptySchedule, eventVisibleInMonth, formatEventWhen, normalizeSchedule, WEEKDAYS } from "@/lib/calendar";
-import { castingsForCd, getProject, projectsForCd } from "@/lib/productions";
 import { availabilityLabel, personAvailability } from "@/lib/workspace";
-import { AGENCY_PAGES } from "@/lib/agencies";
 import { useEffect, useMemo, useState } from "react";
 import { AnketaTabs } from "./AnketaTabs";
 import { HideIfOwn, ProfileViewerActions, WriteButton } from "./ProfileViewerActions";
@@ -136,7 +131,7 @@ function PhotoLightbox({ src, onClose }: { src: string; onClose: () => void }) {
   );
 }
 
-function PhotoGrid({ photos }: { photos: PersonProfile["photos"] }) {
+function PhotoGrid({ photos }: { photos: PublicProfile["photos"] }) {
   const [openSrc, setOpenSrc] = useState<string | null>(null);
   if (!photos.length) return null;
   return (
@@ -167,7 +162,7 @@ function isEducationLabel(label: string) {
   return label.trim().toLowerCase() === "образование";
 }
 
-function educationLines(card: PersonCard): string[] {
+function educationLines(card: PublicCard): string[] {
   const fromParams = card.params?.find((row) => isEducationLabel(row.label))?.value;
   const raw = (card.education || fromParams || "").trim();
   if (!raw) return [];
@@ -177,7 +172,7 @@ function educationLines(card: PersonCard): string[] {
     .filter(Boolean);
 }
 
-function Anketa({ card }: { card: PersonCard }) {
+function Anketa({ card }: { card: PublicCard }) {
   const params = (card.params || []).filter((row) => !isEducationLabel(row.label));
   const education = educationLines(card);
   const cols = [
@@ -238,7 +233,7 @@ function Avatar({
   person,
   onOpen,
 }: {
-  person: PersonProfile;
+  person: PublicProfile;
   onOpen?: (src: string) => void;
 }) {
   const plan = useVisiblePlan(person);
@@ -267,14 +262,9 @@ function quotedAgency(name: string) {
   return `агентство «${inner}»`;
 }
 
-function cardFor(person: PersonProfile, patch?: import("@/lib/workspace").ProfilePatch): PersonCard {
-  const base = asCard(person.card);
-  const card =
-    person.slug === "vzmetnev"
-      ? { ...base, ...VZMETNEV_CARD, manager: undefined }
-      : person.slug === "kevorkova"
-        ? { ...base, ...KEVORKOVA_CARD, manager: undefined }
-        : base;
+function cardFor(person: PublicProfile, patch?: import("@/lib/workspace").ProfilePatch): PublicCard {
+  // demo personas already arrive with their demo card from the server (lib/demo-overlay.ts)
+  const card = person.card;
   if (!patch) return card;
   return {
     ...card,
@@ -297,7 +287,7 @@ function cardFor(person: PersonProfile, patch?: import("@/lib/workspace").Profil
   };
 }
 
-export function ProfileView({ person }: { person: PersonProfile }) {
+export function ProfileView({ person }: { person: PublicProfile }) {
   const { profilePatches } = useWorkspace();
   const patch = profilePatches[person.slug];
   const card = cardFor(person, patch);
@@ -306,13 +296,13 @@ export function ProfileView({ person }: { person: PersonProfile }) {
   return <ActorLayout person={person} card={card} />;
 }
 
-function videoLink(person: PersonProfile) {
+function videoLink(person: PublicProfile) {
   return person.links.find(
     (link) => VIDEO_KINDS.has(link.kind) || /(?:vimeo\.com|youtube\.com|youtu\.be)\b/i.test(link.url),
   );
 }
 
-function resolveShowreel(person: PersonProfile, card: PersonCard): (Showreel & { href?: string }) | null {
+function resolveShowreel(person: PublicProfile, card: PublicCard): (Showreel & { href?: string }) | null {
   if (card.showreel?.poster) return card.showreel;
   const video = videoLink(person);
   if (!video || !person.imageUrl) return null;
@@ -360,7 +350,7 @@ function ShowreelBlock({ data }: { data: Showreel }) {
   );
 }
 
-function ScheduleBlock({ card, feminine }: { card: PersonCard; feminine: boolean }) {
+function ScheduleBlock({ card, feminine }: { card: PublicCard; feminine: boolean }) {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
@@ -458,11 +448,41 @@ function ContactsPanel({
   );
 }
 
+/**
+ * The agent's e-mail is not part of the page payload (it would be scraped with the
+ * profile). It is fetched on click from an authenticated, rate-limited endpoint.
+ */
+function AgentContactButton({ personSlug }: { personSlug: string }) {
+  const [busy, setBusy] = useState(false);
+  async function open() {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/people/${encodeURIComponent(personSlug)}/agent-contact`, { credentials: "include" });
+      const data = (await res.json()) as { email?: string; error?: string };
+      if (!res.ok || !data.email) {
+        window.alert(data.error || "Не удалось получить контакт агента");
+        return;
+      }
+      window.location.href = `mailto:${data.email}`;
+    } catch {
+      window.alert("Не удалось получить контакт агента");
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <button type="button" className="btn-secondary btn-block" style={{ marginTop: 8 }} disabled={busy} onClick={() => void open()}>
+      Написать агенту
+    </button>
+  );
+}
+
 function HeroTitle({
   person,
   education,
 }: {
-  person: PersonProfile;
+  person: PublicProfile;
   education?: string | string[] | null;
 }) {
   const plan = useVisiblePlan(person);
@@ -484,7 +504,7 @@ function HeroTitle({
   );
 }
 
-function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard }) {
+function ActorLayout({ person, card }: { person: PublicProfile; card: PublicCard }) {
   const { cfg, role } = useDemoRole();
   const { pulses, profilePatches } = useWorkspace();
   const [editOpen, setEditOpen] = useState(false);
@@ -500,43 +520,45 @@ function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard
   const agencyName = person.agencyName;
   const agentName = person.agentName;
   const hasAgency = Boolean(agencyName || agentName);
-  const agentSlug = (person.agencyId && AGENCY_PAGES[person.agencyId]?.agentSlug) || "soykina";
+  const agentSlug = person.agentSlug;
   const showreel = resolveShowreel(person, card);
   const pulse = pulses.find((p) => p.personSlug === person.slug);
-  const openLabel = availabilityLabel(personAvailability(person.slug, pulses), feminine);
+  const availability = personAvailability(person.slug, pulses);
+  const openLabel = availability ? availabilityLabel(availability, feminine) : "Статус не опубликован";
   const agencyLine = agencyName ? quotedAgency(agencyName) : null;
   const bio = patch?.bio ?? person.bio;
   const city = patch?.city ?? person.city;
 
-  const defaults = useMemo(
-    () => ({
-      bio: person.bio || (person.slug === "vzmetnev" ? DEMO_BIOS.vzmetnev : ""),
+  const defaults = useMemo(() => {
+    // Подстановки из демо-карточки — только для самой демо-персоны; у остальных форма стартует с их собственных данных.
+    const demo = person.slug === "vzmetnev" ? VZMETNEV_CARD : undefined;
+    return {
+      bio: person.bio || (demo ? DEMO_BIOS.vzmetnev : ""),
       city: person.city || "",
-      params: card.params || VZMETNEV_CARD.params || [],
-      appearance: card.appearance || VZMETNEV_CARD.appearance || [],
-      languages: card.languages || VZMETNEV_CARD.languages || [],
-      skills: card.skills || VZMETNEV_CARD.skills || [],
-      education: card.education || VZMETNEV_CARD.education || "",
-      showreel: card.showreel || VZMETNEV_CARD.showreel || { poster: "", title: "" },
+      params: card.params || demo?.params || [],
+      appearance: card.appearance || demo?.appearance || [],
+      languages: card.languages || demo?.languages || [],
+      skills: card.skills || demo?.skills || [],
+      education: card.education || demo?.education || "",
+      showreel: card.showreel || demo?.showreel || { poster: "", title: "" },
       photos: (person.photos.length
         ? person.photos
         : person.imageUrl
           ? [{ id: `${person.slug}-hero`, url: person.imageUrl }]
           : []
       ).map((p) => ({ id: p.id, url: p.url })),
-      schedule: normalizeSchedule(card.schedule || demoActorSchedule()),
-      credits: card.credits || VZMETNEV_CARD.credits || [],
+      schedule: normalizeSchedule(card.schedule || (demo ? demoActorSchedule() : emptySchedule())),
+      credits: card.credits || demo?.credits || [],
       links: person.links.map((l) => ({ id: l.id, kind: l.kind, url: l.url })),
-    }),
-    [person, card],
-  );
+    };
+  }, [person, card]);
 
   const photos = (patch?.photos
-    ? patch.photos.map((p) => ({ id: p.id, personSlug: person.slug, url: p.url, sort: 0 }))
+    ? patch.photos.map((p) => ({ id: p.id, url: p.url }))
     : person.photos.length
       ? person.photos
       : person.imageUrl
-        ? [{ id: `${person.slug}-hero`, personSlug: person.slug, url: person.imageUrl, sort: 0 }]
+        ? [{ id: `${person.slug}-hero`, url: person.imageUrl }]
         : []);
   const links = patch?.links ?? person.links;
 
@@ -548,7 +570,7 @@ function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard
             <div className="detail-hero__body kadr-hero-body">
               <Avatar person={person} onOpen={setPhotoSrc} />
               <HeroTitle person={person} education={educationLines(card)} />
-              <MetaLine bits={[person.role, city, ageLabel(person.birthDate), height, ...(card.heroMeta || [])]} />
+              <MetaLine bits={[person.role, city, yearsLabel(person.age), height, ...(card.heroMeta || [])]} />
               {bio ? (
                 <p className="kadr-bio">{bio}</p>
               ) : agencyName && !/^главн/i.test(agencyName) ? (
@@ -559,6 +581,7 @@ function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard
               ) : null}
               <ProfileViewerActions
                 personSlug={person.slug}
+                personName={person.name}
                 profession={person.profession}
                 onEditProfile={() => {
                   setEditTab("about");
@@ -566,7 +589,7 @@ function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard
                 }}
                 onEditStatus={() => setStatusOpen(true)}
               />
-              {manager ? (
+              {manager && agentSlug ? (
                 <div className="callout kadr-manager">
                   <div className="kadr-manager__who">
                     <span className="kadr-manager__ava">{initialsOf(manager.name)}</span>
@@ -580,6 +603,7 @@ function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard
                   </div>
                   <WriteButton
                     personSlug={agentSlug}
+                    personName={manager.name}
                     profession="agent"
                     label="Написать агенту"
                     primary
@@ -674,11 +698,7 @@ function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard
               ) : (
                 <div style={{ fontWeight: 600, fontSize: 14 }}>{agencyName}</div>
               )}
-              {person.agentEmail ? (
-                <a href={`mailto:${person.agentEmail}`} className="btn-secondary btn-block" style={{ marginTop: 8 }}>
-                  Написать агенту
-                </a>
-              ) : null}
+              {person.hasAgentContact ? <AgentContactButton personSlug={person.slug} /> : null}
             </section>
           ) : null}
           <ContactsPanel
@@ -706,9 +726,10 @@ function ActorLayout({ person, card }: { person: PersonProfile; card: PersonCard
   );
 }
 
-function CastingLayout({ person, card }: { person: PersonProfile; card: PersonCard }) {
+function CastingLayout({ person, card }: { person: PublicProfile; card: PublicCard }) {
   const plan = useVisiblePlan(person);
-  const activeCastings = castingsForCd(person.slug);
+  const { castingsForCd, projectsForCd, getProject } = useWorkspace();
+  const activeCastings = castingsForCd(person.slug).filter((c) => c.status !== "closed");
   const cdProjects = projectsForCd(person.slug);
 
   return (
@@ -721,7 +742,7 @@ function CastingLayout({ person, card }: { person: PersonProfile; card: PersonCa
               <HeroTitle person={person} />
               <MetaLine bits={[person.role, person.city, ...(card.heroMeta || [])]} />
               {person.bio ? <p className="kadr-bio">{person.bio}</p> : null}
-              <ProfileViewerActions personSlug={person.slug} profession={person.profession} />
+              <ProfileViewerActions personSlug={person.slug} personName={person.name} profession={person.profession} />
             </div>
           </section>
 
@@ -850,7 +871,7 @@ function CastingLayout({ person, card }: { person: PersonProfile; card: PersonCa
   );
 }
 
-function AgentLayout({ person, card }: { person: PersonProfile; card: PersonCard }) {
+function AgentLayout({ person, card }: { person: PublicProfile; card: PublicCard }) {
   const { role, cfg } = useDemoRole();
   const isOwn = person.slug === profileSlug(cfg);
   const plan = useVisiblePlan(person);
@@ -866,7 +887,7 @@ function AgentLayout({ person, card }: { person: PersonProfile; card: PersonCard
               <HeroTitle person={person} />
               <MetaLine bits={[person.role, person.agencyName ? `агентство «${person.agencyName}»` : null, person.city]} />
               {person.bio ? <p className="kadr-bio">{person.bio}</p> : null}
-              <ProfileViewerActions personSlug={person.slug} profession={person.profession} agencyId={person.agencyId} />
+              <ProfileViewerActions personSlug={person.slug} personName={person.name} profession={person.profession} agencyId={person.agencyId} />
             </div>
           </section>
 

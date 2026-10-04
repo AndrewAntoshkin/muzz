@@ -139,3 +139,5 @@ export const rateLimits = pgTable("rate_limits", {
   count: integer("count").notNull().default(0),
   resetAt: timestamp("reset_at", { withTimezone: true }).notNull(),
 }, (t) => [index("rate_limits_reset_at_idx").on(t.resetAt)]);
+
+export * from "./schema-workspace";

@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointer
 import { createPortal } from "react-dom";
 import { withRole } from "@/lib/roles";
 import { decodeSlug } from "@/lib/workspace";
+import { ConfirmDialog } from "./ConfirmDialog";
 import { useWorkspace } from "./useWorkspace";
 
 const CARD_W = 390;
@@ -58,6 +59,7 @@ export function ProjectBoard({
     roleLayout,
     addPin,
     removePin,
+    clearPins,
     updatePin,
     updateRoleLayout,
     getProject,
@@ -80,6 +82,7 @@ export function ProjectBoard({
   const [selected, setSelected] = useState<string | null>(null);
   const [picker, setPicker] = useState(false);
   const [menu, setMenu] = useState(false);
+  const [confirmClear, setConfirmClear] = useState(false);
   const [query, setQuery] = useState("");
   const [drag, setDrag] = useState<DragItem | null>(null);
   const [spaceDown, setSpaceDown] = useState(false);
@@ -526,7 +529,7 @@ export function ProjectBoard({
               <button
                 type="button"
                 onClick={() => {
-                  pins.forEach((p) => removePin(p.id));
+                  setConfirmClear(true);
                   setMenu(false);
                 }}
               >
@@ -536,6 +539,20 @@ export function ProjectBoard({
           </div>
         ) : null}
       </div>
+      {confirmClear ? (
+        <ConfirmDialog
+          title="Убрать всех актёров с доски?"
+          confirmLabel="Убрать всех"
+          danger
+          onCancel={() => setConfirmClear(false)}
+          onConfirm={() => {
+            void clearPins(projectSlug);
+            setConfirmClear(false);
+          }}
+        >
+          С доски исчезнут {pins.length} карточек. Шорт-лист и отклики не изменятся.
+        </ConfirmDialog>
+      ) : null}
     </div>
   );
 }

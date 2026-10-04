@@ -128,7 +128,11 @@ export function ageYears(iso: string | null | undefined) {
 }
 
 export function ageLabel(iso: string | null | undefined) {
-  const n = ageYears(iso);
+  return yearsLabel(ageYears(iso));
+}
+
+/** "34 года" from an already computed age (the server sends `age`, not the birth date). */
+export function yearsLabel(n: number | null | undefined) {
   if (n == null) return null;
   const mod10 = n % 10;
   const mod100 = n % 100;

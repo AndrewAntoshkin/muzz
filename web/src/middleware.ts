@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { isAdmin } from "@/lib/access";
+import { matchCheckedRoute, routeExists } from "@/lib/route-exists";
 import { SESSION_COOKIE, readSessionToken } from "@/lib/session";
 
 // /api/cron/* проверяет CRON_SECRET сам, /api/health нужен мониторингу.
@@ -58,9 +59,28 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Real HTTP 404 for missing people / agencies / events (see lib/route-exists.ts for why
+  // this cannot be left to notFound() inside the page). Client-side navigations (RSC /
+  // prefetch) are left to the page's own not-found UI.
+  if (session && (req.method === "GET" || req.method === "HEAD") && !req.headers.has("rsc") && !req.headers.has("next-router-prefetch")) {
+    const check = matchCheckedRoute(pathname);
+    if (check) {
+      if (check.kind === "people" && check.key === "lebedeva") {
+        const url = req.nextUrl.clone();
+        url.pathname = "/people/kevorkova";
+        return NextResponse.redirect(url, 308);
+      }
+      if ((await routeExists(check)) === false) {
+        return NextResponse.rewrite(new URL("/_not-found-kadr", req.url));
+      }
+    }
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
   matcher: ["/((?!_next/static|_next/image).*)"],
+  // Node.js runtime: the existence checks above query Postgres (postgres-js needs TCP sockets).
+  runtime: "nodejs",
 };

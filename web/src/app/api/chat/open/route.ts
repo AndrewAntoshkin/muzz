@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { openThreadWithPerson } from "@/lib/accounts";
+import { NoAccountError, openThreadWithPerson } from "@/lib/accounts";
 import { getSession } from "@/lib/auth";
 import { limitOr429 } from "@/lib/rate-limit";
 
@@ -18,6 +18,9 @@ export async function POST(req: Request) {
     const threadId = await openThreadWithPerson(me, personSlug);
     return NextResponse.json({ threadId });
   } catch (err) {
+    if (err instanceof NoAccountError) {
+      return NextResponse.json({ error: err.message, code: "no_account" }, { status: 409 });
+    }
     const message = err instanceof Error ? err.message : "Ошибка";
     return NextResponse.json({ error: message }, { status: 400 });
   }

@@ -400,6 +400,7 @@ export function Shell({ children }: { children: ReactNode }) {
             ))}
           </nav>
 
+          {cfg.block.length ? (
           <section className="sidebar-block">
             <h2 className="sidebar-block__title">{cfg.blockTitle}</h2>
             <nav className="sidebar-nav">
@@ -416,6 +417,7 @@ export function Shell({ children }: { children: ReactNode }) {
               ))}
             </nav>
           </section>
+          ) : null}
 
           <section className="sidebar-block">
             <h2 className="sidebar-block__title">Недавно</h2>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useLayoutEffect, useMemo, useRef, useState, type MouseEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { collectInbox, relTime, type InboxEvent } from "@/lib/inbox";
 import { canUseAssistant, openPlanModal, parsePlan } from "@/lib/plans";
 import { profileSlug, withRole } from "@/lib/roles";
@@ -10,54 +10,24 @@ import { IconBell } from "./icons";
 import { useAuth } from "./AuthProvider";
 import { useWorkspace } from "./useWorkspace";
 
-const SEEN_KEY = "kadr-inbox-seen";
-
-function loadSeen(): string[] {
-  try {
-    const raw = localStorage.getItem(SEEN_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed.filter((x) => typeof x === "string") : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveSeen(ids: string[]) {
-  try {
-    localStorage.setItem(SEEN_KEY, JSON.stringify(ids.slice(-200)));
-  } catch {
-    /* ignore */
-  }
-}
-
 function useInbox() {
   const { role, cfg } = useAuth();
-  const { state, settings } = useWorkspace();
-  const [seen, setSeen] = useState<string[]>([]);
+  const { state, settings, ready, inboxSeenAt, markInboxSeen } = useWorkspace();
   const [highlight, setHighlight] = useState<Set<string>>(() => new Set());
   const meSlug = profileSlug(cfg);
   const plan = parsePlan(settings.plan);
 
-  useLayoutEffect(() => {
-    setSeen(loadSeen());
-  }, []);
-
   const events = useMemo(() => collectInbox(state, role, meSlug, plan), [state, role, meSlug, plan]);
-  const seenSet = useMemo(() => new Set(seen), [seen]);
-  const unreadN = events.filter((e) => !seenSet.has(e.id)).length;
+  // «Прочитано» хранится на сервере как отметка времени, поэтому одинаково на всех устройствах.
+  const unreadN = ready ? events.filter((e) => e.createdAt > inboxSeenAt).length : 0;
 
   const markSeen = useCallback(() => {
-    setSeen((prev) => {
-      const seenSet = new Set(prev);
-      const fresh = events.filter((e) => !seenSet.has(e.id)).map((e) => e.id);
-      setHighlight(new Set(fresh));
-      const ids = Array.from(new Set([...prev, ...events.map((e) => e.id)]));
-      saveSeen(ids);
-      return ids;
-    });
-  }, [events]);
+    if (!ready) return;
+    setHighlight(new Set(events.filter((e) => e.createdAt > inboxSeenAt).map((e) => e.id)));
+    if (unreadN > 0) void markInboxSeen();
+  }, [events, inboxSeenAt, markInboxSeen, ready, unreadN]);
 
-  return { role, plan, events, highlight, unreadN, markSeen };
+  return { role, plan, events, highlight, unreadN, markSeen, ready };
 }
 
 function InboxItems({
@@ -113,13 +83,15 @@ export function InboxFeed({
 }: {
   onNavigate?: () => void;
 }) {
-  const { role, plan, events, highlight, unreadN, markSeen } = useInbox();
+  const { role, plan, events, highlight, unreadN, markSeen, ready } = useInbox();
+  const marked = useRef(false);
 
-  useLayoutEffect(() => {
+  // Отмечаем прочитанным один раз — когда раздел открыт и данные уже загружены.
+  useEffect(() => {
+    if (!ready || marked.current) return;
+    marked.current = true;
     markSeen();
-    // mark once when the drawer section mounts
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [ready, markSeen]);
 
   return (
     <section className="account-drawer__section" aria-label="Уведомления">

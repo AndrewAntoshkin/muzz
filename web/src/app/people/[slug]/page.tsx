@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { ProfileView } from "@/components/ProfileView";
+import { getSession } from "@/lib/auth";
 import { getPerson } from "@/lib/people";
+import { toPublicProfile } from "@/lib/person-public";
 
 export const dynamic = "force-dynamic";
 
@@ -22,13 +24,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PersonPage({ params }: Props) {
   const { slug } = await params;
-  const person = await getPerson(slug);
+  const [person, viewer] = await Promise.all([getPerson(slug), getSession()]);
   if (!person) notFound();
+  // legacy alias (e.g. /people/lebedeva -> kevorkova): one canonical URL per profile
+  if (person.slug !== slug) permanentRedirect(`/people/${person.slug}`);
 
+  // Only the public DTO crosses the server/client boundary (see lib/person-public.ts).
   return (
     <div className="app-main__body">
       <main className="page-area">
-        <ProfileView person={person} />
+        <ProfileView person={toPublicProfile(person, viewer)} />
       </main>
     </div>
   );

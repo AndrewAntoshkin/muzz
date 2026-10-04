@@ -8151,3 +8151,119 @@ button.hub-task {
 }
 
 
+
+/* === Confirm dialog === */
+.confirm-dialog {
+  width: min(440px, 100%);
+  padding: 22px 22px 18px;
+  border-radius: 16px;
+  background: var(--ss-surface-panel);
+  border: 1px solid var(--hairline);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+
+.confirm-dialog__title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.confirm-dialog__body {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.confirm-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.confirm-dialog__danger {
+  background: #c0392b;
+  border-color: #c0392b;
+}
+
+.confirm-dialog__danger:hover:not(:disabled) {
+  background: #a93226;
+}
+
+.lifecycle-panel {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+}
+
+.lifecycle-panel__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.lifecycle-panel__hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* === Contact dialogs === */
+.contact-dialog {
+  width: min(480px, 100%);
+}
+
+.contact-dialog__list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.contact-dialog__option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.contact-dialog__option.is-active {
+  border-color: var(--text-muted);
+}
+
+.contact-dialog__option strong,
+.contact-dialog__option em {
+  display: block;
+  font-style: normal;
+}
+
+.contact-dialog__option em {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.contact-dialog__invite {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+.contact-dialog__text {
+  width: 100%;
+  resize: none;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+}

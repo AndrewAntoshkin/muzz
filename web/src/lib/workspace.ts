@@ -1,13 +1,7 @@
-import {
-  CASTINGS,
-  PROJECTS,
-  type Casting,
-  type Project,
-} from "@/lib/productions";
+import type { Casting, Project } from "@/lib/productions";
 import type { Credit, KvPair, Schedule, Showreel } from "@/lib/person-card";
 import type { RoleId } from "@/lib/roles";
 
-export const WORKSPACE_KEY = "kadr-workspace-v13";
 
 export type Availability = "open" | "busy" | "hold";
 
@@ -37,21 +31,9 @@ export type ActorPulse = {
   updatedAt: number;
 };
 
-/** Demo occupancy when an actor has not published a live pulse. */
-export const DEMO_AVAILABILITY: Record<string, Availability> = {
-  vzmetnev: "open",
-  "ustyugov-aleksandr": "busy",
-  "shilovskaya-aglaya": "open",
-  "metelkin-aleksandr": "hold",
-  "lerman-olga": "busy",
-  "kutepova-polina": "open",
-  "hmelnickaya-alyona": "hold",
-  "chadov-aleksej": "busy",
-  "horinyak-viktor": "open",
-};
-
-export function personAvailability(slug: string, pulses: ActorPulse[]): Availability {
-  return pulses.find((p) => p.personSlug === slug)?.availability ?? DEMO_AVAILABILITY[slug] ?? "open";
+/** Статус занятости из опубликованного «пульса». Если актёр ничего не публиковал — null (мы не выдумываем занятость). */
+export function personAvailability(slug: string, pulses: ActorPulse[]): Availability | null {
+  return pulses.find((p) => p.personSlug === slug)?.availability ?? null;
 }
 
 export type ProfileLink = { id: string; kind: string; url: string };
@@ -73,7 +55,7 @@ export type ProfilePatch = {
 };
 
 export type AppStatus = "sent" | "shortlist" | "invited" | "declined";
-export type AppKind = "apply" | "selftape" | "propose";
+export type AppKind = "apply" | "selftape" | "propose" | "invite";
 
 export type AppTape = {
   title: string;
@@ -92,8 +74,10 @@ export type Application = {
   kind: AppKind;
   note: string;
   status: AppStatus;
-  source: "actor" | "agent";
+  /** actor — откликнулся сам, agent — предложил агент, casting — пригласил кастинг-директор. */
+  source: "actor" | "agent" | "casting";
   createdAt: number;
+  updatedAt: number;
   match?: string;
   actorMeta?: string;
   tape?: AppTape;
@@ -149,17 +133,6 @@ export type ShortlistPerson = {
   meta?: string;
 };
 
-/** Agent-owned picks — not applications / responses. */
-export const DEMO_SHORTLIST: ShortlistPerson[] = [
-  { slug: "vzmetnev", name: "Александр Взметнев", photo: "/assets/actors/vzmetnev-kinopoisk.jpg", meta: "Актёр · Москва" },
-  { slug: "lerman-olga", name: "Ольга Лерман", photo: "/assets/actors/akter1/lerman-olga.png", meta: "Актриса · Москва" },
-  { slug: "ustyugov-aleksandr", name: "Александр Устюгов", photo: "/assets/actors/akter1/ustyugov-aleksandr.jpg", meta: "Актёр · Москва" },
-  { slug: "shilovskaya-aglaya", name: "Аглая Шиловская", photo: "/assets/actors/akter1/shilovskaya-aglaya.jpg", meta: "Актриса · Москва" },
-  { slug: "metelkin-aleksandr", name: "Александр Метелкин", photo: "/assets/actors/akter1/metelkin-aleksandr.jpg", meta: "Актёр · Москва" },
-  { slug: "kutepova-polina", name: "Полина Кутепова", photo: "/assets/actors/akter1/kutepova-polina.jpg", meta: "Актриса · Москва" },
-  { slug: "hmelnickaya-alyona", name: "Алёна Хмельницкая", photo: "/assets/actors/akter1/hmelnickaya-alyona.jpg", meta: "Актриса · Москва" },
-  { slug: "horinyak-viktor", name: "Виктор Хориняк", photo: "/assets/actors/akter1/horinyak-viktor.png", meta: "Актёр · Москва" },
-];
 
 export type RoleLayout = {
   projectSlug: string;
@@ -184,8 +157,18 @@ export type WorkspaceSettings = {
   rehearsalsMonth?: string;
 };
 
+export type WorkspaceViewer = {
+  /** Чьими глазами смотрим: slug реальной анкеты или демо-персоны. */
+  slug: string;
+  role: RoleId;
+  /** Демо-режим: показываем демо-контент, настоящие пользователи его не видят. */
+  demo: boolean;
+};
+
 export type WorkspaceState = {
-  v: 1;
+  me: WorkspaceViewer;
+  /** Всё, что новее этой отметки в «уведомлениях», считается непрочитанным. */
+  inboxSeenAt: number;
   projects: Project[];
   castings: Casting[];
   applications: Application[];
@@ -218,735 +201,42 @@ export const KIND_LABEL: Record<AppKind, string> = {
   apply: "Отклик",
   selftape: "Самопроба",
   propose: "Предложение агента",
+  invite: "Приглашение",
 };
 
-function thread(
-  id: string,
-  roles: RoleId[],
-  unreadFor: RoleId[],
-  views: ChatThread["views"],
-  messages: ChatLine[],
-): ChatThread {
-  return { id, roles, unreadFor, views, messages };
-}
-
-const VZ = {
-  name: "Александр Взметнев",
-  roleLabel: "Актёр",
-  avatar: "/assets/actors/vzmetnev-avatar.jpg",
-  profileHref: "/people/vzmetnev",
-};
-
-function seedThreads(): ChatThread[] {
-  return [
-    thread(
-      "kevorkova-vzmetnev",
-      ["actor", "casting"],
-      ["actor"],
-      {
-        actor: {
-          name: "Анна Кеворкова",
-          roleLabel: "Кастинг-директор · «Тихий январь»",
-          avatar: "/assets/people/kevorkova.jpg",
-          profileHref: "/people/kevorkova",
-          extraHref: "/castings/tihiy-yanvar-second",
-          extraLabel: "К кастингу",
-        },
-        casting: { ...VZ },
-      },
-      [
-        line("t1-1", "casting", "Александр, добрый день. Вторая мужская в «Тихом январе» — отец / коллега по школе, 30–40. Самопробы до 6 июня.", "10:14", Date.parse("2026-05-28T10:14:00Z")),
-        line("t1-2", "actor", "Анна, здравствуйте. Роль видел, в кастинге открыл. Могу сегодня вечером, свет дома нормальный до 21.", "10:22", Date.parse("2026-05-28T10:22:00Z")),
-        line("t1-3", "casting", "Две сцены: кухня и школа. Слейт в начале — имя, рост, город. 16:9, без музыки, не вертикаль.", "10:28", Date.parse("2026-05-28T10:28:00Z")),
-        line("t1-4", "actor", "Партнёрша нужна или один? И грим — борода как есть?", "10:31", Date.parse("2026-05-28T10:31:00Z")),
-        line("t1-5", "casting", "Один. Текст в кастинге, страницы 2 и 4. Бороду не трогать. Камера примерно на уровне глаз.", "10:33", Date.parse("2026-05-28T10:33:00Z")),
-        line("t1-6", "actor", "Понял. Снимаю в квартире, фон нейтральный. Если файл больше 200 — через облако ок?", "10:37", Date.parse("2026-05-28T10:37:00Z")),
-        line("t1-7", "casting", "Сюда в чат, если влезет. Если нет — ссылка, доступ по ссылке без пароля.", "10:39", Date.parse("2026-05-28T10:39:00Z")),
-        line("t1-8", "actor", "Самопробы", "11:00", Date.parse("2026-05-28T11:00:00Z"), {
-          tape: { title: "Самопроба", duration: "2:14" },
-        }),
-        line("t1-9", "actor", "Обе сцены одним файлом. На кухне чуть темновато в конце — если крупный слабый, пересниму.", "11:01", Date.parse("2026-05-28T11:01:00Z")),
-        line("t1-10", "casting", "Приняла, смотрю сегодня. Не дёргайте, если не отвечу сразу.", "11:08", Date.parse("2026-05-28T11:08:00Z")),
-        line("t1-11", "casting", "Кухня хорошая, этот тон оставляем. Школу давайте ещё раз: спокойнее, без давления в последней реплике. Тот же кадр, не надо заново слейт.", "14:20", Date.parse("2026-05-28T14:20:00Z")),
-      ],
-    ),
-    thread(
-      "lenskikh-vzmetnev",
-      ["actor"],
-      [],
-      {
-        actor: {
-          name: "Маргарита Ленских",
-          roleLabel: "Кастинг-директор · ГКД",
-          initials: "МЛ",
-          bg: "#5C4A45",
-          profileHref: "/people/lenskikh",
-        },
-        casting: { ...VZ },
-      },
-      [
-        line("t2-1", "casting", "Александр, Маргарита Ленских. Есть 8 смен на севере, 10–14 июня. Мужская 32–40, не главная, с текстом.", "09:40", Date.parse("2026-05-28T09:40:00Z")),
-        line("t2-2", "actor", "Здравствуйте. 10–14 пока свободен. Может встать hold по «Тихому январю» — ещё не закрыли.", "09:55", Date.parse("2026-05-28T09:55:00Z")),
-        line("t2-3", "casting", "Hold уже стоит или только разговор?", "10:02", Date.parse("2026-05-28T10:02:00Z")),
-        line("t2-4", "actor", "Пока разговор. Если завтра скажут — сразу напишу. Иначе окно ваше.", "10:08", Date.parse("2026-05-28T10:08:00Z")),
-        line("t2-5", "casting", "Хорошо. Экспедиция оплачивается, средний гонорар по сериалу. Не реклама, не «известное лицо».", "10:15", Date.parse("2026-05-28T10:15:00Z")),
-        line("t2-6", "actor", "Город какой? И перелёт в один конец или туда-обратно каждый раз?", "10:21", Date.parse("2026-05-28T10:21:00Z")),
-        line("t2-7", "casting", "Мурманская область, живём на площадке. Туда 9-го вечером, обратно 15-го утром. Палатка не нужна, база есть.", "10:29", Date.parse("2026-05-28T10:29:00Z")),
-        line("t2-8", "actor", "Понял. Отвечу до пятницы, как будет ясно по январю. Если hold снимут раньше — напишу сразу.", "10:41", Date.parse("2026-05-28T10:41:00Z")),
-      ],
-    ),
-    thread(
-      "khrechkova-vzmetnev",
-      ["actor"],
-      [],
-      {
-        actor: {
-          name: "Татьяна Хречкова",
-          roleLabel: "Кастинг-директор · «Алиса не может ждать»",
-          initials: "ТХ",
-          bg: "#4A3D5C",
-          profileHref: "/people/khrechkova",
-        },
-        casting: { ...VZ },
-      },
-      [
-        line("t3-1", "casting", "Татьяна Хречкова. Смотрю 32–38, характер, не главный. Есть свежий шоурил?", "15:40", Date.parse("2026-05-27T15:40:00Z")),
-        line("t3-2", "actor", "Есть, 2018–2025. В профиле и на Кинопоиске. Если удобнее файл — кину сюда.", "15:48", Date.parse("2026-05-27T15:48:00Z")),
-        line("t3-3", "casting", "«Мажор» видела. Есть кусок поспокойнее, без криминала? Нам не оперативник.", "16:02", Date.parse("2026-05-27T16:02:00Z")),
-        line("t3-4", "actor", "«Любовь СССР» и «Трудные подростки» — там преподаватель. Могу таймкоды.", "16:10", Date.parse("2026-05-27T16:10:00Z")),
-        line("t3-5", "casting", "Дайте СССР, минута примерно. И рост / возраст в анкете актуальные?", "16:14", Date.parse("2026-05-27T16:14:00Z")),
-        line("t3-6", "actor", "180, 34. 0:38–1:12 — разговор в классе. Если не откроется — напишите, перезалью отдельно.", "16:40", Date.parse("2026-05-27T16:40:00Z")),
-        line("t3-7", "casting", "Открылось. Этот тон ближе. Самопробу пока не прошу, сначала покажу режиссёру.", "17:05", Date.parse("2026-05-27T17:05:00Z")),
-        line("t3-8", "actor", "Хорошо. Июнь в Москве, кроме 10–14 — там может закрыться другое. Если нужно знать заранее, скажите.", "17:12", Date.parse("2026-05-27T17:12:00Z")),
-        line("t3-9", "casting", "Пока не нужно. Если позовём — это июль, 3–4 смены. Напишу.", "17:18", Date.parse("2026-05-27T17:18:00Z")),
-      ],
-    ),
-    thread(
-      "lavrentieva-vzmetnev",
-      ["actor"],
-      [],
-      {
-        actor: {
-          name: "Ирина Лаврентьева",
-          roleLabel: "Кастинг-директор · ВГИК",
-          initials: "ИЛ",
-          bg: "#3D5C4A",
-          profileHref: "/people/lavrentieva",
-        },
-        casting: { ...VZ },
-      },
-      [
-        line("t4-1", "casting", "Ирина Лаврентьева. Зову на очные 12 июня, 11:30. Мосфильм, 3 павильон.", "11:05", Date.parse("2026-05-26T11:05:00Z")),
-        line("t4-2", "actor", "Буду. С собой паспорт и шоурил на телефоне?", "11:12", Date.parse("2026-05-26T11:12:00Z")),
-        line("t4-3", "casting", "Паспорт. Сцены пришлю вечером, две страницы. Не зубрить до запятой — смысл важнее.", "11:18", Date.parse("2026-05-26T11:18:00Z")),
-        line("t4-4", "actor", "Ок. Парковка есть или лучше метро? И сколько по времени, если вдруг смена рядом.", "11:21", Date.parse("2026-05-26T11:21:00Z")),
-        line("t4-5", "casting", "Метро «Мосфильмовская». На охране пропуск на фамилию. Слоты по 15 минут, не задерживаем.", "11:40", Date.parse("2026-05-26T11:40:00Z")),
-        line("t4-6", "actor", "Понял. Костюм — что удобно, или есть пожелание?", "11:47", Date.parse("2026-05-26T11:47:00Z")),
-        line("t4-7", "casting", "Своё, нейтральное. Не спорт и не костюм с галстуком. Обувь без белой подошвы.", "12:02", Date.parse("2026-05-26T12:02:00Z")),
-        line("t4-8", "casting", "Сцены отправила на почту и дублем сюда. Если не придут — напишите, перешлю ещё раз.", "19:10", Date.parse("2026-05-26T19:10:00Z")),
-        line("t4-9", "actor", "Пришли, обе страницы открылись. Спасибо, буду в 11:30.", "19:26", Date.parse("2026-05-26T19:26:00Z")),
-      ],
-    ),
-    thread(
-      "zalinyan-vzmetnev",
-      ["actor"],
-      ["actor"],
-      {
-        actor: {
-          name: "Татевик Залинян",
-          roleLabel: "Кастинг-директор · «Нулевой пациент»",
-          initials: "ТЗ",
-          bg: "#6D3D3D",
-          profileHref: "/people/zalinyan",
-        },
-        casting: { ...VZ },
-      },
-      [
-        line("t5-1", "casting", "Татевик Залинян. Смотрела вас в «Любви СССР» — этот тон нам ближе, чем криминал.", "09:12", Date.parse("2026-05-28T09:12:00Z")),
-        line("t5-2", "actor", "Здравствуйте. Рад, что этот кусок попался — его редко смотрят первым.", "09:18", Date.parse("2026-05-28T09:18:00Z")),
-        line("t5-3", "casting", "Есть характер на 4 смены в июле. Не главная, но с текстом. Врач / сосед, спокойный. Есть самопроба в этом регистре?", "09:24", Date.parse("2026-05-28T09:24:00Z")),
-        line("t5-4", "actor", "Готовой нет. Могу снять за выходные. Сцены есть? И занятость: 7–11 июля свободен, 12–13 уже нет.", "09:33", Date.parse("2026-05-28T09:33:00Z")),
-        line("t5-5", "casting", "7–11 как раз наши. Партнёр в кадре не нужен, читайте на камеру. Фон простой.", "09:41", Date.parse("2026-05-28T09:41:00Z")),
-        line("t5-6", "actor", "Ок. Снимать буду днём, свет из окна. Если нужен второй дубль с другой дистанцией — скажите сразу.", "09:46", Date.parse("2026-05-28T09:46:00Z")),
-        line("t5-7", "casting", "Сцены кину сегодня. Без музыки, слейт 5 секунд, не вертикаль. Как будет файл — сразу мне, не через агентство.", "09:50", Date.parse("2026-05-28T09:50:00Z")),
-      ],
-    ),
-    thread(
-      "soykina-vzmetnev",
-      ["actor", "agent"],
-      ["agent"],
-      {
-        actor: {
-          name: "Наталья Гнеушева",
-          roleLabel: "Агент",
-          avatar: "/assets/people/gneusheva.jpg",
-          profileHref: "/people/gneusheva",
-        },
-        agent: { ...VZ },
-      },
-      [
-        line("t6-1", "agent", "Александр, Наталья Гнеушева. Пишу напрямую: в анкете у вас без агента, не хочу путать.", "10:50", Date.parse("2026-05-27T10:50:00Z")),
-        line("t6-2", "actor", "Да, сам себя веду. Договор не рассматриваю сейчас — не из принципа, просто пока так спокойнее.", "11:04", Date.parse("2026-05-27T11:04:00Z")),
-        line("t6-3", "agent", "Ок, не предлагаю. Просто занятость: на июнь есть запросы 30–40, драма. Если свободны — могу кидать роли без эксклюзива и без процента с вашей стороны, это к CD.", "11:12", Date.parse("2026-05-27T11:12:00Z")),
-        line("t6-4", "actor", "Июнь в целом свободен. 10–14 может закрыться hold по Кеворковой, «Тихий январь».", "11:28", Date.parse("2026-05-27T11:28:00Z")),
-        line("t6-5", "agent", "Поняла. Если hold снимут — напишите, есть куда поставить. Дёргать каждый день не буду.", "11:36", Date.parse("2026-05-27T11:36:00Z")),
-        line("t6-6", "actor", "Спасибо. Материалы все в профиле, Кинопоиск актуальный. Если чего не хватит — скажите.", "11:40", Date.parse("2026-05-27T11:40:00Z")),
-        line("t6-7", "agent", "Хватит. Если пришлю конкретную роль — ответьте в тот же день, даже если нет. Иначе я не знаю, держать или нет.", "11:44", Date.parse("2026-05-27T11:44:00Z")),
-        line("t6-8", "actor", "Договорились. Если что-то конкретное — сюда, отвечу в тот же день.", "11:48", Date.parse("2026-05-27T11:48:00Z")),
-      ],
-    ),
-    thread(
-      "bocharova-vzmetnev",
-      ["actor"],
-      [],
-      {
-        actor: {
-          name: "Наталия Бочарова",
-          roleLabel: "Агент",
-          initials: "НБ",
-          bg: "#3D5C6D",
-          profileHref: "/people/bocharova",
-        },
-        agent: { ...VZ },
-      },
-      [
-        line("t7-1", "agent", "Наталия Бочарова, здравствуйте. Ищу 30–38 на драму, не конвейер. Можно ваши материалы?", "14:40", Date.parse("2026-05-26T14:40:00Z")),
-        line("t7-2", "actor", "Конечно. Шоурил в профиле, Кинопоиск там же. Если нужен файл отдельно — кину.", "14:51", Date.parse("2026-05-26T14:51:00Z")),
-        line("t7-3", "agent", "Рост какой? И город сейчас Москва? Экспедиция возможна на неделю.", "15:00", Date.parse("2026-05-26T15:00:00Z")),
-        line("t7-4", "actor", "180, Москва. Экспедиции до 3 недель нормально, если даты заранее.", "15:07", Date.parse("2026-05-26T15:07:00Z")),
-        line("t7-5", "agent", "Права? Иностранный язык в кадре нужен хотя бы на уровне «прочитать без акцента».", "15:11", Date.parse("2026-05-26T15:11:00Z")),
-        line("t7-6", "actor", "Английский читаю спокойно. Не носитель, для сериала обычно хватало.", "15:16", Date.parse("2026-05-26T15:16:00Z")),
-        line("t7-7", "agent", "Спасибо. Если пройдёте первичный — пришлю сцены. Без агентского договора, вы сами с CD, я только свожу.", "15:20", Date.parse("2026-05-26T15:20:00Z")),
-        line("t7-8", "actor", "Так и надо. Спасибо, жду.", "15:22", Date.parse("2026-05-26T15:22:00Z")),
-      ],
-    ),
-    thread(
-      "kevorkova-soykina",
-      ["casting", "agent"],
-      ["casting"],
-      {
-        casting: {
-          name: "Наталья Гнеушева",
-          roleLabel: "Агент",
-          avatar: "/assets/people/gneusheva.jpg",
-          profileHref: "/people/gneusheva",
-          extraHref: "/agencies/castingrus",
-          extraLabel: "К агентству",
-        },
-        agent: {
-          name: "Анна Кеворкова",
-          roleLabel: "Кастинг-директор · «Тихий январь»",
-          avatar: "/assets/people/kevorkova.jpg",
-          profileHref: "/people/kevorkova",
-        },
-      },
-      [
-        line("t8-1", "agent", "Анна, привет. Устюгов свободен на июнь, кроме 12–13. Смотрите на вторую мужскую?", "09:48", Date.parse("2026-05-28T09:48:00Z")),
-        line("t8-2", "casting", "Привет. Да, тип подходит. Самопроба есть или только шоурил?", "09:56", Date.parse("2026-05-28T09:56:00Z")),
-        line("t8-3", "agent", "Шоурил свежий, прошлогодний. Самопробу можем снять до пятницы, если надо под школу.", "10:03", Date.parse("2026-05-28T10:03:00Z")),
-        line("t8-4", "casting", "Снимайте. Роль — не красавец, держать паузу. Возраст 49 не смущает, если в кадре не 30.", "10:12", Date.parse("2026-05-28T10:12:00Z")),
-        line("t8-5", "agent", "Он как раз такой. Гримом молодить не будем. Кину сегодня фото + шоурил, самопробу — как снимет.", "10:19", Date.parse("2026-05-28T10:19:00Z")),
-        line("t8-6", "casting", "Ок. Только не рассылкой на всю студию, мне в этот чат. И не три ссылки в одном письме.", "10:22", Date.parse("2026-05-28T10:22:00Z")),
-        line("t8-7", "agent", "Конечно. Сегодня до шести фото и шоурил, самопроба отдельным сообщением как будет.", "10:24", Date.parse("2026-05-28T10:24:00Z")),
-        line("t8-8", "casting", "Если до шести не успеет снять — не гоните. Шоурила хватит на первый проход.", "10:28", Date.parse("2026-05-28T10:28:00Z")),
-        line("t8-9", "agent", "Тогда шоурил точно сегодня. Самопробу не обещаю на сегодня, скажу как снимет.", "10:31", Date.parse("2026-05-28T10:31:00Z")),
-      ],
-    ),
-    thread(
-      "kevorkova-bocharova",
-      ["casting"],
-      [],
-      {
-        casting: {
-          name: "Наталия Бочарова",
-          roleLabel: "Агент",
-          initials: "НБ",
-          bg: "#3D5C6D",
-          profileHref: "/people/bocharova",
-        },
-        agent: {
-          name: "Анна Кеворкова",
-          roleLabel: "Кастинг-директор",
-          avatar: "/assets/people/kevorkova.jpg",
-          profileHref: "/people/kevorkova",
-        },
-      },
-      [
-        line("t9-1", "agent", "Анна, добрый. Есть трое на главную 28–34. Кинуть всех сразу?", "17:50", Date.parse("2026-05-27T17:50:00Z")),
-        line("t9-2", "casting", "Одну. Кто ближе к учительнице: север, не гламур, не «инстаграм». Трое сразу я не смотрю.", "18:04", Date.parse("2026-05-27T18:04:00Z")),
-        line("t9-3", "agent", "Тогда Лерман не дам — слишком город. Есть 31, театр, жила в Архангельске. Не звезда, нормальная речь.", "18:12", Date.parse("2026-05-27T18:12:00Z")),
-        line("t9-4", "casting", "Имя в карточке. Самопроба с прошлого кастинга пойдёт, если не старше полугода. И занятость на июнь сразу.", "18:21", Date.parse("2026-05-27T18:21:00Z")),
-        line("t9-5", "agent", "Ок, кину одну, без рассылки. Занятость уточню сегодня вечером — вчера ещё была свободна.", "18:33", Date.parse("2026-05-27T18:33:00Z")),
-        line("t9-6", "casting", "Если уже не свободна — не кидайте «на всякий». Лучше пусто, чем потом отмена.", "18:37", Date.parse("2026-05-27T18:37:00Z")),
-        line("t9-7", "agent", "Поняла. Если не зайдёт — второй заход не буду делать сама, скажите.", "18:40", Date.parse("2026-05-27T18:40:00Z")),
-        line("t9-8", "casting", "Договорились. Жду одну карточку.", "18:41", Date.parse("2026-05-27T18:41:00Z")),
-      ],
-    ),
-    thread(
-      "kevorkova-ustyugov",
-      ["casting"],
-      ["casting"],
-      {
-        casting: {
-          name: "Александр Устюгов",
-          roleLabel: "Актёр · «Актёр 1»",
-          avatar: "/assets/actors/akter1/ustyugov-aleksandr.jpg",
-          profileHref: "/people/ustyugov-aleksandr",
-        },
-      },
-      [
-        line("t10-1", "casting", "Александр, добрый день. Очные «Тихий январь», 10–14 июня. Подтвердите, пожалуйста, какие дни живые.", "09:05", Date.parse("2026-05-27T09:05:00Z")),
-        line("t10-2", "actor", "Здравствуйте. 10–14 подтверждаю. 12-е лучше после 14:00 — утром уже смена в другом месте.", "09:22", Date.parse("2026-05-27T09:22:00Z")),
-        line("t10-3", "casting", "12-е поставим на 15:00. Адрес пришлю отдельно, это не павильон Sreda. Остальные дни — как обычно, утро.", "09:30", Date.parse("2026-05-27T09:30:00Z")),
-        line("t10-4", "actor", "Хорошо. Гриму что-то особенное? Бороду не трогать? И сцены заранее будут или на месте?", "09:36", Date.parse("2026-05-27T09:36:00Z")),
-        line("t10-5", "casting", "Как есть. Бороду не сбривать. Сцены короткие, смысл важнее текста. Пришлю за день, не зубрить.", "09:44", Date.parse("2026-05-27T09:44:00Z")),
-        line("t10-6", "actor", "Понял. Партнёр на площадке будет или один в камеру?", "09:48", Date.parse("2026-05-27T09:48:00Z")),
-        line("t10-7", "casting", "С ридером. Не режиссёр, не волнуйтесь за игру напротив — это для глаз.", "09:50", Date.parse("2026-05-27T09:50:00Z")),
-        line("t10-8", "actor", "Ок. Если самопроба всё же нужна до очных — скажите сегодня, сниму вечером. Свет дома нормальный до 21.", "09:51", Date.parse("2026-05-27T09:51:00Z")),
-      ],
-    ),
-    thread(
-      "lenskikh-soykina",
-      ["agent"],
-      ["agent"],
-      {
-        agent: {
-          name: "Маргарита Ленских",
-          roleLabel: "Кастинг-директор · ГКД",
-          initials: "МЛ",
-          bg: "#5C4A45",
-          profileHref: "/people/lenskikh",
-        },
-      },
-      [
-        line("t11-1", "casting", "Наталья, мужская 38–46, следователь, сериал. Не звёзды первой величины. Есть кто из ростера?", "08:50", Date.parse("2026-05-28T08:50:00Z")),
-        line("t11-2", "agent", "Могу Устюгова и ещё одного. Устюгов сейчас свободнее по июню, второй — если не закроется реклама.", "08:58", Date.parse("2026-05-28T08:58:00Z")),
-        line("t11-3", "casting", "Устюгов старше, тип тот. Шоурил свежий? И не «герой боевика», нам бывший оперативник, уставший.", "09:04", Date.parse("2026-05-28T09:04:00Z")),
-        line("t11-4", "agent", "Да, шоурил прошлогодний. Когда дедлайн? Не хочу кидать в последний день и потом выяснять занятость.", "09:07", Date.parse("2026-05-28T09:07:00Z")),
-        line("t11-5", "casting", "Кастинг уже идёт, до 20 июня. Двоих максимум, без спама на всю студию. Самопроба не нужна на первом круге.", "09:12", Date.parse("2026-05-28T09:12:00Z")),
-        line("t11-6", "agent", "Ок. Сегодня до обеда пришлю двоих, карточки коротко: фото, ссылка, занятость одной строкой.", "09:16", Date.parse("2026-05-28T09:16:00Z")),
-        line("t11-7", "casting", "Жду. Если занятость не подтверждена — сразу пишите, не держите слот «на всякий».", "09:18", Date.parse("2026-05-28T09:18:00Z")),
-      ],
-    ),
-    thread(
-      "khrechkova-soykina",
-      ["agent"],
-      [],
-      {
-        agent: {
-          name: "Татьяна Хречкова",
-          roleLabel: "Кастинг-директор",
-          initials: "ТХ",
-          bg: "#4A3D5C",
-          profileHref: "/people/khrechkova",
-        },
-      },
-      [
-        line("t12-1", "casting", "Наталья, Чадов на июнь свободен? Эпизод с текстом, 6 смен, Москва.", "13:40", Date.parse("2026-05-26T13:40:00Z")),
-        line("t12-2", "agent", "Сейчас уточню, 10 минут. Он вчера ещё был открыт.", "13:42", Date.parse("2026-05-26T13:42:00Z")),
-        line("t12-3", "agent", "Свободен. Могу предложить. Гонорар вилка какая, чтобы сразу сказать и не ходить кругами?", "14:05", Date.parse("2026-05-26T14:05:00Z")),
-        line("t12-4", "casting", "Как на платформе обычно. Не реклама, не «известное лицо». Даты 18–25, не каждый день.", "14:11", Date.parse("2026-05-26T14:11:00Z")),
-        line("t12-5", "agent", "Передала. Если скажет нет — не буду торговаться в чате, напишу. Самопроба нужна?", "14:18", Date.parse("2026-05-26T14:18:00Z")),
-        line("t12-6", "casting", "Нет, шоурила хватит. Если возьмём — очные, не самопроба.", "14:22", Date.parse("2026-05-26T14:22:00Z")),
-        line("t12-7", "agent", "Тогда держим. Подтверждение от него — завтра утром, до 11. Если молчит — не предлагаю другого вместо.", "14:26", Date.parse("2026-05-26T14:26:00Z")),
-        line("t12-8", "casting", "Ок. Завтра до обеда жду да/нет, дальше закрываю слот.", "14:30", Date.parse("2026-05-26T14:30:00Z")),
-      ],
-    ),
-    thread(
-      "soykina-ustyugov",
-      ["agent"],
-      ["agent"],
-      {
-        agent: {
-          name: "Александр Устюгов",
-          roleLabel: "Актёр · ростер",
-          avatar: "/assets/actors/akter1/ustyugov-aleksandr.jpg",
-          profileHref: "/people/ustyugov-aleksandr",
-        },
-      },
-      [
-        line("t13-1", "agent", "Саша, 10–14 июня Кеворкова зовёт на очные «Тихий январь». Как занятость?", "08:10", Date.parse("2026-05-28T08:10:00Z")),
-        line("t13-2", "actor", "Июнь в целом ок. 12–13 уже смена, туда не встану. Остальное могу держать.", "08:21", Date.parse("2026-05-28T08:21:00Z")),
-        line("t13-3", "agent", "12–13 им написала. Остальное держим. Самопроба пока не просили, смотрят шоурил.", "08:28", Date.parse("2026-05-28T08:28:00Z")),
-        line("t13-4", "actor", "Если всё же понадобится — сегодня вечером могу. Лучше знать заранее, свет дома нормальный только до 21.", "08:35", Date.parse("2026-05-28T08:35:00Z")),
-        line("t13-5", "agent", "Ок. Не снимай «на всякий». Как скажут — сразу тебе. Роль вторая мужская, школа / отец, не красавец.", "08:38", Date.parse("2026-05-28T08:38:00Z")),
-        line("t13-6", "actor", "Тип понятен. Бороду не трогаю. Если адрес не Sreda — напиши, чтобы не ехать не туда.", "08:42", Date.parse("2026-05-28T08:42:00Z")),
-        line("t13-7", "agent", "На 12-е она уже ставит 15:00, не павильон. Остальные дни — как обычно. Адрес пришлёт отдельно.", "08:46", Date.parse("2026-05-28T08:46:00Z")),
-        line("t13-8", "actor", "Июнь подтверждаю, кроме 12–13. 12-е после 15:00 если очень надо — подумаем, но лучше не надо. Спасибо.", "08:50", Date.parse("2026-05-28T08:50:00Z")),
-      ],
-    ),
-  ];
-}
-
-function line(
-  id: string,
-  authorRole: ChatLine["authorRole"],
-  text: string,
-  time: string,
-  createdAt: number,
-  extra?: Pick<ChatLine, "card" | "tape">,
-): ChatLine {
-  return { id, authorRole, text, time, createdAt, ...extra };
-}
-
-export function seedState(): WorkspaceState {
-  return {
-    v: 1,
-    projects: [],
-    castings: [],
-    applications: [
-      {
-        id: "app-ty-vz",
-        castingSlug: "tihiy-yanvar-second",
-        actorSlug: "vzmetnev",
-        actorName: "Александр Взметнев",
-        actorAvatar: "/assets/actors/vzmetnev-avatar.jpg",
-        kind: "selftape",
-        note: "Самопроба.",
-        status: "shortlist",
-        source: "actor",
-        createdAt: Date.parse("2026-05-28T11:00:00Z"),
-        match: "91%",
-        actorMeta: "Актёр · 32 · Москва · «Мажор», «Любовь СССР»",
-        tape: {
-          title: "Самопроба · Кухня + Школа",
-          poster: "/assets/actors/vzmetnev-kinopoisk.jpg",
-          duration: "3:12",
-          caption: "Showreel · вертикаль · слейт в начале",
-          href: "/people/vzmetnev#showreel",
-        },
-      },
-      {
-        id: "app-ty-ustyugov",
-        castingSlug: "tihiy-yanvar-second",
-        actorSlug: "ustyugov-aleksandr",
-        actorName: "Александр Устюгов",
-        actorAvatar: "/assets/actors/akter1/ustyugov-aleksandr.jpg",
-        kind: "propose",
-        note: "Предложение агента на вторую мужскую из ростера «Актёр 1». Занятость на июнь подтверждена.",
-        status: "sent",
-        source: "agent",
-        createdAt: Date.parse("2026-05-27T15:00:00Z"),
-        match: "84%",
-        actorMeta: "Актёр · ростер «Актёр 1»",
-        tape: {
-          title: "Showreel Устюгова · 2023–2025",
-          poster: "/assets/actors/akter1/ustyugov-aleksandr.jpg",
-          duration: "1:48",
-          caption: "Драма / характер · предложение агента",
-          href: "/people/ustyugov-aleksandr#showreel",
-        },
-      },
-      {
-        id: "app-ty-metelkin",
-        castingSlug: "tihiy-yanvar-second",
-        actorSlug: "metelkin-aleksandr",
-        actorName: "Александр Метелкин",
-        actorAvatar: "/assets/actors/akter1/metelkin-aleksandr.jpg",
-        kind: "selftape",
-        note: "Самопроба одним файлом. Готов к очным 10–14 июня.",
-        status: "sent",
-        source: "actor",
-        createdAt: Date.parse("2026-05-28T16:20:00Z"),
-        match: "79%",
-        actorMeta: "Актёр · ростер «Актёр 1»",
-        tape: {
-          title: "Самопроба · сцена «Кухня»",
-          poster: "/assets/actors/akter1/metelkin-aleksandr.jpg",
-          duration: "2:05",
-          caption: "Только парная · слейт по стандарту",
-          href: "/people/metelkin-aleksandr#showreel",
-        },
-      },
-      {
-        id: "app-ty-chadov",
-        castingSlug: "tihiy-yanvar-second",
-        actorSlug: "chadov-aleksej",
-        actorName: "Алексей Чадов",
-        actorAvatar: "/assets/actors/akter1/chadov-aleksej.jpeg",
-        kind: "selftape",
-        note: "Обе сцены + короткий монолог. Могу на натуру в Мурманск.",
-        status: "invited",
-        source: "actor",
-        createdAt: Date.parse("2026-05-27T19:40:00Z"),
-        match: "88%",
-        actorMeta: "Актёр · ростер «Актёр 1»",
-        tape: {
-          title: "Самопроба · Кухня + Школа",
-          poster: "/assets/actors/akter1/chadov-aleksej.jpeg",
-          duration: "3:40",
-          caption: "Showreel-тон · приглашён на очные",
-          href: "/people/chadov-aleksej#showreel",
-        },
-      },
-      {
-        id: "app-ty-lerman",
-        castingSlug: "tihiy-yanvar-lead",
-        actorSlug: "lerman-olga",
-        actorName: "Ольга Лерман",
-        actorAvatar: "/assets/actors/akter1/lerman-olga.png",
-        kind: "propose",
-        note: "На главную женскую 28–34 из ростера «Актёр 1».",
-        status: "invited",
-        source: "agent",
-        createdAt: Date.parse("2026-05-28T09:30:00Z"),
-        match: "93%",
-        actorMeta: "Актриса · ростер «Актёр 1»",
-        tape: {
-          title: "Showreel Лерман · главная",
-          poster: "/assets/actors/akter1/lerman-olga.png",
-          duration: "2:10",
-          caption: "Предложение агента · сцены 01–03",
-          href: "/people/lerman-olga#showreel",
-        },
-      },
-      {
-        id: "app-ty-shilovskaya",
-        castingSlug: "tihiy-yanvar-lead",
-        actorSlug: "shilovskaya-aglaya",
-        actorName: "Аглая Шиловская",
-        actorAvatar: "/assets/actors/akter1/shilovskaya-aglaya.jpg",
-        kind: "selftape",
-        note: "Самопроба: «Звонок» + «Метель». Готова к очным 10–14 июня.",
-        status: "shortlist",
-        source: "actor",
-        createdAt: Date.parse("2026-05-28T12:10:00Z"),
-        match: "91%",
-        actorMeta: "Актриса · 30 · Москва",
-        tape: {
-          title: "Самопроба · Звонок + Метель",
-          poster: "/assets/actors/akter1/shilovskaya-aglaya.jpg",
-          duration: "3:05",
-          caption: "Showreel как самопроба · вертикаль",
-          href: "/people/shilovskaya-aglaya#showreel",
-        },
-      },
-      {
-        id: "app-ty-kutepova",
-        castingSlug: "tihiy-yanvar-lead",
-        actorSlug: "kutepova-polina",
-        actorName: "Полина Кутепова",
-        actorAvatar: "/assets/actors/akter1/kutepova-polina.jpg",
-        kind: "selftape",
-        note: "Все три сцены одним файлом. Могу на натуру в Мурманск.",
-        status: "sent",
-        source: "actor",
-        createdAt: Date.parse("2026-05-27T18:40:00Z"),
-        match: "87%",
-        actorMeta: "Актриса · ростер «Актёр 1»",
-        tape: {
-          title: "Самопроба · три сцены",
-          poster: "/assets/actors/akter1/kutepova-polina.jpg",
-          duration: "4:20",
-          caption: "Showreel · слейт по стандарту",
-          href: "/people/kutepova-polina#showreel",
-        },
-      },
-      {
-        id: "app-ty-hmelnickaya",
-        castingSlug: "tihiy-yanvar-lead",
-        actorSlug: "hmelnickaya-alyona",
-        actorName: "Алёна Хмельницкая",
-        actorAvatar: "/assets/actors/akter1/hmelnickaya-alyona.jpg",
-        kind: "propose",
-        note: "Предложение агента: сильный типаж учительницы, опыт в драме.",
-        status: "sent",
-        source: "agent",
-        createdAt: Date.parse("2026-05-26T16:00:00Z"),
-        match: "84%",
-        actorMeta: "Актриса · ростер «Актёр 1»",
-        tape: {
-          title: "Showreel Хмельницкой",
-          poster: "/assets/actors/akter1/hmelnickaya-alyona.jpg",
-          duration: "1:55",
-          caption: "Предложение агента · характер",
-          href: "/people/hmelnickaya-alyona#showreel",
-        },
-      },
-      {
-        id: "app-okno-chadov",
-        castingSlug: "okno-hosts",
-        actorSlug: "chadov-aleksej",
-        actorName: "Алексей Чадов",
-        actorAvatar: "/assets/actors/akter1/chadov-aleksej.jpeg",
-        kind: "apply",
-        note: "Опыт в разговорном жанре и доке.",
-        status: "shortlist",
-        source: "actor",
-        createdAt: Date.parse("2026-05-22T10:00:00Z"),
-      },
-      {
-        id: "app-okno-vz",
-        castingSlug: "okno-hosts",
-        actorSlug: "vzmetnev",
-        actorName: "Александр Взметнев",
-        actorAvatar: "/assets/actors/vzmetnev-avatar.jpg",
-        kind: "apply",
-        note: "Интересен формат ведущего, могу на Казань.",
-        status: "sent",
-        source: "actor",
-        createdAt: Date.parse("2026-05-26T14:00:00Z"),
-      },
-      {
-        id: "app-k14-lerman",
-        castingSlug: "komnata-14-episode",
-        actorSlug: "lerman-olga",
-        actorName: "Ольга Лерман",
-        actorAvatar: "/assets/actors/akter1/lerman-olga.png",
-        kind: "apply",
-        note: "",
-        status: "declined",
-        source: "actor",
-        createdAt: Date.parse("2026-05-18T09:00:00Z"),
-      },
-      {
-        id: "app-k14-shilovskaya",
-        castingSlug: "komnata-14-episode",
-        actorSlug: "shilovskaya-aglaya",
-        actorName: "Аглая Шиловская",
-        actorAvatar: "/assets/actors/akter1/shilovskaya-aglaya.jpg",
-        kind: "propose",
-        note: "Эпизод period 1950-е, свободна на смены.",
-        status: "shortlist",
-        source: "agent",
-        createdAt: Date.parse("2026-05-20T11:00:00Z"),
-      },
-    ],
-    posts: [],
-    saved: ["casting:tihiy-yanvar-second", "casting:okno-hosts", "project:tihiy-yanvar"],
-    settings: { notifyEmail: true, notifyPush: false, plan: "pro", rehearsalsUsed: 0, rehearsalsMonth: "" },
-    profilePatches: {},
-    pulses: [
-      {
-        id: "pulse-vz-1",
-        personSlug: "vzmetnev",
-        name: "Александр Взметнев",
-        avatar: "/assets/actors/vzmetnev-avatar.jpg",
-        text: "Самопроба «Тихий январь» отправлена. С июля открыт.",
-        availability: "open",
-        updatedAt: Date.parse("2026-05-28T12:30:00Z"),
-      },
-    ],
-    boards: [
-      {
-        id: "pin-lerman",
-        projectSlug: "tihiy-yanvar",
-        actorSlug: "lerman-olga",
-        actorName: "Ольга Лерман",
-        photo: "/assets/actors/akter1/lerman-olga.png",
-        character: "Марина · учительница",
-        rotation: -5,
-      },
-      {
-        id: "pin-vz",
-        projectSlug: "tihiy-yanvar",
-        actorSlug: "vzmetnev",
-        actorName: "Александр Взметнев",
-        photo: "/assets/actors/vzmetnev-kinopoisk.jpg",
-        character: "Отец",
-        rotation: 3,
-      },
-      {
-        id: "pin-ustyugov",
-        projectSlug: "tihiy-yanvar",
-        actorSlug: "ustyugov-aleksandr",
-        actorName: "Александр Устюгов",
-        photo: "/assets/actors/akter1/ustyugov-aleksandr.jpg",
-        character: "Участковый",
-        rotation: -2,
-      },
-      {
-        id: "pin-shilovskaya",
-        projectSlug: "tihiy-yanvar",
-        actorSlug: "shilovskaya-aglaya",
-        actorName: "Аглая Шиловская",
-        photo: "/assets/actors/akter1/shilovskaya-aglaya.jpg",
-        character: "Коллега по школе",
-        rotation: 4,
-      },
-    ],
-    shortlist: DEMO_SHORTLIST,
-    roleLayout: [],
-    threads: seedThreads(),
-  };
-}
-
-export function cloneSeed(): WorkspaceState {
-  return structuredClone(seedState());
-}
-
-export function loadWorkspace(): WorkspaceState {
-  if (typeof window === "undefined") return cloneSeed();
-  try {
-    const raw = localStorage.getItem(WORKSPACE_KEY);
-    if (!raw) {
-      const seed = cloneSeed();
-      localStorage.setItem(WORKSPACE_KEY, JSON.stringify(seed));
-      return seed;
-    }
-    const parsed = JSON.parse(raw) as WorkspaceState;
-    if (parsed?.v !== 1 || !Array.isArray(parsed.threads)) return cloneSeed();
-    return {
-      ...cloneSeed(),
-      ...parsed,
-      settings: { ...cloneSeed().settings, ...parsed.settings },
-      pulses: Array.isArray(parsed.pulses) ? parsed.pulses : cloneSeed().pulses,
-      profilePatches: parsed.profilePatches && typeof parsed.profilePatches === "object" ? parsed.profilePatches : {},
-      boards: Array.isArray(parsed.boards) ? parsed.boards : cloneSeed().boards,
-      shortlist: Array.isArray(parsed.shortlist) ? parsed.shortlist : cloneSeed().shortlist,
-      roleLayout: Array.isArray(parsed.roleLayout) ? parsed.roleLayout : cloneSeed().roleLayout,
-    };
-  } catch {
-    return cloneSeed();
-  }
-}
-
-export function saveWorkspace(state: WorkspaceState) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(WORKSPACE_KEY, JSON.stringify(state));
-}
 
 export function allProjects(state: WorkspaceState): Project[] {
-  const overrides = new Map(state.projects.map((p) => [p.slug, p]));
-  const extra = state.projects.filter((p) => !PROJECTS.some((s) => s.slug === p.slug));
-  const seeds = PROJECTS.map((p) => {
-    const over = overrides.get(p.slug);
-    return over ? { ...p, ...over, cover: p.cover } : p;
-  });
-  return [...extra, ...seeds];
+  return state.projects;
 }
 
 export function allCastings(state: WorkspaceState): Casting[] {
-  const extra = state.castings.filter((c) => !CASTINGS.some((s) => s.slug === c.slug));
-  return [...extra, ...CASTINGS];
+  return state.castings;
 }
 
 export function findProject(state: WorkspaceState, slug: string) {
-  return allProjects(state).find((p) => p.slug === slug) ?? null;
+  return state.projects.find((p) => p.slug === slug) ?? null;
 }
 
 export function findCasting(state: WorkspaceState, slug: string) {
-  return allCastings(state).find((c) => c.slug === slug) ?? null;
+  return state.castings.find((c) => c.slug === slug) ?? null;
 }
 
 export function castingsOfProject(state: WorkspaceState, projectSlug: string) {
-  return allCastings(state).filter((c) => c.projectSlug === projectSlug);
+  return state.castings.filter((c) => c.projectSlug === projectSlug);
 }
 
 export function projectsOfCd(state: WorkspaceState, cdSlug: string) {
-  const list = allCastings(state);
-  const fromCastings = new Set(list.filter((c) => c.cdSlug === cdSlug).map((c) => c.projectSlug));
-  return allProjects(state).filter((p) => p.cdSlug === cdSlug || fromCastings.has(p.slug));
+  const fromCastings = new Set(state.castings.filter((c) => c.cdSlug === cdSlug).map((c) => c.projectSlug));
+  return state.projects.filter((p) => p.cdSlug === cdSlug || fromCastings.has(p.slug));
 }
 
 export function castingsOfCd(state: WorkspaceState, cdSlug: string) {
-  return allCastings(state).filter((c) => c.cdSlug === cdSlug);
+  return state.castings.filter((c) => c.cdSlug === cdSlug);
 }
 
-export function responseCount(state: WorkspaceState, casting: Casting) {
-  const extra = state.applications.filter((a) => a.castingSlug === casting.slug).length;
-  const seeded = CASTINGS.some((c) => c.slug === casting.slug);
-  return seeded ? casting.responses + extra : extra;
+/** Число откликов считает сервер (видно всем); владельцу кастинга оно совпадает с длиной его списка откликов. */
+export function responseCount(_state: WorkspaceState, casting: Casting) {
+  return casting.responses;
 }
 
 export function decodeSlug(slug: string) {

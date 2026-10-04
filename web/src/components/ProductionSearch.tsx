@@ -253,12 +253,12 @@ function ProjectCard({
   return (
     <article className="feed-card feed-card--project">
       <Link href={href} className="feed-card__hero media-16x9">
-        <img src={p.cover} alt="" />
+        {p.cover ? <img src={p.cover} alt="" /> : null}
         {urgent ? <CoverBadge kind="urgent">Срочно</CoverBadge> : null}
         <CoverBadge kind={statusKind(p.status)}>{p.status}</CoverBadge>
       </Link>
       <div className="feed-card__top">
-        <img src={p.studioAvatar} alt="" className="feed-card__avatar" width={40} height={40} />
+        <img src={p.studioAvatar || "/assets/figma/avatar-04.png"} alt="" className="feed-card__avatar" width={40} height={40} />
         <div className="feed-card__who">
           <div className="feed-card__org">{p.studio}</div>
           <div className="feed-card__meta">
@@ -314,7 +314,7 @@ function CastingCard({
   return (
     <article className="feed-card feed-card--casting">
       <Link href={cardHref} className="feed-card__hero media-16x9">
-        <img src={c.media} alt="" />
+        {c.media ? <img src={c.media} alt="" /> : null}
         {c.urgent ? <CoverBadge kind="urgent">Срочно</CoverBadge> : null}
         <CoverBadge kind="casting">Кастинг</CoverBadge>
       </Link>

@@ -3,6 +3,7 @@ import { and, asc, count, eq, inArray, isNotNull, isNull, ne, or, sql, type SQL 
 import { db } from "@/db";
 import { agencies, agents, people, personLinks, personPhotos } from "@/db/schema";
 import { PENDING_PROFILE_HINT } from "./people-flags";
+import { searchCondition } from "./search-query";
 import { applyDemoFace, applyDemoPerson, overlayFaces, syntheticIndustry, syntheticGneusheva, syntheticSoykina } from "./demo-overlay";
 
 export type FaceCard = {
@@ -56,13 +57,6 @@ export type FaceSearch = {
   offset?: number;
 };
 
-/** Должно совпадать с индексом `people_search_trgm_idx` (миграция 0005), иначе поиск уйдёт в полный перебор. */
-const SEARCH_EXPR = sql`(${people.name} || ' ' || ${people.role} || ' ' || coalesce(${people.city}, '') || ' ' || coalesce(${people.hint}, ''))`;
-
-function likeNeedle(q: string) {
-  return `%${q.replace(/[%_\\]/g, "")}%`;
-}
-
 /** Скрываем пустые анкеты с регистрации: каталог не засоряется ботами и «мёртвыми» аккаунтами. */
 function visibleInCatalog(): SQL | undefined {
   return or(
@@ -81,11 +75,8 @@ function faceWhere(opts: FaceSearch): SQL | undefined {
   else if (opts.professions?.length) parts.push(inArray(people.profession, opts.professions));
   if (opts.city) parts.push(eq(people.city, opts.city));
   if (opts.agencyId) parts.push(eq(people.agencyId, opts.agencyId));
-  const q = opts.q?.trim().slice(0, 80);
-  if (q) {
-    const needle = likeNeedle(q);
-    parts.push(sql`${SEARCH_EXPR} ilike ${needle}`);
-  }
+  const match = searchCondition(opts.q);
+  if (match) parts.push(match);
   if (!parts.length) return undefined;
   return parts.length === 1 ? parts[0] : and(...parts);
 }

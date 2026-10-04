@@ -1,11 +1,12 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { canMessageCasting, canMessageCompany, openPlanModal, parsePlan } from "@/lib/plans";
 import { profileSlug, withRole } from "@/lib/roles";
 import { useAuth } from "./AuthProvider";
+import { InviteToCastingDialog, NoAccountDialog } from "./ContactDialogs";
 import { useWorkspace } from "./useWorkspace";
 
 function isCompanyTarget(slug: string, profession?: string) {
@@ -31,8 +32,11 @@ export function WriteButton({
   primary,
   className,
   profession,
+  personName,
 }: {
   personSlug: string;
+  /** Имя адресата — для подписи в диалоге «нет аккаунта». */
+  personName?: string;
   label: string;
   primary?: boolean;
   className?: string;
@@ -42,6 +46,8 @@ export function WriteButton({
   const { threads, settings } = useWorkspace();
   const router = useRouter();
   const plan = parsePlan(settings.plan);
+  const [noAccount, setNoAccount] = useState(false);
+  const [failure, setFailure] = useState<string | null>(null);
 
   async function openChat() {
     if (role === "actor") {
@@ -61,39 +67,60 @@ export function WriteButton({
       router.push(withRole(to, role));
       return;
     }
-    const res = await fetch("/api/chat/open", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ personSlug }),
-    });
-    const data = (await res.json()) as { threadId?: string; error?: string };
+    setFailure(null);
+    let res: Response;
+    try {
+      res = await fetch("/api/chat/open", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ personSlug }),
+      });
+    } catch {
+      setFailure("Нет соединения. Проверьте интернет и повторите.");
+      return;
+    }
+    const data = (await res.json().catch(() => ({}))) as { threadId?: string; error?: string; code?: string };
+    if (data.code === "no_account") {
+      setNoAccount(true);
+      return;
+    }
     if (!res.ok || !data.threadId) {
-      window.alert(data.error || "Не удалось открыть чат");
+      setFailure(data.error || "Не удалось открыть чат");
       return;
     }
     router.push(withRole(`/messages?thread=${data.threadId}`, role));
   }
 
   return (
-    <button
-      type="button"
-      className={`${primary ? "btn-primary" : "btn-secondary"}${className ? ` ${className}` : ""}`}
-      onClick={() => void openChat()}
-    >
-      {label}
-    </button>
+    <>
+      <button
+        type="button"
+        className={`${primary ? "btn-primary" : "btn-secondary"}${className ? ` ${className}` : ""}`}
+        onClick={() => void openChat()}
+      >
+        {label}
+      </button>
+      {failure ? (
+        <span role="alert" className="settings-page__hint" style={{ color: "var(--danger, #e5484d)" }}>
+          {failure}
+        </span>
+      ) : null}
+      {noAccount ? <NoAccountDialog personName={personName} onClose={() => setNoAccount(false)} /> : null}
+    </>
   );
 }
 
 export function ProfileViewerActions({
   personSlug,
+  personName,
   profession,
   agencyId,
   onEditProfile,
   onEditStatus,
 }: {
   personSlug: string;
+  personName?: string;
   profession?: string;
   agencyId?: string | null;
   onEditProfile?: () => void;
@@ -104,6 +131,7 @@ export function ProfileViewerActions({
   const isCasting = profession === "casting";
   const isAgent = profession === "agent";
   const isOwn = personSlug === profileSlug(cfg);
+  const [inviteOpen, setInviteOpen] = useState(false);
 
   if (isOwn) {
     const second =
@@ -139,10 +167,13 @@ export function ProfileViewerActions({
   if (role === "casting" && isTalent) {
     return (
       <div className="detail-hero__actions">
-        <WriteButton personSlug={personSlug} profession={profession} label="Написать в чат" primary />
-        <Link href={withRole("/search", role)} className="btn-secondary">
+        <WriteButton personSlug={personSlug} personName={personName} profession={profession} label="Написать в чат" primary />
+        <button type="button" className="btn-secondary" onClick={() => setInviteOpen(true)}>
           Пригласить на кастинг
-        </Link>
+        </button>
+        {inviteOpen ? (
+          <InviteToCastingDialog personSlug={personSlug} personName={personName} onClose={() => setInviteOpen(false)} />
+        ) : null}
       </div>
     );
   }
@@ -153,7 +184,7 @@ export function ProfileViewerActions({
         <Link href={withRole("/compose?type=propose", role)} className="btn-primary">
           Предложить на кастинг
         </Link>
-        <WriteButton personSlug={personSlug} profession={profession} label="Написать актёру" />
+        <WriteButton personSlug={personSlug} personName={personName} profession={profession} label="Написать актёру" />
       </div>
     );
   }
@@ -161,7 +192,7 @@ export function ProfileViewerActions({
   if (role === "actor" && isCasting) {
     return (
       <div className="detail-hero__actions">
-        <WriteButton personSlug={personSlug} profession={profession} label="Написать кастинг-директору" primary />
+        <WriteButton personSlug={personSlug} personName={personName} profession={profession} label="Написать кастинг-директору" primary />
         <Link href={withRole("/castings", role)} className="btn-secondary">
           Смотреть кастинги
         </Link>
@@ -172,7 +203,7 @@ export function ProfileViewerActions({
   if (role === "agent" && isCasting) {
     return (
       <div className="detail-hero__actions">
-        <WriteButton personSlug={personSlug} profession={profession} label="Ответить в чат" primary />
+        <WriteButton personSlug={personSlug} personName={personName} profession={profession} label="Ответить в чат" primary />
         <Link href={withRole("/castings", role)} className="btn-secondary">
           Предложить ростер
         </Link>
@@ -180,15 +211,18 @@ export function ProfileViewerActions({
     );
   }
 
-  const agencyHref = `/agencies/${agencyId || "akter1"}`;
+  // Only link to an agency the profile actually belongs to (every agencyId has a page).
+  const agencyHref = agencyId ? `/agencies/${encodeURIComponent(agencyId)}` : null;
 
   if (role === "casting" && isAgent) {
     return (
       <div className="detail-hero__actions">
-        <WriteButton personSlug={personSlug} profession={profession} label="Написать агенту" primary />
-        <Link href={withRole(agencyHref, role)} className="btn-secondary">
-          Ростер агентства
-        </Link>
+        <WriteButton personSlug={personSlug} personName={personName} profession={profession} label="Написать агенту" primary />
+        {agencyHref ? (
+          <Link href={withRole(agencyHref, role)} className="btn-secondary">
+            Ростер агентства
+          </Link>
+        ) : null}
       </div>
     );
   }
@@ -196,17 +230,19 @@ export function ProfileViewerActions({
   if (isAgent) {
     return (
       <div className="detail-hero__actions">
-        <WriteButton personSlug={personSlug} profession={profession} label="Написать" primary />
-        <Link href={withRole(agencyHref, role)} className="btn-secondary">
-          Агентство
-        </Link>
+        <WriteButton personSlug={personSlug} personName={personName} profession={profession} label="Написать" primary />
+        {agencyHref ? (
+          <Link href={withRole(agencyHref, role)} className="btn-secondary">
+            Агентство
+          </Link>
+        ) : null}
       </div>
     );
   }
 
   return (
     <div className="detail-hero__actions">
-      <WriteButton personSlug={personSlug} profession={profession} label="Написать" primary />
+      <WriteButton personSlug={personSlug} personName={personName} profession={profession} label="Написать" primary />
     </div>
   );
 }

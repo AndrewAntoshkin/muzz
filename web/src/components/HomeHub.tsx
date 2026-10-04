@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo } from "react";
 import type { FaceCard } from "@/lib/people";
 import { compareFacesByPlan } from "@/lib/labels";
-import { profileSlug, roleAgencyId, withRole } from "@/lib/roles";
+import { profileSlug, withRole } from "@/lib/roles";
 import {
   availabilityLabel,
   personAvailability,
@@ -29,10 +29,13 @@ const PLATFORMS = [
 
 export function HomeHub({
   roster,
+  agencyId,
   preview,
   actorCount,
 }: {
   roster: FaceCard[];
+  /** Агентство, ростер которого показываем агенту; null — ростера нет. */
+  agencyId: string | null;
   preview: FaceCard[];
   actorCount: number;
 }) {
@@ -57,8 +60,15 @@ export function HomeHub({
     state,
   } = ws;
   const hub = cfg.hub;
+  // Демо-подпись («Самопроба по «Тихому январю» отправлена») — только для демо; у настоящих пользователей нейтральный текст.
+  const lead = ws.me.demo
+    ? cfg.hub.lead
+    : role === "casting"
+      ? "Проекты, кастинги и входящие отклики — в одном месте."
+      : role === "agent"
+        ? "Ваш ростер и предложения на открытые кастинги."
+        : "Открытые кастинги и ваши отклики — в одном месте.";
   const cdSlug = profileSlug(cfg);
-  const agencyId = roleAgencyId(role);
   const plan = parsePlan(settings.plan);
   const digest = useMemo(
     () => assistantDigest(state, role, cdSlug, plan),
@@ -80,6 +90,8 @@ export function HomeHub({
   const feedCastings = useMemo(() => {
     if (role === "casting") return castingsForCd(cdSlug);
     if (role === "actor") {
+      // В демо поднимаем «витринные» роли; у настоящих пользователей лента просто от новых к старым.
+      if (!ws.me.demo) return castings;
       const preferred = ["tihiy-yanvar-second", "okno-hosts"];
       return [...castings].sort((a, b) => {
         const ai = preferred.indexOf(a.slug);
@@ -111,12 +123,12 @@ export function HomeHub({
       : role === "casting"
         ? [
             [String(feedCastings.length), "кастинга в работе", "ваши роли"],
-            [String(applications.filter((a) => feedCastings.some((c) => c.slug === a.castingSlug)).length), "входящих отклика", "на разбор"],
+            [String(applications.filter((a) => a.source !== "casting" && feedCastings.some((c) => c.slug === a.castingSlug)).length), "входящих отклика", "на разбор"],
             [String(applications.filter((a) => a.status === "shortlist").length), "в шорт-листе", "нужно решение"],
             [String(unread), "сообщения", "актёры и агенты"],
           ]
         : [
-            [String(peopleTotal), "актёров в ростере", "Актёр 1"],
+            [String(peopleTotal), "актёров в ростере", "ваше агентство"],
             [String(castings.length), "кастингов к разбору", "сегодня"],
             [String(myApplications.length), "предложений отправлено", "ждут ответа"],
             [String(unread), "сообщения", "от кастинг-директоров"],
@@ -125,8 +137,8 @@ export function HomeHub({
   function rosterStatus(person: FaceCard) {
     const kind = personAvailability(person.slug, pulses);
     return {
-      kind,
-      label: availabilityLabel(kind, person.profession === "actress"),
+      kind: kind ?? undefined,
+      label: kind ? availabilityLabel(kind, person.profession === "actress") : undefined,
     };
   }
 
@@ -144,7 +156,7 @@ export function HomeHub({
             <section className="hub-welcome">
               <div>
                 <h1 className="hub-welcome__title">Здравствуйте, {cfg.firstName}</h1>
-                <p className="hub-welcome__lead">{hub.lead}</p>
+                <p className="hub-welcome__lead">{lead}</p>
               </div>
               {digest ? (
                 <div className="hub-welcome__tasks">
@@ -256,7 +268,7 @@ export function HomeHub({
                   .map((post) => (
                   <article key={post.id} className="feed-card">
                     <div className="feed-card__top">
-                      <img src={post.authorAvatar} alt="" className="feed-card__avatar" width={40} height={40} />
+                      <img src={post.authorAvatar || "/assets/figma/avatar-04.png"} alt="" className="feed-card__avatar" width={40} height={40} />
                       <div className="feed-card__who">
                         <div className="feed-card__org">{post.authorName}</div>
                         <div className="feed-card__meta">Пост в ленту</div>
@@ -276,7 +288,7 @@ export function HomeHub({
                   return (
                     <article key={p.slug} className="feed-card feed-card--casting">
                       <Link href={cardHref} className="feed-card__hero media-16x9">
-                        <img src={p.media} alt="" />
+                        {p.media ? <img src={p.media} alt="" /> : null}
                         {p.urgent ? <CoverBadge kind="urgent">Срочно</CoverBadge> : null}
                         <CoverBadge kind="casting">Кастинг</CoverBadge>
                       </Link>
@@ -385,12 +397,12 @@ export function HomeHub({
                   return (
                     <article key={p.slug} className="feed-card feed-card--project">
                       <Link href={href} className="feed-card__hero media-16x9">
-                        <img src={p.cover} alt="" />
+                        {p.cover ? <img src={p.cover} alt="" /> : null}
                         {urgent ? <CoverBadge kind="urgent">Срочно</CoverBadge> : null}
                         <CoverBadge kind={statusKind(p.status)}>{p.status}</CoverBadge>
                       </Link>
                       <div className="feed-card__top">
-                        <img src={p.studioAvatar} alt="" className="feed-card__avatar" width={40} height={40} />
+                        <img src={p.studioAvatar || "/assets/figma/avatar-04.png"} alt="" className="feed-card__avatar" width={40} height={40} />
                         <div className="feed-card__who">
                           <div className="feed-card__org">{p.studio}</div>
                           <div className="feed-card__meta">
