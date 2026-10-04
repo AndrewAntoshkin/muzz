@@ -1,4 +1,4 @@
-import { boolean, date, integer, jsonb, pgTable, primaryKey, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, date, index, integer, jsonb, pgTable, primaryKey, text, timestamp } from "drizzle-orm/pg-core";
 import type { AccessId } from "../lib/access";
 import type { FileKind } from "../lib/file-kinds";
 import type { PersonCard } from "../lib/person-card";
@@ -35,7 +35,11 @@ export const people = pgTable("people", {
   initials: text("initials"),
   bg: text("bg"),
   card: jsonb("card").$type<PersonCard | null>(),
-});
+}, (t) => [
+  index("people_profession_name_idx").on(t.profession, t.name),
+  index("people_agency_name_idx").on(t.agencyId, t.name),
+  index("people_city_idx").on(t.city),
+]);
 
 export const personLinks = pgTable("person_links", {
   id: text("id").primaryKey(),
@@ -67,7 +71,10 @@ export const users = pgTable("users", {
   isDemo: boolean("is_demo").notNull().default(false),
   personSlug: text("person_slug").references(() => people.slug),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+}, (t) => [
+  index("users_person_slug_idx").on(t.personSlug),
+  index("users_created_at_idx").on(t.createdAt),
+]);
 
 export const files = pgTable("files", {
   id: text("id").primaryKey(),
@@ -82,7 +89,10 @@ export const files = pgTable("files", {
   storageKey: text("storage_key").notNull(),
   status: text("status").notNull().default("ready"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+}, (t) => [
+  index("files_owner_user_id_idx").on(t.ownerUserId),
+  index("files_status_created_idx").on(t.status, t.createdAt),
+]);
 
 export const chatThreads = pgTable("chat_threads", {
   id: text("id").primaryKey(),
@@ -101,7 +111,10 @@ export const chatThreadMembers = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     lastReadAt: timestamp("last_read_at", { withTimezone: true }),
   },
-  (t) => [primaryKey({ columns: [t.threadId, t.userId] })],
+  (t) => [
+    primaryKey({ columns: [t.threadId, t.userId] }),
+    index("chat_thread_members_user_idx").on(t.userId, t.threadId),
+  ],
 );
 
 export const chatMessages = pgTable("chat_messages", {
@@ -115,4 +128,14 @@ export const chatMessages = pgTable("chat_messages", {
   text: text("text").notNull().default(""),
   fileId: text("file_id").references(() => files.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+}, (t) => [
+  index("chat_messages_thread_created_idx").on(t.threadId, t.createdAt),
+  index("chat_messages_file_id_idx").on(t.fileId),
+]);
+
+/** Счётчики для rate-limit (см. src/lib/rate-limit.ts). */
+export const rateLimits = pgTable("rate_limits", {
+  key: text("key").primaryKey(),
+  count: integer("count").notNull().default(0),
+  resetAt: timestamp("reset_at", { withTimezone: true }).notNull(),
+}, (t) => [index("rate_limits_reset_at_idx").on(t.resetAt)]);

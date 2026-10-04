@@ -38,7 +38,13 @@ npm run db:enrich -- --all
 
 Регистрация создаёт `access=user` и выбранный вид. Пароль генерируется и показывается один раз.
 
-Админ: `andrew` / `CadrShow26` (кнопка на `/auth`). Чаты и отклики демо-админа пока в браузере (`is_demo`). Обычные аккаунты пишут друг другу через Postgres (`users` + `chat_*`).
+Демо-админ `andrew` (публичный пароль) работает **только локально**. В проде демо-вход выключен, пока не задан `ALLOW_DEMO_LOGIN=1`. Настоящего админа создайте так:
+
+```bash
+ADMIN_LOGIN=ivan ADMIN_PASSWORD='длинный-пароль-от-12-символов' npm run db:create-admin
+```
+
+Чаты и отклики демо-админа пока в браузере (`is_demo`). Обычные аккаунты пишут друг другу через Postgres (`users` + `chat_*`).
 
 Тестовые аккаунты после `npm run db:seed-auth`:
 
@@ -50,7 +56,7 @@ npm run db:enrich -- --all
 | `natalya.gneusheva` | `demo` | пользователь | агент |
 | `irina.soykina` | `demo` | пользователь | агент |
 
-Нужен `AUTH_SECRET` в env. На Vercel добавьте его в Project → Environment Variables, затем `db:migrate` и `db:seed-auth` против Neon.
+`AUTH_SECRET` обязателен в проде (16+ символов): без него приложение не запустится. На Vercel добавьте его в Project → Environment Variables, затем `db:migrate`. `db:seed-auth` создаёт тестовые аккаунты с публичными паролями — в прод их не заливайте.
 
 ## База
 
@@ -74,3 +80,17 @@ Postgres (Neon в проде, Docker локально) — это и есть о
 | `npm run db:migrate` | применяет SQL из `drizzle/` |
 | `npm run db:seed` | 78 человек с akter1 + Взметнев и команда |
 | `npm run db:enrich` | дописывает поля с akter1.ru |
+
+## Запуск под нагрузку (чек-лист)
+
+Перед открытием для тысяч пользователей:
+
+1. **Env на Vercel (Production):** `AUTH_SECRET` (обязательно), `DATABASE_URL` с **pooled**-хостом Neon (`-pooler`), `CRON_SECRET`, ключи Turnstile (`TURNSTILE_SECRET_KEY`, `NEXT_PUBLIC_TURNSTILE_SITE_KEY`), хранилище (`BLOB_READ_WRITE_TOKEN` или `R2_*`). `ALLOW_DEMO_LOGIN` не задавать.
+2. **Миграции:** `npm run db:migrate` — `0005_scale` добавляет индексы, `pg_trgm` для поиска и таблицу `rate_limits`.
+3. **Админ:** `npm run db:create-admin`, затем проверьте, что `POST /api/auth/demo` отвечает 404.
+4. **Neon:** тариф без scale-to-zero (или `min compute` > 0), достаточный максимум compute, включённый PITR/бэкапы.
+5. **Vercel:** тариф Pro (Hobby запрещает коммерческое использование и имеет жёсткие лимиты), регион функций рядом с регионом Neon.
+6. **Мониторинг:** аптайм-проверка на `GET /api/health`, алерты Vercel/Neon на ошибки и соединения, Sentry (не подключён).
+7. **Нагрузочный тест:** `k6 run loadtest/smoke.js` против staging (см. `loadtest/README.md`).
+
+Аварийно закрыть регистрацию: `REGISTRATION_DISABLED=1` и redeploy.

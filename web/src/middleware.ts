@@ -3,7 +3,8 @@ import type { NextRequest } from "next/server";
 import { isAdmin } from "@/lib/access";
 import { SESSION_COOKIE, readSessionToken } from "@/lib/session";
 
-const PUBLIC = ["/auth", "/api/auth/login", "/api/auth/register", "/api/auth/demo"];
+// /api/cron/* проверяет CRON_SECRET сам, /api/health нужен мониторингу.
+const PUBLIC = ["/auth", "/api/auth/login", "/api/auth/register", "/api/auth/demo", "/api/health", "/api/cron"];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;

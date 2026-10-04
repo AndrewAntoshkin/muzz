@@ -1,7 +1,7 @@
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { BLOB_ALLOWED_CONTENT_TYPES, FILE_KIND_MAX_BYTES } from "@/lib/file-kinds";
+import { BLOB_ALLOWED_CONTENT_TYPES, FILE_KIND_MAX_BYTES, parseFileKind } from "@/lib/file-kinds";
 import { getOwnedFile, markFileReady } from "@/lib/files";
 
 export const maxDuration = 60;
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
         if (pathname !== row.storageKey) throw new Error("Неверный путь файла");
         return {
           allowedContentTypes: [...BLOB_ALLOWED_CONTENT_TYPES],
-          maximumSizeInBytes: Math.max(row.bytes, FILE_KIND_MAX_BYTES.video),
+          maximumSizeInBytes: Math.min(row.bytes + 1024, FILE_KIND_MAX_BYTES[parseFileKind(row.kind)]),
           addRandomSuffix: false,
           allowOverwrite: true,
           tokenPayload: JSON.stringify({ fileId: row.id }),

@@ -1,12 +1,71 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ROLE_SWITCH, type RoleId } from "@/lib/roles";
 
 type Creds = { login: string; password: string };
 
-export function AuthView() {
+type TurnstileApi = {
+  render: (el: HTMLElement, opts: { sitekey: string; callback: (token: string) => void; "expired-callback": () => void }) => string;
+  reset: (id?: string) => void;
+};
+
+declare global {
+  interface Window {
+    turnstile?: TurnstileApi;
+  }
+}
+
+function useTurnstile(siteKey: string | null, active: boolean) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [token, setToken] = useState("");
+  const widget = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!siteKey || !active) return;
+    let cancelled = false;
+    function mount() {
+      if (cancelled || !ref.current || !window.turnstile || widget.current) return;
+      widget.current = window.turnstile.render(ref.current, {
+        sitekey: siteKey!,
+        callback: (t) => setToken(t),
+        "expired-callback": () => setToken(""),
+      });
+    }
+    if (window.turnstile) {
+      mount();
+    } else {
+      const existing = document.querySelector<HTMLScriptElement>("script[data-turnstile]");
+      const script = existing ?? document.createElement("script");
+      if (!existing) {
+        script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+        script.async = true;
+        script.dataset.turnstile = "1";
+        document.head.appendChild(script);
+      }
+      script.addEventListener("load", mount);
+    }
+    return () => {
+      cancelled = true;
+      widget.current = null;
+    };
+  }, [siteKey, active]);
+
+  const reset = () => {
+    setToken("");
+    if (window.turnstile) window.turnstile.reset(widget.current ?? undefined);
+  };
+  return { ref, token, reset };
+}
+
+export function AuthView({
+  demoEnabled = false,
+  captchaSiteKey = null,
+}: {
+  demoEnabled?: boolean;
+  captchaSiteKey?: string | null;
+}) {
   const searchParams = useSearchParams();
   const next = searchParams.get("next") || "/";
   const [mode, setMode] = useState<"register" | "login">("register");
@@ -18,6 +77,12 @@ export function AuthView() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [creds, setCreds] = useState<Creds | null>(null);
+  const [website, setWebsite] = useState("");
+  const [copied, setCopied] = useState(false);
+  const { ref: captchaRef, token: captchaToken, reset: resetCaptcha } = useTurnstile(
+    captchaSiteKey,
+    mode === "register" && !creds,
+  );
 
   useEffect(() => {
     document.body.setAttribute("data-page", "auth");
@@ -38,7 +103,10 @@ export function AuthView() {
         login?: string;
         password?: string;
       };
-      if (!res.ok) throw new Error(data.error || "Ошибка");
+      if (!res.ok) {
+        if (captchaSiteKey) resetCaptcha();
+        throw new Error(data.error || "Ошибка");
+      }
       if (data.login && data.password) {
         setCreds({ login: data.login, password: data.password });
         return;
@@ -73,6 +141,17 @@ export function AuthView() {
                 <code>{creds.password}</code>
               </dd>
             </dl>
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => {
+                void navigator.clipboard
+                  ?.writeText(`Логин: ${creds.login}\nПароль: ${creds.password}`)
+                  .then(() => setCopied(true));
+              }}
+            >
+              {copied ? "Скопировано" : "Скопировать логин и пароль"}
+            </button>
             <button type="button" className="btn-primary" onClick={() => window.location.assign(next)}>
               Войти в Кадр
             </button>
@@ -101,7 +180,11 @@ export function AuthView() {
                 className="auth-form"
                 onSubmit={(e) => {
                   e.preventDefault();
-                  void enter("/api/auth/register", { firstName, lastName, role });
+                  if (captchaSiteKey && !captchaToken) {
+                    setError("Подтвердите, что вы не робот");
+                    return;
+                  }
+                  void enter("/api/auth/register", { firstName, lastName, role, captcha: captchaToken, website });
                 }}
               >
                 <label>
@@ -137,6 +220,17 @@ export function AuthView() {
                     ))}
                   </div>
                 </fieldset>
+                <input
+                  type="text"
+                  name="website"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }}
+                />
+                {captchaSiteKey ? <div ref={captchaRef} /> : null}
                 <p className="auth-hint">Пароль придумаем сами и покажем один раз после регистрации.</p>
                 {error ? <p className="auth-error">{error}</p> : null}
                 <button type="submit" className="btn-primary" disabled={busy}>
@@ -172,14 +266,16 @@ export function AuthView() {
               </form>
             )}
 
-            <button
-              type="button"
-              className="btn-secondary auth-demo"
-              disabled={busy}
-              onClick={() => void enter("/api/auth/demo")}
-            >
-              Войти демо-аккаунтом
-            </button>
+            {demoEnabled ? (
+              <button
+                type="button"
+                className="btn-secondary auth-demo"
+                disabled={busy}
+                onClick={() => void enter("/api/auth/demo")}
+              >
+                Войти демо-аккаунтом
+              </button>
+            ) : null}
           </>
         )}
       </div>

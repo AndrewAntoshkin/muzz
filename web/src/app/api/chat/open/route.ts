@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { openThreadWithPerson } from "@/lib/accounts";
 import { getSession } from "@/lib/auth";
+import { limitOr429 } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
   const me = await getSession();
@@ -8,6 +9,8 @@ export async function POST(req: Request) {
   if (me.isDemo) {
     return NextResponse.json({ error: "В демо чаты локальные — откройте Сообщения" }, { status: 400 });
   }
+  const limited = await limitOr429({ bucket: "chat:open", id: me.id, max: 60, windowSec: 600 });
+  if (limited) return limited;
   try {
     const body = (await req.json()) as { personSlug?: string };
     const personSlug = (body.personSlug || "").trim();

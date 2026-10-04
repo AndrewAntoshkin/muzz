@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { markThreadRead, sendChatMessage } from "@/lib/accounts";
 import { getSession } from "@/lib/auth";
+import { limitOr429 } from "@/lib/rate-limit";
 
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const me = await getSession();
@@ -8,6 +9,10 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   if (me.isDemo) {
     return NextResponse.json({ error: "В демо используйте локальные чаты" }, { status: 400 });
   }
+  const limited =
+    (await limitOr429({ bucket: "chat:send:min", id: me.id, max: 20, windowSec: 60 })) ??
+    (await limitOr429({ bucket: "chat:send:day", id: me.id, max: 1000, windowSec: 86400 }));
+  if (limited) return limited;
   try {
     const { id } = await ctx.params;
     const body = (await req.json()) as { text?: string; fileId?: string };

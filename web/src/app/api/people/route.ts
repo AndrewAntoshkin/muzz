@@ -12,6 +12,9 @@ export async function GET(req: Request) {
   const kind = url.searchParams.get("kind") || "actors";
   const limit = Number(url.searchParams.get("limit") || "96");
   const offset = Number(url.searchParams.get("offset") || "0");
+  if (q.length > 80) {
+    return NextResponse.json({ error: "Слишком длинный запрос", items: [], total: 0 }, { status: 400 });
+  }
   const professions =
     profession || kind === "all" ? undefined : (["actor", "actress"] as string[]);
 
@@ -25,9 +28,12 @@ export async function GET(req: Request) {
       limit,
       offset,
     });
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      // Каталог меняется редко: браузер и общий кэш не дёргают базу на каждый ввод.
+      headers: { "Cache-Control": "private, max-age=20, stale-while-revalidate=60" },
+    });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "search failed";
-    return NextResponse.json({ error: message, items: [], total: 0 }, { status: 500 });
+    console.error("people search failed", err);
+    return NextResponse.json({ error: "Не удалось загрузить базу", items: [], total: 0 }, { status: 500 });
   }
 }

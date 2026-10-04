@@ -1,6 +1,8 @@
-import { and, asc, count, eq, ilike, inArray, or, type SQL } from "drizzle-orm";
+import { unstable_cache } from "next/cache";
+import { and, asc, count, eq, inArray, isNotNull, isNull, ne, or, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db";
 import { agencies, agents, people, personLinks, personPhotos } from "@/db/schema";
+import { PENDING_PROFILE_HINT } from "./people-flags";
 import { applyDemoFace, applyDemoPerson, overlayFaces, syntheticIndustry, syntheticGneusheva, syntheticSoykina } from "./demo-overlay";
 
 export type FaceCard = {
@@ -54,29 +56,45 @@ export type FaceSearch = {
   offset?: number;
 };
 
+/** Должно совпадать с индексом `people_search_trgm_idx` (миграция 0005), иначе поиск уйдёт в полный перебор. */
+const SEARCH_EXPR = sql`(${people.name} || ' ' || ${people.role} || ' ' || coalesce(${people.city}, '') || ' ' || coalesce(${people.hint}, ''))`;
+
 function likeNeedle(q: string) {
   return `%${q.replace(/[%_\\]/g, "")}%`;
 }
 
+/** Скрываем пустые анкеты с регистрации: каталог не засоряется ботами и «мёртвыми» аккаунтами. */
+function visibleInCatalog(): SQL | undefined {
+  return or(
+    isNull(people.hint),
+    ne(people.hint, PENDING_PROFILE_HINT),
+    isNotNull(people.imageUrl),
+    isNotNull(people.card),
+  );
+}
+
 function faceWhere(opts: FaceSearch): SQL | undefined {
   const parts: SQL[] = [];
+  const visible = visibleInCatalog();
+  if (visible) parts.push(visible);
   if (opts.profession) parts.push(eq(people.profession, opts.profession));
   else if (opts.professions?.length) parts.push(inArray(people.profession, opts.professions));
   if (opts.city) parts.push(eq(people.city, opts.city));
   if (opts.agencyId) parts.push(eq(people.agencyId, opts.agencyId));
-  const q = opts.q?.trim();
+  const q = opts.q?.trim().slice(0, 80);
   if (q) {
     const needle = likeNeedle(q);
-    const match = or(ilike(people.name, needle), ilike(people.role, needle), ilike(people.city, needle), ilike(people.hint, needle));
-    if (match) parts.push(match);
+    parts.push(sql`${SEARCH_EXPR} ilike ${needle}`);
   }
   if (!parts.length) return undefined;
   return parts.length === 1 ? parts[0] : and(...parts);
 }
 
-export async function searchFaces(opts: FaceSearch = {}): Promise<{ items: FaceCard[]; total: number }> {
-  const limit = Math.min(Math.max(opts.limit ?? 96, 1), 200);
-  const offset = Math.max(opts.offset ?? 0, 0);
+async function searchFacesUncached(opts: FaceSearch = {}): Promise<{ items: FaceCard[]; total: number }> {
+  const rawLimit = Number.isFinite(opts.limit) ? Number(opts.limit) : 96;
+  const rawOffset = Number.isFinite(opts.offset) ? Number(opts.offset) : 0;
+  const limit = Math.min(Math.max(Math.trunc(rawLimit), 1), 200);
+  const offset = Math.min(Math.max(Math.trunc(rawOffset), 0), 20000);
   const where = faceWhere(opts);
   const [totalRow, rows] = await Promise.all([
     db.select({ n: count() }).from(people).where(where),
@@ -88,8 +106,31 @@ export async function searchFaces(opts: FaceSearch = {}): Promise<{ items: FaceC
   return { items, total: Number(totalRow[0]?.n ?? 0) };
 }
 
+const searchFacesCached = unstable_cache(
+  async (key: string) => searchFacesUncached(JSON.parse(key) as FaceSearch),
+  ["faces-search"],
+  { revalidate: 60, tags: ["people"] },
+);
+
+/**
+ * Поиск без текстового запроса (первые страницы каталога, фильтры) кэшируем на минуту:
+ * это самый частый запрос, и он одинаков для всех. Свободный текст идёт напрямую в базу.
+ */
+export async function searchFaces(opts: FaceSearch = {}): Promise<{ items: FaceCard[]; total: number }> {
+  if (opts.q?.trim()) return searchFacesUncached(opts);
+  const key = JSON.stringify({
+    profession: opts.profession || "",
+    city: opts.city || "",
+    professions: opts.professions ?? [],
+    agencyId: opts.agencyId || "",
+    limit: Number.isFinite(opts.limit) ? opts.limit : 96,
+    offset: Number.isFinite(opts.offset) ? opts.offset : 0,
+  });
+  return searchFacesCached(key);
+}
+
 export async function listFaces(): Promise<FaceCard[]> {
-  const rows = await db.select(FACE_FIELDS).from(people).orderBy(asc(people.name)).limit(400);
+  const rows = await db.select(FACE_FIELDS).from(people).where(visibleInCatalog()).orderBy(asc(people.name)).limit(400);
   return overlayFaces(rows.map((r) => ({ ...r, city: r.city ?? "" })));
 }
 
@@ -130,7 +171,18 @@ export async function getPerson(slug: string) {
   return synthetic;
 }
 
+const fetchPersonRowCached = unstable_cache(
+  async (slug: string) => fetchPersonRowUncached(slug),
+  ["person-row"],
+  { revalidate: 60, tags: ["people"] },
+);
+
 async function fetchPersonRow(slug: string) {
+  // «Не найден» не кэшируем: только что зарегистрированный человек должен открыть свой профиль сразу.
+  return (await fetchPersonRowCached(slug)) ?? fetchPersonRowUncached(slug);
+}
+
+async function fetchPersonRowUncached(slug: string) {
   const [row] = await db
     .select({
       slug: people.slug,

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { listThreadsForUser } from "@/lib/accounts";
+import { latestThreadUpdate, listThreadsForUser } from "@/lib/accounts";
 import { getSession } from "@/lib/auth";
 
 export async function GET() {
@@ -7,5 +7,6 @@ export async function GET() {
   if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (me.isDemo) return NextResponse.json({ threads: [], demo: true });
   const threads = await listThreadsForUser(me);
-  return NextResponse.json({ threads });
+  const latest = threads.reduce((max, t) => Math.max(max, t.updatedAt), 0);
+  return NextResponse.json({ threads, latest }, { headers: { "Cache-Control": "no-store" } });
 }

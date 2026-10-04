@@ -1,5 +1,6 @@
 import { SignJWT, jwtVerify } from "jose";
 import { parseAccess, type AccessId } from "./access";
+import { authSecretValue, demoLoginEnabled } from "./env";
 import type { RoleId } from "./roles";
 
 export const SESSION_COOKIE = "kadr_session";
@@ -17,8 +18,7 @@ export type SessionUser = {
 };
 
 function authSecret() {
-  const secret = process.env.AUTH_SECRET || process.env.DATABASE_URL || "kadr-dev-secret-change-me";
-  return new TextEncoder().encode(secret.slice(0, 64).padEnd(32, "0"));
+  return new TextEncoder().encode(authSecretValue());
 }
 
 export async function createSessionToken(user: SessionUser) {
@@ -45,6 +45,8 @@ export async function readSessionToken(token: string | undefined | null): Promis
     const { payload } = await jwtVerify(token, authSecret());
     const role = payload.role === "casting" || payload.role === "agent" ? payload.role : "actor";
     if (typeof payload.id !== "string" || typeof payload.login !== "string") return null;
+    // Старые демо-сессии не должны жить дальше, когда демо-вход выключен.
+    if (payload.isDemo === true && !demoLoginEnabled()) return null;
     return {
       id: payload.id,
       login: payload.login,

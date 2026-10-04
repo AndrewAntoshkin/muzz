@@ -1,14 +1,14 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { FILE_KIND_MAX_BYTES, kindFromMime, parseFileKind, type FileKind } from "@/lib/file-kinds";
 import { newId } from "@/lib/identity";
 import {
   assertObjectReady,
   createUploadTarget,
-  isRemoteFileUrl,
   publicUrlFor,
   storageConfigured,
   storageDriver,
+  trustedObjectUrl,
 } from "@/lib/storage";
 
 const { files } = schema;
@@ -66,6 +66,27 @@ export async function getReadyFile(id: string) {
   return row;
 }
 
+/** Лимиты на человека, чтобы один аккаунт не забил хранилище. */
+const MAX_PENDING_FILES = 20;
+const DEFAULT_QUOTA_MB = 1024;
+
+async function assertWithinQuota(userId: string, incoming: number) {
+  const [row] = await db
+    .select({
+      pending: sql<number>`count(*) filter (where ${files.status} = 'pending' and ${files.createdAt} > now() - interval '1 day')`,
+      total: sql<number>`coalesce(sum(${files.bytes}), 0)`,
+    })
+    .from(files)
+    .where(eq(files.ownerUserId, userId));
+  if (Number(row?.pending ?? 0) >= MAX_PENDING_FILES) {
+    throw new Error("Слишком много незавершённых загрузок. Попробуйте позже.");
+  }
+  const quota = (Number(process.env.USER_STORAGE_QUOTA_MB) || DEFAULT_QUOTA_MB) * 1024 * 1024;
+  if (Number(row?.total ?? 0) + incoming > quota) {
+    throw new Error("Хранилище заполнено. Удалите старые файлы или напишите в поддержку.");
+  }
+}
+
 export async function signUserUpload(input: {
   userId: string;
   filename: string;
@@ -85,6 +106,8 @@ export async function signUserUpload(input: {
     const mb = Math.round(max / (1024 * 1024));
     throw new Error(`Слишком большой файл. Максимум ${mb} МБ`);
   }
+
+  await assertWithinQuota(input.userId, input.bytes);
 
   const id = newId("file");
   const storageKey = `u/${input.userId}/${id}/${safeName(filename)}`;
@@ -126,9 +149,10 @@ export async function markFileReady(id: string, url: string, storageKey?: string
 export async function completeUserUpload(id: string, userId: string, extra?: { url?: string; storageKey?: string }) {
   const row = await getOwnedFile(id, userId);
   if (!row) throw new Error("Файл не найден");
-  const remote = extra?.url && isRemoteFileUrl(extra.url) ? extra.url : isRemoteFileUrl(row.url) ? row.url : "";
+  if (row.status === "ready") return toStoredFile(row);
+  const remote = trustedObjectUrl(extra?.url, row.storageKey);
   if (remote) {
-    await markFileReady(id, remote, extra?.storageKey);
+    await markFileReady(id, remote);
     return toStoredFile({ ...row, url: remote });
   }
   if (storageDriver() === "blob") {

@@ -272,19 +272,47 @@ function LiveMessenger({ initialThread }: { initialThread?: string | null }) {
   const bodyRef = useRef<HTMLDivElement>(null);
   const attach = useChatUpload();
 
+  const latestRef = useRef(0);
+
   const load = async () => {
     const res = await fetch("/api/chat/threads", { credentials: "include" });
-    const data = (await res.json()) as { threads?: ApiThread[]; error?: string };
+    const data = (await res.json()) as { threads?: ApiThread[]; latest?: number; error?: string };
     if (!res.ok) {
       setError(data.error || "Не удалось загрузить чаты");
       return;
     }
+    latestRef.current = data.latest ?? 0;
     setThreads(data.threads || []);
     setError(null);
   };
 
   useEffect(() => {
     void load();
+  }, []);
+
+  // Почти-реальное время без WebSocket: дешёвый опрос раз в 15 с, пока вкладка открыта.
+  // Полный список диалогов перезагружаем, только если на сервере что-то изменилось.
+  useEffect(() => {
+    let stopped = false;
+    async function poll() {
+      if (stopped || document.visibilityState !== "visible") return;
+      try {
+        const res = await fetch("/api/chat/poll", { credentials: "include", cache: "no-store" });
+        if (!res.ok) return;
+        const data = (await res.json()) as { latest?: number };
+        if ((data.latest ?? 0) > latestRef.current) await load();
+      } catch {
+        /* сеть моргнула — попробуем в следующий раз */
+      }
+    }
+    const timer = window.setInterval(poll, 15000);
+    const onVisible = () => void poll();
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      stopped = true;
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, []);
 
   const filtered = useMemo(() => {

@@ -87,6 +87,29 @@ export function publicUrlFor(storageKey: string, fileId: string) {
   return `/api/files/${fileId}/content`;
 }
 
+/**
+ * Принимаем от клиента URL готового файла, только если он указывает ровно на
+ * объект этого файла в нашем хранилище (иначе можно подсунуть чужую ссылку).
+ */
+export function trustedObjectUrl(url: string | undefined, storageKey: string) {
+  if (!url) return "";
+  try {
+    const driver = storageDriver();
+    if (driver === "s3") {
+      return url === `${s3PublicBase()}/${storageKey}` ? url : "";
+    }
+    if (driver === "blob") {
+      const u = new URL(url);
+      const path = decodeURIComponent(u.pathname).replace(/^\//, "");
+      const ok = u.protocol === "https:" && u.hostname.endsWith(".blob.vercel-storage.com" ) && path === storageKey;
+      return ok ? url : "";
+    }
+  } catch {
+    /* fallthrough */
+  }
+  return "";
+}
+
 export function isRemoteFileUrl(url: string) {
   return url.startsWith("https://") || url.startsWith("http://");
 }
